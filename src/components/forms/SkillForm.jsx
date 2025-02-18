@@ -37,6 +37,9 @@ const SkillForm = () => {
     image: '',
     category_id: '',
   })
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
+  const [currentCategory, setCurrentCategory] = useState({ title: '' })
+  const [editingCategory, setEditingCategory] = useState(false)
 
   useEffect(() => {
     fetchCategories()
@@ -134,6 +137,70 @@ const SkillForm = () => {
       image: '',
       category_id: '',
     })
+  }
+
+  const handleCategorySubmit = async () => {
+    try {
+      if (!currentCategory.title) {
+        toast.error('Please enter a category title')
+        return
+      }
+
+      const { error } = await supabase
+        .from('skill_categories')
+        .upsert({
+          ...currentCategory,
+          id: editingCategory ? currentCategory.id : undefined
+        })
+
+      if (error) throw error
+
+      await fetchCategories()
+      handleCategoryClose()
+      toast.success(editingCategory ? 'Category updated successfully' : 'Category added successfully')
+    } catch (error) {
+      console.error('Error saving category:', error)
+      toast.error('Error saving category: ' + error.message)
+    }
+  }
+
+  const handleEditCategory = (category) => {
+    setCurrentCategory(category)
+    setEditingCategory(true)
+    setCategoryDialogOpen(true)
+  }
+
+  const handleDeleteCategory = async (id) => {
+    try {
+      // Check if category has skills
+      const { data: skillsInCategory } = await supabase
+        .from('skills')
+        .select('id')
+        .eq('category_id', id)
+
+      if (skillsInCategory?.length > 0) {
+        toast.error('Cannot delete category with existing skills')
+        return
+      }
+
+      const { error } = await supabase
+        .from('skill_categories')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+
+      await fetchCategories()
+      toast.success('Category deleted successfully')
+    } catch (error) {
+      toast.error('Error deleting category: ' + error.message)
+    }
+  }
+
+  const handleCategoryClose = () => {
+    setCategoryDialogOpen(false)
+    setEditingCategory(false)
+    setCurrentCategory({ title: '' })
   }
 
   return (
@@ -252,6 +319,71 @@ const SkillForm = () => {
         </Box>
       </Paper>
 
+      <Paper sx={{ mt: 4, p: 4, borderRadius: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3
+        }}>
+          <Typography variant="h5" sx={{ fontWeight: 600, color: '#1E293B' }}>
+            Skill Categories
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setCategoryDialogOpen(true)}
+            sx={{
+              backgroundColor: '#0F172A',
+              '&:hover': { backgroundColor: '#1E293B' },
+              borderRadius: 2,
+              textTransform: 'none',
+            }}
+          >
+            Add Category
+          </Button>
+        </Box>
+        <Grid container spacing={2}>
+          {categories.map((category) => (
+            <Grid item xs={12} sm={6} md={4} key={category.id}>
+              <Card sx={{
+                p: 2,
+                borderRadius: 3,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                border: '1px solid',
+                borderColor: 'grey.200',
+              }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <Typography variant="subtitle1" sx={{ color: '#1E293B' }}>
+                    {category.title}
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleEditCategory(category)}
+                      sx={{ color: '#1E293B' }}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleDeleteCategory(category.id)}
+                      sx={{ color: '#EF4444' }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                </Box>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Paper>
+
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -349,8 +481,54 @@ const SkillForm = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog open={categoryDialogOpen} onClose={handleCategoryClose} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h6" sx={{ color: '#1E293B', fontWeight: 600 }}>
+              {editingCategory ? 'Edit Category' : 'Add Category'}
+            </Typography>
+            <IconButton onClick={handleCategoryClose}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <TextField
+            fullWidth
+            required
+            label="Category Title"
+            value={currentCategory.title || ''}
+            onChange={(e) => setCurrentCategory({ ...currentCategory, title: e.target.value })}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button 
+            onClick={handleCategoryClose}
+            sx={{ 
+              color: '#64748B',
+              textTransform: 'none',
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleCategorySubmit}
+            variant="contained"
+            startIcon={<SaveIcon />}
+            sx={{
+              backgroundColor: '#0F172A',
+              '&:hover': { backgroundColor: '#1E293B' },
+              borderRadius: 2,
+              textTransform: 'none',
+            }}
+          >
+            {editingCategory ? 'Save Changes' : 'Add Category'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }
 
-export default SkillForm 
+export default SkillForm
