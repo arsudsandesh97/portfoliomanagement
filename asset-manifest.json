@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/portfoliomanagement/static/css/main.8856237b.css",
-    "main.js": "/portfoliomanagement/static/js/main.6cf1baf6.js",
+    "main.js": "/portfoliomanagement/static/js/main.ab2fe88d.js",
     "static/js/437.7a1ed438.chunk.js": "/portfoliomanagement/static/js/437.7a1ed438.chunk.js",
     "static/js/206.3b19fcc3.chunk.js": "/portfoliomanagement/static/js/206.3b19fcc3.chunk.js",
     "index.html": "/portfoliomanagement/index.html"
   },
   "entrypoints": [
     "static/css/main.8856237b.css",
-    "static/js/main.6cf1baf6.js"
+    "static/js/main.ab2fe88d.js"
   ]
 }
