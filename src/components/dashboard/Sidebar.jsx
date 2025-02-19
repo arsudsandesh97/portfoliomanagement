@@ -1,37 +1,39 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   Drawer,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
-  AppBar,
-  Toolbar,
-  Typography,
+  Box,
   IconButton,
+  Divider,
 } from '@mui/material'
 import {
-  Person,
-  Code,
-  Work,
-  Assignment,
-  School,
-  Logout,
+  Person as BioIcon,
+  School as EducationIcon,
+  Work as ExperienceIcon,
+  Code as ProjectIcon,
+  Psychology as SkillIcon,
+  Logout as LogoutIcon,
 } from '@mui/icons-material'
 import { useAuth } from '../../contexts/AuthContext'
 
-const Sidebar = () => {
+const drawerWidth = 240
+
+const menuItems = [
+  { text: 'Bio', icon: <BioIcon />, path: '/dashboard' },
+  { text: 'Skills', icon: <SkillIcon />, path: '/dashboard/skills' },
+  { text: 'Experience', icon: <ExperienceIcon />, path: '/dashboard/experience' },
+  { text: 'Projects', icon: <ProjectIcon />, path: '/dashboard/projects' },
+  { text: 'Education', icon: <EducationIcon />, path: '/dashboard/education' },
+]
+
+const Sidebar = ({ mobileOpen, handleDrawerToggle }) => {
+  const location = useLocation()
   const navigate = useNavigate()
   const { logout } = useAuth()
-
-  const menuItems = [
-    { text: 'Bio', icon: <Person />, path: '/dashboard' },
-    { text: 'Skills', icon: <Code />, path: '/dashboard/skills' },
-    { text: 'Experience', icon: <Work />, path: '/dashboard/experience' },
-    { text: 'Projects', icon: <Assignment />, path: '/dashboard/projects' },
-    { text: 'Education', icon: <School />, path: '/dashboard/education' },
-  ]
 
   const handleLogout = async () => {
     try {
@@ -42,48 +44,111 @@ const Sidebar = () => {
     }
   }
 
-  return (
-    <>
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-        <Toolbar>
-          <Typography variant="h6" noWrap component="div">
-            Portfolio CMS
-          </Typography>
-          <IconButton
-            color="inherit"
-            onClick={handleLogout}
-            sx={{ marginLeft: 'auto' }}
+  const drawer = (
+    <Box sx={{ height: '100%', backgroundColor: 'white' }}>
+      <List sx={{ p: 2 }}>
+        {menuItems.map((item) => (
+          <ListItem
+            button
+            key={item.text}
+            onClick={() => {
+              navigate(item.path)
+              if (mobileOpen) handleDrawerToggle()
+            }}
+            sx={{
+              borderRadius: 2,
+              mb: 1,
+              backgroundColor: location.pathname === item.path ? '#F1F5F9' : 'transparent',
+              color: location.pathname === item.path ? '#0F172A' : '#64748B',
+              '&:hover': {
+                backgroundColor: '#F8FAFC',
+              },
+            }}
           >
-            <Logout />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
+            <ListItemIcon
+              sx={{
+                color: location.pathname === item.path ? '#0F172A' : '#64748B',
+                minWidth: 40,
+              }}
+            >
+              {item.icon}
+            </ListItemIcon>
+            <ListItemText 
+              primary={item.text}
+              primaryTypographyProps={{
+                fontWeight: location.pathname === item.path ? 600 : 400,
+              }}
+            />
+          </ListItem>
+        ))}
+      </List>
+      <Divider />
+      <List sx={{ p: 2 }}>
+        <ListItem
+          button
+          onClick={handleLogout}
+          sx={{
+            borderRadius: 2,
+            color: '#EF4444',
+            '&:hover': {
+              backgroundColor: '#FEE2E2',
+            },
+          }}
+        >
+          <ListItemIcon sx={{ color: '#EF4444', minWidth: 40 }}>
+            <LogoutIcon />
+          </ListItemIcon>
+          <ListItemText primary="Logout" />
+        </ListItem>
+      </List>
+    </Box>
+  )
+
+  return (
+    <Box
+      component="nav"
+      sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+    >
+      {/* Mobile drawer */}
       <Drawer
-        variant="permanent"
+        variant="temporary"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{
+          keepMounted: true, // Better open performance on mobile
+        }}
         sx={{
-          width: 240,
-          flexShrink: 0,
+          display: { xs: 'block', sm: 'none' },
           '& .MuiDrawer-paper': {
-            width: 240,
             boxSizing: 'border-box',
-            marginTop: '64px',
+            width: drawerWidth,
+            backgroundColor: 'white',
+            border: 'none',
+            boxShadow: '4px 0 10px rgba(0,0,0,0.05)',
           },
         }}
       >
-        <List>
-          {menuItems.map((item) => (
-            <ListItem
-              button
-              key={item.text}
-              onClick={() => navigate(item.path)}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItem>
-          ))}
-        </List>
+        {drawer}
       </Drawer>
-    </>
+
+      {/* Desktop drawer */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          display: { xs: 'none', sm: 'block' },
+          '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
+            width: drawerWidth,
+            backgroundColor: 'white',
+            border: 'none',
+            boxShadow: '4px 0 10px rgba(0,0,0,0.05)',
+          },
+        }}
+        open
+      >
+        {drawer}
+      </Drawer>
+    </Box>
   )
 }
 
