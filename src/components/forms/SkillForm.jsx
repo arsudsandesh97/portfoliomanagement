@@ -66,16 +66,25 @@ const SkillForm = () => {
       const { data, error } = await supabase
         .from('skills')
         .select(`
-          *,
+          id,
+          name,
+          image,
+          category_id,
           skill_categories (
+            id,
             title
           )
         `)
         .order('name')
 
       if (error) throw error
-      console.log('Fetched skills:', data)
-      setSkills(data || [])
+      
+      const processedSkills = data?.map(skill => ({
+        ...skill,
+        categoryTitle: skill.skill_categories?.title
+      })) || []
+      
+      setSkills(processedSkills)
     } catch (error) {
       console.error('Error fetching skills:', error)
       toast.error('Error fetching skills: ' + error.message)
@@ -85,16 +94,20 @@ const SkillForm = () => {
   const handleSubmit = async () => {
     try {
       if (!currentSkill.name || !currentSkill.category_id) {
-        toast.error('Please fill in all required fields')
+        toast.error('Please fill in required fields (Name and Category)')
         return
+      }
+
+      const skillData = {
+        name: currentSkill.name.trim(),
+        category_id: currentSkill.category_id,
+        image: currentSkill.image?.trim() || null,
+        id: editMode ? currentSkill.id : undefined
       }
 
       const { error } = await supabase
         .from('skills')
-        .upsert({
-          ...currentSkill,
-          id: editMode ? currentSkill.id : undefined
-        })
+        .upsert(skillData)
 
       if (error) throw error
 
@@ -139,6 +152,7 @@ const SkillForm = () => {
     })
   }
 
+  // Update the handleCategorySubmit function
   const handleCategorySubmit = async () => {
     try {
       if (!currentCategory.title) {
@@ -149,8 +163,8 @@ const SkillForm = () => {
       const { error } = await supabase
         .from('skill_categories')
         .upsert({
-          ...currentCategory,
-          id: editingCategory ? currentCategory.id : undefined
+          id: editingCategory ? currentCategory.id : undefined,
+          title: currentCategory.title.trim()
         })
 
       if (error) throw error
@@ -172,27 +186,29 @@ const SkillForm = () => {
 
   const handleDeleteCategory = async (id) => {
     try {
-      // Check if category has skills
-      const { data: skillsInCategory } = await supabase
+      const { data: skillsInCategory, error: checkError } = await supabase
         .from('skills')
-        .select('id')
+        .select('id, name')
         .eq('category_id', id)
 
+      if (checkError) throw checkError
+
       if (skillsInCategory?.length > 0) {
-        toast.error('Cannot delete category with existing skills')
+        toast.error(`Cannot delete category. ${skillsInCategory.length} skills are using this category.`)
         return
       }
 
-      const { error } = await supabase
+      const { error: deleteError } = await supabase
         .from('skill_categories')
         .delete()
         .eq('id', id)
 
-      if (error) throw error
+      if (deleteError) throw deleteError
 
       await fetchCategories()
       toast.success('Category deleted successfully')
     } catch (error) {
+      console.error('Error deleting category:', error)
       toast.error('Error deleting category: ' + error.message)
     }
   }
