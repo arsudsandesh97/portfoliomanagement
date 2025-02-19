@@ -103,7 +103,7 @@ const SkillForm = () => {
         category_id: currentSkill.category_id,
         image: currentSkill.image?.trim() || null,
         id: editMode ? currentSkill.id : undefined
-      }
+      } 
 
       const { error } = await supabase
         .from('skills')
