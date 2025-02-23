@@ -15,6 +15,10 @@ import {
   Chip,
   Stack,
   Avatar,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -59,6 +63,12 @@ const ProjectForm = () => {
     name: "",
     img: "",
   });
+  const [categories, setCategories] = useState([]);
+
+  // Add new state for category management
+  const [newCategory, setNewCategory] = useState("");
+  const [openCategoryDialog, setOpenCategoryDialog] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
 
   // Add this common button style
   const commonButtonSx = {
@@ -74,6 +84,7 @@ const ProjectForm = () => {
 
   useEffect(() => {
     fetchProjects();
+    fetchCategories();
   }, []);
 
   // Update the fetchProjects function
@@ -120,6 +131,27 @@ const ProjectForm = () => {
     } catch (error) {
       console.error("Error details:", error);
       toast.error("Error fetching projects: " + error.message);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("category")
+        .not("category", "is", null)
+        .order("category");
+
+      if (error) throw error;
+
+      // Remove duplicates and null values
+      const uniqueCategories = [
+        ...new Set(data.map((item) => item.category)),
+      ].filter(Boolean);
+      setCategories(uniqueCategories);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      toast.error("Error fetching categories: " + error.message);
     }
   };
 
@@ -442,6 +474,77 @@ const ProjectForm = () => {
       toast.success("Association deleted successfully");
     } catch (error) {
       toast.error("Error deleting association: " + error.message);
+    }
+  };
+
+  // Add new functions for category management
+  const handleAddCategory = async () => {
+    try {
+      if (!newCategory.trim()) {
+        toast.error("Please enter a category name");
+        return;
+      }
+
+      if (editingCategory) {
+        // Update existing category
+        const { error } = await supabase
+          .from("projects")
+          .update({ category: newCategory.trim() })
+          .eq("category", editingCategory);
+
+        if (error) throw error;
+
+        setCategories(
+          categories.map((cat) =>
+            cat === editingCategory ? newCategory.trim() : cat
+          )
+        );
+        toast.success("Category updated successfully");
+      } else {
+        // Add new category
+        setCategories([...categories, newCategory.trim()]);
+        toast.success("Category added successfully");
+      }
+
+      setNewCategory("");
+      setEditingCategory(null);
+      setOpenCategoryDialog(false);
+    } catch (error) {
+      toast.error("Error managing category: " + error.message);
+    }
+  };
+
+  const handleEditCategory = (category) => {
+    setNewCategory(category);
+    setEditingCategory(category);
+    setOpenCategoryDialog(true);
+  };
+
+  const handleDeleteCategory = async (categoryToDelete) => {
+    try {
+      // Remove category from the list
+      const updatedCategories = categories.filter(
+        (cat) => cat !== categoryToDelete
+      );
+      setCategories(updatedCategories);
+
+      // Update any projects using this category to have no category
+      const { data: projectsToUpdate } = await supabase
+        .from("projects")
+        .select("id")
+        .eq("category", categoryToDelete);
+
+      if (projectsToUpdate?.length > 0) {
+        await supabase
+          .from("projects")
+          .update({ category: null })
+          .eq("category", categoryToDelete);
+      }
+
+      toast.success("Category deleted successfully");
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      toast.error("Error deleting category: " + error.message);
     }
   };
 
@@ -875,6 +978,30 @@ const ProjectForm = () => {
               />
             </Grid>
             <Grid item xs={12}>
+              <FormControl fullWidth required>
+                <InputLabel>Category</InputLabel>
+                <Select
+                  value={currentProject.category || ""}
+                  label="Category"
+                  onChange={(e) =>
+                    setCurrentProject({
+                      ...currentProject,
+                      category: e.target.value,
+                    })
+                  }
+                >
+                  {categories.map((category) => (
+                    <MenuItem key={category} value={category}>
+                      {category}
+                    </MenuItem>
+                  ))}
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
               <TextField
                 fullWidth
                 multiline
@@ -967,6 +1094,178 @@ const ProjectForm = () => {
                 }
               />
             </Grid>
+            <Grid item xs={12}>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="h6" sx={{ color: "#1E293B", mb: 2 }}>
+                  Project Category
+                </Typography>
+                <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
+                  <FormControl fullWidth required>
+                    <InputLabel>Category</InputLabel>
+                    <Select
+                      value={currentProject.category || ""}
+                      label="Category"
+                      onChange={(e) =>
+                        setCurrentProject({
+                          ...currentProject,
+                          category: e.target.value,
+                        })
+                      }
+                    >
+                      {categories.map((category) => (
+                        <MenuItem
+                          key={category}
+                          value={category}
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            px: 2,
+                            py: 1.5,
+                          }}
+                        >
+                          {category}
+                        </MenuItem>
+                      ))}
+                      <MenuItem value="" sx={{ color: "#64748B" }}>
+                        <em>None</em>
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+              </Box>
+
+              {/* Categories Management Section */}
+              <Box sx={{ mt: 2 }}>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ color: "#475569", mb: 1 }}
+                >
+                  Manage Categories
+                </Typography>
+                <Stack spacing={1}>
+                  {categories.map((category) => (
+                    <Card
+                      key={category}
+                      sx={{
+                        p: 2,
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        backgroundColor: "#F8FAFC",
+                        border: "1px solid",
+                        borderColor: "grey.200",
+                      }}
+                    >
+                      <Typography>{category}</Typography>
+                      <Box sx={{ display: "flex", gap: 1 }}>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleEditCategory(category)}
+                          sx={{
+                            color: "#1E293B",
+                            "&:hover": {
+                              backgroundColor: "rgba(30, 41, 59, 0.04)",
+                            },
+                          }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDeleteCategory(category)}
+                          sx={{
+                            color: "#EF4444",
+                            "&:hover": {
+                              backgroundColor: "rgba(239, 68, 68, 0.04)",
+                            },
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    </Card>
+                  ))}
+                  <Button
+                    variant="outlined"
+                    startIcon={<AddIcon />}
+                    onClick={() => {
+                      setNewCategory("");
+                      setEditingCategory(null);
+                      setOpenCategoryDialog(true);
+                    }}
+                    sx={{
+                      color: "#1E293B",
+                      borderColor: "#E2E8F0",
+                      "&:hover": {
+                        borderColor: "#CBD5E1",
+                        backgroundColor: "#F8FAFC",
+                      },
+                      textTransform: "none",
+                    }}
+                  >
+                    Add New Category
+                  </Button>
+                </Stack>
+              </Box>
+            </Grid>
+
+            {/* Add Category Dialog */}
+            <Dialog
+              open={openCategoryDialog}
+              onClose={() => {
+                setOpenCategoryDialog(false);
+                setNewCategory("");
+                setEditingCategory(null);
+              }}
+              PaperProps={{
+                sx: {
+                  width: "100%",
+                  maxWidth: "400px",
+                  borderRadius: 2,
+                },
+              }}
+            >
+              <DialogTitle
+                sx={{
+                  backgroundColor: "#F8FAFC",
+                  borderBottom: "1px solid",
+                  borderColor: "grey.200",
+                  p: 3,
+                }}
+              >
+                {editingCategory ? "Edit Category" : "Add New Category"}
+              </DialogTitle>
+              <DialogContent sx={{ p: 3 }}>
+                <TextField
+                  autoFocus
+                  fullWidth
+                  label="Category Name"
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  sx={{ mt: 1 }}
+                />
+              </DialogContent>
+              <DialogActions sx={{ p: 3, pt: 2 }}>
+                <Button
+                  onClick={() => {
+                    setOpenCategoryDialog(false);
+                    setNewCategory("");
+                    setEditingCategory(null);
+                  }}
+                  sx={{ color: "#64748B" }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleAddCategory}
+                  variant="contained"
+                  sx={commonButtonSx}
+                >
+                  {editingCategory ? "Update" : "Add"}
+                </Button>
+              </DialogActions>
+            </Dialog>
           </Grid>
           <Grid container spacing={3}>
             {/* ...existing form fields... */}
