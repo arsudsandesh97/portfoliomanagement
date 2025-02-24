@@ -36,6 +36,109 @@ import {
 import { toast } from "react-toastify";
 import { supabase } from "../../config/supabase";
 
+const styles = {
+  gradientHeader: {
+    background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+    color: "white",
+    p: 4,
+  },
+
+  headerText: {
+    background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
+    backgroundClip: "text",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    fontWeight: 700,
+    letterSpacing: "-0.01em",
+  },
+
+  projectCard: {
+    p: 3,
+    borderRadius: 3,
+    backgroundColor: "white",
+    transition: "all 0.3s ease",
+    border: "1px solid",
+    borderColor: "grey.200",
+    "&:hover": {
+      transform: "translateY(-4px)",
+      boxShadow: "0 12px 24px rgba(0,0,0,0.1)",
+    },
+  },
+
+  imageContainer: {
+    width: "100%",
+    height: "200px",
+    borderRadius: 2,
+    overflow: "hidden",
+    bgcolor: "#F8FAFC",
+    border: "1px solid",
+    borderColor: "grey.200",
+    transition: "transform 0.3s ease",
+    "&:hover": {
+      transform: "scale(1.02)",
+    },
+  },
+
+  chip: {
+    backgroundColor: "#F1F5F9",
+    color: "#475569",
+    "&:hover": {
+      backgroundColor: "#E2E8F0",
+    },
+  },
+
+  iconButton: {
+    color: "#1E293B",
+    transition: "all 0.2s ease",
+    "&:hover": {
+      backgroundColor: "#F1F5F9",
+      transform: "translateY(-2px)",
+    },
+  },
+
+  dialogField: {
+    "& .MuiOutlinedInput-root": {
+      borderRadius: 2,
+      transition: "all 0.2s ease",
+      "&:hover": {
+        backgroundColor: "#F8FAFC",
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: "#94A3B8",
+        },
+      },
+      "&.Mui-focused": {
+        backgroundColor: "#F8FAFC",
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: "#0F172A",
+          borderWidth: 2,
+        },
+      },
+    },
+  },
+
+  memberCard: {
+    p: 2,
+    borderRadius: 2,
+    backgroundColor: "white",
+    transition: "all 0.3s ease",
+    border: "1px solid",
+    borderColor: "grey.200",
+    "&:hover": {
+      transform: "translateY(-2px)",
+      boxShadow: "0 8px 16px rgba(0,0,0,0.06)",
+    },
+  },
+
+  avatar: {
+    width: 40,
+    height: 40,
+    transition: "transform 0.3s ease",
+    "&:hover": {
+      transform: "scale(1.1)",
+    },
+  },
+};
+
 const ProjectForm = () => {
   const [projects, setProjects] = useState([]);
   const [open, setOpen] = useState(false);
@@ -81,6 +184,10 @@ const ProjectForm = () => {
     height: 42,
     fontSize: "0.875rem",
   };
+
+  // Add at the top with other state variables
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   useEffect(() => {
     fetchProjects();
@@ -303,36 +410,25 @@ const ProjectForm = () => {
     }
   };
 
-  const handleDelete = async (id) => {
+  // Update handleDelete function
+  const handleDelete = (projectId) => {
+    setItemToDelete({ id: projectId });
+    setDeleteDialogOpen(true);
+  };
+
+  // Update handleConfirmDelete function
+  const handleConfirmDelete = async () => {
     try {
-      // First delete all related members
-      const { error: membersError } = await supabase
-        .from("members")
-        .delete()
-        .eq("project_id", id);
-
-      if (membersError) throw membersError;
-
-      // Then delete all related associations
-      const { error: associationsError } = await supabase
-        .from("associations")
-        .delete()
-        .eq("project_id", id);
-
-      if (associationsError) throw associationsError;
-
-      // Finally delete the project itself
-      const { error: projectError } = await supabase
+      const { error } = await supabase
         .from("projects")
         .delete()
-        .eq("id", id);
-
-      if (projectError) throw projectError;
-
+        .eq("id", itemToDelete.id); // Access the id property from itemToDelete object
+      if (error) throw error;
       await fetchProjects();
       toast.success("Project deleted successfully");
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
     } catch (error) {
-      console.error("Error deleting:", error);
       toast.error("Error deleting project: " + error.message);
     }
   };
@@ -549,7 +645,18 @@ const ProjectForm = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 1200, margin: "0 auto", p: 3 }}>
+    <Box
+      sx={{
+        maxWidth: 1200,
+        margin: "0 auto",
+        p: 3,
+        "& .MuiPaper-root": {
+          borderRadius: 4,
+          overflow: "hidden",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+        },
+      }}
+    >
       {/* Main Projects List */}
       <Paper
         sx={{
@@ -558,85 +665,74 @@ const ProjectForm = () => {
           boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            backgroundColor: "#F8FAFC",
-            p: 4,
-            borderBottom: "1px solid",
-            borderColor: "grey.200",
-          }}
-        >
-          <Box>
-            <Typography
-              variant="h4"
-              sx={{ fontWeight: 600, color: "#1E293B", mb: 1 }}
-            >
-              Projects
-            </Typography>
-            <Typography variant="body1" sx={{ color: "#64748B" }}>
-              Manage your projects
-            </Typography>
-          </Box>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => {
-              setEditMode(false);
-              setOpen(true);
-            }}
+        <Box sx={styles.gradientHeader}>
+          <Box
             sx={{
-              backgroundColor: "#0F172A",
-              "&:hover": { backgroundColor: "#1E293B" },
-              borderRadius: 2,
-              textTransform: "none",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
-            Add Project
-          </Button>
+            <Box>
+              <Typography variant="h4" sx={styles.headerText}>
+                Projects
+              </Typography>
+              <Typography variant="body1" sx={{ color: "#94A3B8", mt: 1 }}>
+                Manage your projects and collaborations
+              </Typography>
+            </Box>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setEditMode(false);
+                setOpen(true);
+              }}
+              sx={{
+                background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
+                color: "#0F172A",
+                fontWeight: 600,
+                px: 3,
+                py: 1,
+                borderRadius: 2,
+                textTransform: "none",
+                boxShadow: "0 4px 12px rgba(255,255,255,0.15)",
+                "&:hover": {
+                  background:
+                    "linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%)",
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 6px 16px rgba(255,255,255,0.2)",
+                },
+                transition: "all 0.2s ease-in-out",
+              }}
+            >
+              Add Project
+            </Button>
+          </Box>
         </Box>
 
         <Box sx={{ p: 4 }}>
           <Grid container spacing={3}>
             {projects.map((project) => (
               <Grid item xs={12} key={project.id}>
-                <Card
-                  sx={{
-                    p: 3,
-                    borderRadius: 3,
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                    border: "1px solid",
-                    borderColor: "grey.200",
-                  }}
-                >
+                <Card sx={styles.projectCard}>
                   <Grid container spacing={3}>
+                    {/* Image section */}
                     <Grid item xs={12} sm={4}>
-                      <Box
-                        sx={{
-                          width: "100%",
-                          height: "200px",
-                          borderRadius: 2,
-                          overflow: "hidden",
-                          bgcolor: "#F8FAFC",
-                          border: "1px solid",
-                          borderColor: "grey.200",
-                        }}
-                      >
+                      <Box sx={styles.imageContainer}>
                         {project.image ? (
-                          <img
+                          <Box
+                            component="img"
                             src={project.image}
                             alt={project.title}
-                            style={{
+                            sx={{
                               width: "100%",
                               height: "100%",
                               objectFit: "cover",
-                            }}
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src =
-                                "https://via.placeholder.com/400x200?text=No+Image";
+                              transition: "transform 0.3s ease",
+                              "&:hover": {
+                                transform: "scale(1.05)",
+                              },
                             }}
                           />
                         ) : (
@@ -654,29 +750,31 @@ const ProjectForm = () => {
                       </Box>
                     </Grid>
 
+                    {/* Content section */}
                     <Grid item xs={12} sm={8}>
                       <Box
                         sx={{
                           display: "flex",
                           justifyContent: "space-between",
                           alignItems: "flex-start",
+                          mb: 2,
                         }}
                       >
                         <Box>
                           <Typography
                             variant="h6"
-                            sx={{ color: "#1E293B", mb: 1 }}
+                            sx={{
+                              color: "#1E293B",
+                              fontWeight: 600,
+                              mb: 1,
+                            }}
                           >
                             {project.title}
                           </Typography>
                           <Chip
                             label={project.category}
                             size="small"
-                            sx={{
-                              backgroundColor: "#F1F5F9",
-                              color: "#475569",
-                              mb: 2,
-                            }}
+                            sx={styles.chip}
                           />
                         </Box>
                         <Box sx={{ display: "flex", gap: 1 }}>
@@ -684,7 +782,7 @@ const ProjectForm = () => {
                             <IconButton
                               href={project.github}
                               target="_blank"
-                              sx={{ color: "#1E293B" }}
+                              sx={styles.iconButton}
                             >
                               <GitHubIcon />
                             </IconButton>
@@ -693,241 +791,75 @@ const ProjectForm = () => {
                             <IconButton
                               href={project.dashboard}
                               target="_blank"
-                              sx={{ color: "#1E293B" }}
+                              sx={{
+                                ...styles.iconButton,
+                                color: "#1E293B", // Changed from #0284c7 to black
+                                "&:hover": {
+                                  backgroundColor: "#F1F5F9",
+                                  transform: "translateY(-2px)",
+                                },
+                              }}
                             >
                               <DashboardIcon />
                             </IconButton>
                           )}
                           <IconButton
                             onClick={() => handleEdit(project)}
-                            sx={{ color: "#1E293B" }}
+                            sx={{
+                              ...styles.iconButton,
+                              color: "#1E293B", // Changed from #0f766e to black
+                              "&:hover": {
+                                backgroundColor: "#F1F5F9",
+                                transform: "translateY(-2px)",
+                              },
+                            }}
                           >
                             <EditIcon />
                           </IconButton>
                           <IconButton
                             onClick={() => handleDelete(project.id)}
-                            sx={{ color: "#1E293B" }}
+                            sx={{
+                              ...styles.iconButton,
+                              color: "#dc2626", // Kept delete button red
+                              "&:hover": {
+                                backgroundColor: "#fee2e2",
+                                transform: "translateY(-2px)",
+                              },
+                            }}
                           >
                             <DeleteIcon />
                           </IconButton>
                         </Box>
                       </Box>
+
+                      {/* Project descriptions */}
                       <Typography
                         variant="body2"
-                        sx={{ color: "#475569", mb: 2 }}
+                        sx={{
+                          color: "#475569",
+                          mb: 2,
+                          lineHeight: 1.6,
+                        }}
                       >
                         {project.description}
                       </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ color: "#475569", mb: 2 }}
+
+                      {/* Tags */}
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        flexWrap="wrap"
+                        sx={{ gap: 1 }}
                       >
-                        {project.description2}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ color: "#475569", mb: 2 }}
-                      >
-                        {project.description3}
-                      </Typography>
-                      <Stack direction="row" spacing={1}>
                         {project.tags.map((tag, index) => (
                           <Chip
                             key={index}
                             label={tag}
                             size="small"
-                            sx={{
-                              backgroundColor: "#F1F5F9",
-                              color: "#475569",
-                            }}
+                            sx={styles.chip}
                           />
                         ))}
                       </Stack>
-                      <Box sx={{ mt: 2 }}>
-                        {/* Members */}
-                        {project.members && project.members.length > 0 && (
-                          <Box sx={{ mb: 2 }}>
-                            <Typography
-                              variant="subtitle2"
-                              sx={{ color: "#475569", mb: 1 }}
-                            >
-                              Team Members ({project.members.length})
-                            </Typography>
-                            <Stack
-                              direction="row"
-                              spacing={1}
-                              alignItems="center"
-                            >
-                              {project.members.map((member) => (
-                                <Box
-                                  key={member.id}
-                                  sx={{
-                                    position: "relative",
-                                    "&:hover .member-details": {
-                                      opacity: 1,
-                                      visibility: "visible",
-                                    },
-                                  }}
-                                >
-                                  <Avatar
-                                    src={member.img}
-                                    alt={member.name}
-                                    sx={{ width: 32, height: 32 }}
-                                  />
-                                  {/* Enhanced member details tooltip */}
-                                  <Box
-                                    className="member-details"
-                                    sx={{
-                                      position: "absolute",
-                                      bottom: -80,
-                                      left: "50%",
-                                      transform: "translateX(-50%)",
-                                      backgroundColor: "#1E293B",
-                                      color: "white",
-                                      padding: "8px 12px",
-                                      borderRadius: 1,
-                                      opacity: 0,
-                                      visibility: "hidden",
-                                      transition: "all 0.2s ease",
-                                      zIndex: 2,
-                                      width: "max-content",
-                                      boxShadow:
-                                        "0 4px 6px -1px rgba(0,0,0,0.1)",
-                                    }}
-                                  >
-                                    <Typography
-                                      sx={{
-                                        fontSize: "0.875rem",
-                                        fontWeight: 500,
-                                        mb: 0.5,
-                                      }}
-                                    >
-                                      {member.name}
-                                    </Typography>
-                                    <Stack direction="row" spacing={1}>
-                                      {member.github && (
-                                        <IconButton
-                                          size="small"
-                                          href={member.github}
-                                          target="_blank"
-                                          sx={{
-                                            width: 20,
-                                            height: 20,
-                                            color: "white",
-                                            "&:hover": {
-                                              bgcolor: "rgba(255,255,255,0.1)",
-                                            },
-                                          }}
-                                        >
-                                          <GitHubIcon sx={{ fontSize: 14 }} />
-                                        </IconButton>
-                                      )}
-                                      {member.linkedin && (
-                                        <IconButton
-                                          size="small"
-                                          href={member.linkedin}
-                                          target="_blank"
-                                          sx={{
-                                            width: 20,
-                                            height: 20,
-                                            color: "white",
-                                            "&:hover": {
-                                              bgcolor: "rgba(255,255,255,0.1)",
-                                            },
-                                          }}
-                                        >
-                                          <LinkedInIcon sx={{ fontSize: 14 }} />
-                                        </IconButton>
-                                      )}
-                                    </Stack>
-                                  </Box>
-                                  <Box
-                                    sx={{
-                                      position: "absolute",
-                                      bottom: -4,
-                                      right: -4,
-                                      display: "flex",
-                                      gap: 0.5,
-                                    }}
-                                  >
-                                    {member.github && (
-                                      <IconButton
-                                        size="small"
-                                        href={member.github}
-                                        target="_blank"
-                                        sx={{
-                                          width: 16,
-                                          height: 16,
-                                          bgcolor: "#1E293B",
-                                          color: "white",
-                                          "&:hover": { bgcolor: "#334155" },
-                                        }}
-                                      >
-                                        <GitHubIcon sx={{ fontSize: 12 }} />
-                                      </IconButton>
-                                    )}
-                                    {member.linkedin && (
-                                      <IconButton
-                                        size="small"
-                                        href={member.linkedin}
-                                        target="_blank"
-                                        sx={{
-                                          width: 16,
-                                          height: 16,
-                                          bgcolor: "#0077B5",
-                                          color: "white",
-                                          "&:hover": { bgcolor: "#0066a1" },
-                                        }}
-                                      >
-                                        <LinkedInIcon sx={{ fontSize: 12 }} />
-                                      </IconButton>
-                                    )}
-                                  </Box>
-                                </Box>
-                              ))}
-                            </Stack>
-                          </Box>
-                        )}
-
-                        {/* Associations */}
-                        {project.associations &&
-                          project.associations.length > 0 && (
-                            <Box>
-                              <Typography
-                                variant="subtitle2"
-                                sx={{ color: "#475569", mb: 1 }}
-                              >
-                                Associated With
-                              </Typography>
-                              <Stack
-                                direction="row"
-                                spacing={1}
-                                alignItems="center"
-                              >
-                                {project.associations.map((association) => (
-                                  <Chip
-                                    key={association.id}
-                                    avatar={
-                                      <Avatar
-                                        src={association.img}
-                                        alt={association.name}
-                                      />
-                                    }
-                                    label={association.name}
-                                    variant="outlined"
-                                    sx={{
-                                      borderColor: "#E2E8F0",
-                                      "& .MuiChip-avatar": {
-                                        width: 24,
-                                        height: 24,
-                                      },
-                                    }}
-                                  />
-                                ))}
-                              </Stack>
-                            </Box>
-                          )}
-                      </Box>
                     </Grid>
                   </Grid>
                 </Card>
@@ -938,29 +870,59 @@ const ProjectForm = () => {
       </Paper>
 
       {/* Project Dialog */}
-      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            overflow: "hidden",
+          },
+        }}
+      >
         <DialogTitle
           sx={{
-            backgroundColor: "#F8FAFC",
-            borderBottom: "1px solid",
-            borderColor: "grey.200",
-            p: 3,
+            background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+            color: "white",
+            px: 3,
+            py: 2,
           }}
         >
-          {editMode ? "Edit Project" : "Add New Project"}
-          <IconButton
-            onClick={handleClose}
+          <Box
             sx={{
-              position: "absolute",
-              right: 8,
-              top: 8,
-              color: "#64748B",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
-            <CloseIcon />
-          </IconButton>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {editMode ? "Edit Project" : "Add Project"}
+            </Typography>
+            <IconButton
+              onClick={handleClose}
+              sx={{
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
         </DialogTitle>
-        <DialogContent sx={{ p: 3 }}>
+        <DialogContent
+          sx={{
+            p: 3,
+            pt: 4,
+            "&.MuiDialogContent-root": {
+              paddingTop: "24px !important",
+            },
+          }}
+        >
           <Grid container spacing={3}>
             {/* Project Details */}
             <Grid item xs={12}>
@@ -975,6 +937,7 @@ const ProjectForm = () => {
                     title: e.target.value,
                   })
                 }
+                sx={styles.dialogField}
               />
             </Grid>
             <Grid item xs={12}>
@@ -989,6 +952,7 @@ const ProjectForm = () => {
                       category: e.target.value,
                     })
                   }
+                  sx={styles.dialogField}
                 >
                   {categories.map((category) => (
                     <MenuItem key={category} value={category}>
@@ -1015,6 +979,7 @@ const ProjectForm = () => {
                     description: e.target.value,
                   })
                 }
+                sx={styles.dialogField}
               />
             </Grid>
             <Grid item xs={12}>
@@ -1030,6 +995,7 @@ const ProjectForm = () => {
                     description2: e.target.value,
                   })
                 }
+                sx={styles.dialogField}
               />
             </Grid>
             <Grid item xs={12}>
@@ -1045,6 +1011,7 @@ const ProjectForm = () => {
                     description3: e.target.value,
                   })
                 }
+                sx={styles.dialogField}
               />
             </Grid>
             <Grid item xs={12}>
@@ -1066,6 +1033,7 @@ const ProjectForm = () => {
                   })
                 }
                 helperText="Enter tags separated by commas"
+                sx={styles.dialogField}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -1079,6 +1047,7 @@ const ProjectForm = () => {
                     github: e.target.value,
                   })
                 }
+                sx={styles.dialogField}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -1092,6 +1061,7 @@ const ProjectForm = () => {
                     dashboard: e.target.value,
                   })
                 }
+                sx={styles.dialogField}
               />
             </Grid>
             <Grid item xs={12}>
@@ -1111,6 +1081,7 @@ const ProjectForm = () => {
                           category: e.target.value,
                         })
                       }
+                      sx={styles.dialogField}
                     >
                       {categories.map((category) => (
                         <MenuItem
@@ -1285,6 +1256,7 @@ const ProjectForm = () => {
                       onChange={(e) =>
                         setNewMember({ ...newMember, name: e.target.value })
                       }
+                      sx={styles.dialogField}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -1295,6 +1267,7 @@ const ProjectForm = () => {
                       onChange={(e) =>
                         setNewMember({ ...newMember, img: e.target.value })
                       }
+                      sx={styles.dialogField}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -1305,6 +1278,7 @@ const ProjectForm = () => {
                       onChange={(e) =>
                         setNewMember({ ...newMember, github: e.target.value })
                       }
+                      sx={styles.dialogField}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -1315,6 +1289,7 @@ const ProjectForm = () => {
                       onChange={(e) =>
                         setNewMember({ ...newMember, linkedin: e.target.value })
                       }
+                      sx={styles.dialogField}
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -1333,7 +1308,7 @@ const ProjectForm = () => {
               {/* Members List */}
               <Stack spacing={2}>
                 {members.map((member) => (
-                  <Card key={member.id} sx={{ p: 2 }}>
+                  <Card key={member.id} sx={styles.memberCard}>
                     <Box
                       sx={{
                         display: "flex",
@@ -1344,7 +1319,11 @@ const ProjectForm = () => {
                       <Box
                         sx={{ display: "flex", alignItems: "center", gap: 2 }}
                       >
-                        <Avatar src={member.img} alt={member.name} />
+                        <Avatar
+                          src={member.img}
+                          alt={member.name}
+                          sx={styles.avatar}
+                        />
                         <Box>
                           <Typography variant="subtitle1">
                             {member.name}
@@ -1374,7 +1353,7 @@ const ProjectForm = () => {
                       <Box sx={{ display: "flex", gap: 1 }}>
                         <IconButton
                           onClick={() => handleEditMember(member)}
-                          sx={{ color: "#1E293B" }} // Changed from color="primary"
+                          sx={styles.iconButton} // Changed from color="primary"
                         >
                           <EditIcon />
                         </IconButton>
@@ -1409,6 +1388,7 @@ const ProjectForm = () => {
                           name: e.target.value,
                         })
                       }
+                      sx={styles.dialogField}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -1422,6 +1402,7 @@ const ProjectForm = () => {
                           img: e.target.value,
                         })
                       }
+                      sx={styles.dialogField}
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -1440,7 +1421,7 @@ const ProjectForm = () => {
               {/* Associations List */}
               <Stack spacing={2}>
                 {associations.map((association) => (
-                  <Card key={association.id} sx={{ p: 2 }}>
+                  <Card key={association.id} sx={styles.memberCard}>
                     <Box
                       sx={{
                         display: "flex",
@@ -1451,7 +1432,11 @@ const ProjectForm = () => {
                       <Box
                         sx={{ display: "flex", alignItems: "center", gap: 2 }}
                       >
-                        <Avatar src={association.img} alt={association.name} />
+                        <Avatar
+                          src={association.img}
+                          alt={association.name}
+                          sx={styles.avatar}
+                        />
                         <Typography variant="subtitle1">
                           {association.name}
                         </Typography>
@@ -1459,7 +1444,7 @@ const ProjectForm = () => {
                       <Box sx={{ display: "flex", gap: 1 }}>
                         <IconButton
                           onClick={() => handleEditAssociation(association)}
-                          sx={{ color: "#1E293B" }} // Changed from color="primary"
+                          sx={styles.iconButton} // Changed from color="primary"
                         >
                           <EditIcon />
                         </IconButton>
@@ -1480,12 +1465,17 @@ const ProjectForm = () => {
           </Grid>
         </DialogContent>
 
-        <DialogActions sx={{ p: 3 }}>
+        <DialogActions sx={{ p: 3, backgroundColor: "#F8FAFC" }}>
           <Button
             onClick={handleClose}
+            variant="outlined"
             sx={{
+              borderColor: "#E2E8F0",
               color: "#64748B",
-              textTransform: "none",
+              "&:hover": {
+                borderColor: "#CBD5E1",
+                backgroundColor: "#F1F5F9",
+              },
             }}
           >
             Cancel
@@ -1494,9 +1484,101 @@ const ProjectForm = () => {
             onClick={handleSubmit}
             variant="contained"
             startIcon={<SaveIcon />}
-            sx={commonButtonSx}
+            sx={{
+              background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+              color: "white",
+              px: 3,
+              py: 1,
+              borderRadius: 2,
+              textTransform: "none",
+              "&:hover": {
+                background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
+              },
+            }}
           >
             {editMode ? "Save Changes" : "Add Project"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            overflow: "hidden",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+            color: "white",
+            px: 3,
+            py: 2,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              Delete Project
+            </Typography>
+            <IconButton
+              onClick={() => setDeleteDialogOpen(false)}
+              sx={{
+                color: "white",
+                "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ p: 3, pt: 4 }}>
+          <Typography>Are you sure you want to delete this project?</Typography>
+          <Typography variant="body2" sx={{ color: "#64748B", mt: 1 }}>
+            This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 3, backgroundColor: "#F8FAFC" }}>
+          <Button
+            onClick={() => setDeleteDialogOpen(false)}
+            variant="outlined"
+            sx={{
+              borderColor: "#E2E8F0",
+              color: "#64748B",
+              "&:hover": {
+                borderColor: "#CBD5E1",
+                backgroundColor: "#F1F5F9",
+              },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            variant="contained"
+            sx={{
+              background: "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)",
+              color: "white",
+              px: 3,
+              py: 1,
+              borderRadius: 2,
+              textTransform: "none",
+              "&:hover": {
+                background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
+              },
+            }}
+          >
+            Delete
           </Button>
         </DialogActions>
       </Dialog>
