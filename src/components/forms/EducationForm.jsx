@@ -222,7 +222,7 @@ const EducationForm = () => {
   const handleEdit = (education) => {
     setCurrentEducation({
       ...education,
-      date: dayjs(education.date).format("YYYY-MM-DD"),
+      date: education.date
     });
     setEditMode(true);
     setOpen(true);
@@ -282,7 +282,7 @@ const EducationForm = () => {
                 Education Details
               </Typography>
               <Typography variant="body1" sx={{ color: "#94A3B8", mt: 1 }}>
-                Manage your educational background and achievements
+                Manage your educational background
               </Typography>
             </Box>
 

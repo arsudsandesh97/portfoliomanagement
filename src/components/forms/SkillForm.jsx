@@ -121,6 +121,47 @@ const styles = {
     color: "white",
     p: 4,
   },
+
+  dialogHeader: {
+    background: "linear-gradient(135deg,rgb(0, 0, 0) 0%,rgb(0, 0, 0) 100%)",
+    color: "white",
+    px: 3,
+    py: 2,
+  },
+
+  dialogHeaderContent: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  dialogCloseButton: {
+    color: "white",
+    "&:hover": {
+      backgroundColor: "rgba(255, 255, 255, 0.1)",
+    },
+  },
+
+  cancelButton: {
+    borderColor: "#E2E8F0",
+    color: "#64748B",
+    "&:hover": {
+      borderColor: "#CBD5E1",
+      backgroundColor: "#F1F5F9",
+    },
+  },
+
+  deleteButton: {
+    background: "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)",
+    color: "white",
+    px: 3,
+    py: 1,
+    borderRadius: 2,
+    textTransform: "none",
+    "&:hover": {
+      background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
+    },
+  },
 };
 
 const SkillForm = () => {
@@ -235,13 +276,12 @@ const SkillForm = () => {
     setDeleteDialogOpen(true);
   };
 
-  // Update handleConfirmDelete function
   const handleConfirmDelete = async () => {
     try {
       const { error } = await supabase
         .from("skills")
         .delete()
-        .eq("id", itemToDelete.id); // Access the id property from itemToDelete object
+        .eq("id", itemToDelete.id);
       if (error) throw error;
       await fetchSkills();
       toast.success("Skill deleted successfully");
@@ -262,7 +302,6 @@ const SkillForm = () => {
     });
   };
 
-  // Update the handleCategorySubmit function
   const handleCategorySubmit = async () => {
     try {
       if (!currentCategory.title) {
@@ -303,7 +342,6 @@ const SkillForm = () => {
 
   const handleConfirmCategoryDelete = async () => {
     try {
-      // First update all skills in this category to have no category
       const { error: updateError } = await supabase
         .from("skills")
         .update({ category_id: null })
@@ -311,7 +349,6 @@ const SkillForm = () => {
 
       if (updateError) throw updateError;
 
-      // Then delete the category
       const { error: deleteError } = await supabase
         .from("skill_categories")
         .delete()
@@ -716,14 +753,7 @@ const SkillForm = () => {
           <Button
             onClick={handleClose}
             variant="outlined"
-            sx={{
-              borderColor: "#E2E8F0",
-              color: "#64748B",
-              "&:hover": {
-                borderColor: "#CBD5E1",
-                backgroundColor: "#F1F5F9",
-              },
-            }}
+            sx={styles.cancelButton}
           >
             Cancel
           </Button>
@@ -816,14 +846,7 @@ const SkillForm = () => {
           <Button
             onClick={handleCategoryClose}
             variant="outlined"
-            sx={{
-              borderColor: "#E2E8F0",
-              color: "#64748B",
-              "&:hover": {
-                borderColor: "#CBD5E1",
-                backgroundColor: "#F1F5F9",
-              },
-            }}
+            sx={styles.cancelButton}
           >
             Cancel
           </Button>
@@ -851,6 +874,8 @@ const SkillForm = () => {
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
         PaperProps={{
           sx: {
             borderRadius: 3,
@@ -859,77 +884,37 @@ const SkillForm = () => {
           },
         }}
       >
-        <DialogTitle
-          sx={{
-            background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
-            color: "white",
-            px: 3,
-            py: 2,
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
+        <DialogTitle sx={styles.dialogHeader}>
+          <Box sx={styles.dialogHeaderContent}>
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Confirm Deletion
+              Delete Skill
             </Typography>
             <IconButton
               onClick={() => setDeleteDialogOpen(false)}
-              sx={{
-                color: "white",
-                "&:hover": {
-                  backgroundColor: "rgba(255,255,255,0.1)",
-                },
-              }}
+              sx={styles.dialogCloseButton}
             >
               <CloseIcon />
             </IconButton>
           </Box>
         </DialogTitle>
         <DialogContent sx={{ p: 3, pt: 4 }}>
-          <Typography>
-            Are you sure you want to delete this category?
-            {itemToDelete?.skillCount > 0 && (
-              <Typography sx={{ color: "#EF4444", mt: 1 }}>
-                This category contains {itemToDelete.skillCount} skills.
-                Deleting it will affect these skills.
-              </Typography>
-            )}
+          <Typography>Are you sure you want to delete this skill?</Typography>
+          <Typography variant="body2" sx={{ color: "#64748B", mt: 1 }}>
+            This action cannot be undone.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ p: 3, backgroundColor: "#F8FAFC" }}>
           <Button
             onClick={() => setDeleteDialogOpen(false)}
             variant="outlined"
-            sx={{
-              borderColor: "#E2E8F0",
-              color: "#64748B",
-              "&:hover": {
-                borderColor: "#CBD5E1",
-                backgroundColor: "#F1F5F9",
-              },
-            }}
+            sx={styles.cancelButton}
           >
             Cancel
           </Button>
           <Button
             onClick={handleConfirmDelete}
             variant="contained"
-            sx={{
-              background: "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)",
-              color: "white",
-              px: 3,
-              py: 1,
-              borderRadius: 2,
-              textTransform: "none",
-              "&:hover": {
-                background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
-              },
-            }}
+            sx={styles.deleteButton}
           >
             Delete
           </Button>
@@ -1007,87 +992,6 @@ const SkillForm = () => {
           </Button>
           <Button
             onClick={handleConfirmCategoryDelete}
-            variant="contained"
-            sx={{
-              background: "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)",
-              color: "white",
-              px: 3,
-              py: 1,
-              borderRadius: 2,
-              textTransform: "none",
-              "&:hover": {
-                background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
-              },
-            }}
-          >
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-            overflow: "hidden",
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{
-            background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
-            color: "white",
-            px: 3,
-            py: 2,
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Delete Skill
-            </Typography>
-            <IconButton
-              onClick={() => setDeleteDialogOpen(false)}
-              sx={{
-                color: "white",
-                "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-        <DialogContent sx={{ p: 3, pt: 4 }}>
-          <Typography>Are you sure you want to delete this skill?</Typography>
-          <Typography variant="body2" sx={{ color: "#64748B", mt: 1 }}>
-            This action cannot be undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 3, backgroundColor: "#F8FAFC" }}>
-          <Button
-            onClick={() => setDeleteDialogOpen(false)}
-            variant="outlined"
-            sx={{
-              borderColor: "#E2E8F0",
-              color: "#64748B",
-              "&:hover": {
-                borderColor: "#CBD5E1",
-                backgroundColor: "#F1F5F9",
-              },
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleConfirmDelete}
             variant="contained"
             sx={{
               background: "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)",
