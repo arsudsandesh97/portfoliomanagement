@@ -16,6 +16,9 @@ import {
   Work as ExperienceIcon,
   Code as ProjectIcon,
   Psychology as SkillIcon,
+  ContactMail as ContactMailIcon,
+  Image as ImageIcon,
+  Folder as FolderIcon, // Add this line
 } from "@mui/icons-material";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -27,6 +30,9 @@ const menuItems = [
   { text: "Experience", icon: <ExperienceIcon />, path: "/experience" },
   { text: "Projects", icon: <ProjectIcon />, path: "/projects" },
   { text: "Skills", icon: <SkillIcon />, path: "/skills" },
+  { text: "Contacts", icon: <ContactMailIcon />, path: "/contacts" },
+  { text: "Image Upload", icon: <ImageIcon />, path: "/image-upload" },
+  { text: "Storage", icon: <FolderIcon />, path: "/storage" }, // Add this line
 ];
 
 const Sidebar = ({ mobileOpen, handleDrawerToggle }) => {

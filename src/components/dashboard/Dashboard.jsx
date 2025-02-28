@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import {
   Box,
   CssBaseline,
@@ -15,6 +15,9 @@ import SkillForm from "../forms/SkillForm";
 import ExperienceForm from "../forms/ExperienceForm";
 import ProjectForm from "../forms/ProjectForm";
 import EducationForm from "../forms/EducationForm";
+import ContactForm from "../forms/ContactForm";
+import ImageUploadForm from "../forms/ImageUploadForm";
+import StorageForm from "../forms/StorageForm";
 
 const Dashboard = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -27,6 +30,8 @@ const Dashboard = () => {
   const getPageTitle = () => {
     const path = location.pathname.split("/portfoliomanagement/").pop();
     switch (path) {
+      case "":
+        return "Bio";
       case "skills":
         return "Skills";
       case "experience":
@@ -35,6 +40,14 @@ const Dashboard = () => {
         return "Projects";
       case "education":
         return "Education";
+      case "contacts":
+        return "Contacts";
+      case "short-urls":
+        return "Short URLs";
+      case "image-upload":
+        return "Image Upload";
+      case "storage":
+        return "Storage";
       default:
         return "Bio";
     }
@@ -87,19 +100,17 @@ const Dashboard = () => {
         }}
       >
         <Routes>
-          <Route path="/portfoliomanagement/" element={<BioForm />} />
-          <Route path="/portfoliomanagement/skills" element={<SkillForm />} />
+          <Route path="/" element={<BioForm />} />
+          <Route path="/skills" element={<SkillForm />} />
+          <Route path="/experience" element={<ExperienceForm />} />
+          <Route path="/projects" element={<ProjectForm />} />
+          <Route path="/education" element={<EducationForm />} />
+          <Route path="/contacts" element={<ContactForm />} />
+          <Route path="/image-upload" element={<ImageUploadForm />} />
+          <Route path="/storage" element={<StorageForm />} />
           <Route
-            path="/portfoliomanagement/experience"
-            element={<ExperienceForm />}
-          />
-          <Route
-            path="/portfoliomanagement/projects"
-            element={<ProjectForm />}
-          />
-          <Route
-            path="/portfoliomanagement/education"
-            element={<EducationForm />}
+            path="*"
+            element={<Navigate to="/portfoliomanagement" replace />}
           />
         </Routes>
       </Box>

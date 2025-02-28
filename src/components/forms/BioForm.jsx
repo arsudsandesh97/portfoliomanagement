@@ -17,8 +17,9 @@ import {
   Instagram as InstagramIcon,
   Description as ResumeIcon,
 } from "@mui/icons-material";
-import { toast } from "react-toastify";
 import { supabase } from "../../config/supabase";
+import { bioApi, copyrightApi } from "../../api/SupabaseData";
+import { Toaster, toast } from "react-hot-toast";
 
 const BioForm = () => {
   const [bio, setBio] = useState({
@@ -30,7 +31,7 @@ const BioForm = () => {
     linkedin: "",
     twitter: "",
     insta: "",
-    Image: "",
+    image: "",
   });
   const [copyright, setCopyright] = useState("");
   const [roleInput, setRoleInput] = useState("");
@@ -93,42 +94,32 @@ const BioForm = () => {
 
   const fetchBio = async () => {
     try {
-      const { data, error } = await supabase.from("bio").select("*").single();
-
-      if (error) throw error;
-      console.log("Fetched bio:", data);
+      const data = await bioApi.fetch();
       setBio({
         ...data,
-        roles: Array.isArray(data?.roles) ? data.roles : [], // Ensure roles is always an array
+        roles: Array.isArray(data?.roles) ? data.roles : [],
       });
-      setRoleInput(Array.isArray(data?.roles) ? data.roles.join(", ") : ""); // Set initial role input
+      setRoleInput(Array.isArray(data?.roles) ? data.roles.join(", ") : "");
     } catch (error) {
-      console.error("Error fetching bio:", error);
       toast.error("Error fetching bio: " + error.message);
     }
   };
 
   const handleSubmit = async () => {
+    const loadingToast = toast.loading("Updating bio...");
     try {
       if (!bio.name || !bio.description) {
         toast.error("Please fill in all required fields");
         return;
       }
 
-      const bioData = {
-        ...bio,
-        roles: Array.isArray(bio.roles) ? bio.roles : [], // Ensure roles is an array before saving
-      };
-
-      const { error } = await supabase.from("bio").upsert(bioData);
-
-      if (error) throw error;
-
+      await bioApi.update(bio);
       await fetchBio();
-      toast.success("Bio updated successfully");
+      toast.dismiss(loadingToast);
+      toast.success("Bio updated successfully!");
     } catch (error) {
-      console.error("Error saving bio:", error);
-      toast.error("Error saving bio: " + error.message);
+      toast.dismiss(loadingToast);
+      toast.error(`Failed to update bio: ${error.message}`);
     }
   };
 
@@ -246,7 +237,7 @@ const BioForm = () => {
                 fullWidth
                 label="Profile Image URL"
                 value={bio.Image || ""}
-                onChange={(e) => setBio({ ...bio, Image: e.target.value })}
+                onChange={(e) => setBio({ ...bio, image: e.target.value })}
                 sx={textFieldStyles}
               />
             </Grid>
@@ -527,6 +518,16 @@ const BioForm = () => {
           </Box>
         </Box>
       </Paper>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            padding: "16px",
+            borderRadius: "8px",
+            fontSize: "14px",
+          },
+        }}
+      />
     </Box>
   );
 };

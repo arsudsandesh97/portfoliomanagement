@@ -35,10 +35,10 @@ const Header = ({ handleDrawerToggle, user }) => {
       if (bioError) throw bioError;
       setBioData(bioInfo);
 
-      if (bioInfo?.image) {
+      if (bioInfo?.Image) {
         const { data: imageData, error: imageError } = await supabase.storage
           .from("bio-images")
-          .download(bioInfo.image);
+          .download(bioInfo.Image);
 
         if (imageError) throw imageError;
 

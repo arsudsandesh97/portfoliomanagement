@@ -75,8 +75,34 @@ const Login = () => {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)", // Deeper blue gradient
+        background: "linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)",
         p: 3,
+        position: "relative",
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Cpath d='M15 0h30v15H30v15H15V15H0V0h15zm0 60h30V45H30V30H15v15H0v15h15zM45 0h15v60H45V0zM0 15h15v30H0V15z'/%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundSize: "60px 60px",
+          opacity: 0.9,
+          pointerEvents: "none",
+          animation: "patternMove 60s linear infinite",
+        },
+        "@keyframes patternMove": {
+          "0%": {
+            backgroundPosition: "0 0",
+          },
+          "100%": {
+            backgroundPosition: "60px 60px",
+          },
+        },
+        "& > *": {
+          position: "relative",
+          zIndex: 1,
+        },
       }}
     >
       <Paper
