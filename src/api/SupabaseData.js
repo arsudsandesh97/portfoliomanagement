@@ -58,8 +58,7 @@ export const educationApi = {
     return data;
   },
 
-  update: async (educationData) => {
-    const { id, ...updateData } = educationData;
+  update: async (id, updateData) => {
     const { data, error } = await supabase
       .from("education")
       .update(updateData)

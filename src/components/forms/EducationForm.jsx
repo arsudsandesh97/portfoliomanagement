@@ -314,6 +314,8 @@ const dialogStyles = {
   },
   content: {
     p: { xs: 2.5, sm: 3 },
+    pt: { xs: 3, sm: 4 },
+    mt: 1,
     "& .MuiTextField-root": {
       mb: { xs: 2, sm: 2.5 },
     },
@@ -322,7 +324,7 @@ const dialogStyles = {
     background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
     color: "white",
     px: 3,
-    py: 2,
+    py: 2.5,
   },
   actions: {
     p: 3,
@@ -362,7 +364,7 @@ const toastConfig = {
     style: {
       background: "rgba(16, 185, 129, 0.95)",
     },
-    duration: 2000,
+    duration: 2000, // 2 seconds for success messages
   },
   error: {
     icon: (
@@ -380,7 +382,7 @@ const toastConfig = {
     style: {
       background: "rgba(239, 68, 68, 0.95)",
     },
-    duration: 3000,
+    duration: 3000, // 3 seconds for error messages
   },
   loading: {
     icon: (
@@ -397,6 +399,7 @@ const toastConfig = {
     style: {
       background: "rgba(30, 41, 59, 0.95)",
     },
+    duration: 10000, // 10 seconds maximum for loading state
   },
 };
 
@@ -513,44 +516,54 @@ const EducationForm = () => {
       !currentEducation.degree ||
       !currentEducation.date
     ) {
-      toast.error(
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Typography>Please fill in all required fields</Typography>
-        </Box>,
-        { ...toastConfig }
-      );
+      toast.error("Please fill in all required fields", {
+        ...toastConfig,
+        duration: 2000,
+      });
       return;
     }
 
     const loadingToast = toast.loading(
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-        <Typography>
-          {editMode ? "Updating" : "Adding"} education entry...
-        </Typography>
-      </Box>,
-      { ...toastConfig }
+      `${editMode ? "Updating" : "Adding"} education...`
     );
 
     try {
-      // ... existing submit logic ...
+      // Structure the data to match database schema exactly
+      const educationData = {
+        school: currentEducation.school.trim(),
+        degree: currentEducation.degree.trim(),
+        date: currentEducation.date.trim(),
+        grade: currentEducation.grade?.trim() || null,
+        description: currentEducation.description?.trim() || null,
+        img: currentEducation.img?.trim() || null,
+      };
 
+      if (editMode && currentEducation.id) {
+        // Pass id and update data separately
+        await educationApi.update(currentEducation.id, educationData);
+      } else {
+        await educationApi.create(educationData);
+      }
+
+      await fetchEducations();
+      toast.dismiss(loadingToast);
       toast.success(
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Typography>
-            {editMode ? "Education updated" : "Education added"} successfully
-          </Typography>
-        </Box>,
-        { ...toastConfig }
+        `${editMode ? "Updated" : "Added"} education successfully`,
+        {
+          ...toastConfig,
+          duration: 2000,
+        }
       );
       handleClose();
     } catch (error) {
+      console.error("Error details:", error);
+      toast.dismiss(loadingToast);
       toast.error(
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Typography>
-            Failed to {editMode ? "update" : "add"} education
-          </Typography>
-        </Box>,
-        { ...toastConfig }
+        `Failed to ${editMode ? "update" : "add"} education: ${error.message}`,
+        {
+          ...toastConfig,
+          duration: 3000,
+        }
       );
     }
   };
@@ -565,12 +578,26 @@ const EducationForm = () => {
       await fetchEducations();
       toast.dismiss(loadingToast);
       toast.success("Education deleted successfully");
-      setDeleteDialogOpen(false);
-      setItemToDelete(null);
+      handleCloseDelete(); // Use this instead of direct setState calls
     } catch (error) {
       toast.dismiss(loadingToast);
       toast.error(`Error deleting education: ${error.message}`);
     }
+  };
+
+  // Also update the handleEdit function to properly structure the data
+  const handleEdit = (education) => {
+    setCurrentEducation({
+      id: education.id,
+      school: education.school,
+      degree: education.degree,
+      date: education.date,
+      grade: education.grade || "",
+      description: education.description || "",
+      img: education.img || "",
+    });
+    setEditMode(true);
+    setOpen(true);
   };
 
   const handleDelete = (item) => {
@@ -583,15 +610,6 @@ const EducationForm = () => {
     setDeleteDialogOpen(false);
     setItemToDelete(null);
     enableBodyScroll();
-  };
-
-  const handleEdit = (education) => {
-    setCurrentEducation({
-      ...education,
-      date: education.date,
-    });
-    setEditMode(true);
-    setOpen(true);
   };
 
   const handleClose = () => {
@@ -860,7 +878,14 @@ const EducationForm = () => {
           </Box>
         </DialogTitle>
 
-        <DialogContent sx={dialogStyles.content}>
+        <DialogContent
+          sx={{
+            ...dialogStyles.content,
+            "&.MuiDialogContent-root": {
+              paddingTop: "24px !important",
+            },
+          }}
+        >
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <TextField
@@ -1015,6 +1040,14 @@ const EducationForm = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
+        disableScrollLock={false}
+        onBackdropClick={handleCloseDelete}
+        PaperProps={{
+          sx: {
+            m: 2,
+            maxHeight: "calc(100% - 64px)",
+          },
+        }}
       >
         <StyledDialogTitle>
           <Box

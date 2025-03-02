@@ -378,8 +378,7 @@ const SkillForm = () => {
       await fetchSkills();
       toast.dismiss(loadingToast);
       toast.success("Skill deleted successfully", toastConfig);
-      setDeleteDialogOpen(false);
-      setItemToDelete(null);
+      handleCloseDelete(); // Use this instead of setDeleteDialogOpen(false)
     } catch (error) {
       toast.dismiss(loadingToast);
       toast.error("Error deleting skill: " + error.message, toastConfig);
@@ -452,18 +451,13 @@ const SkillForm = () => {
   const handleConfirmCategoryDelete = async () => {
     const loadingToast = toast.loading("Deleting category...", toastConfig);
     try {
-      // First update skills to remove category
       await skillsApi.updateCategoryNull(categoryToDelete.id);
-
-      // Then delete the category
       await skillCategoriesApi.delete(categoryToDelete.id);
-
       await fetchCategories();
       await fetchSkills();
       toast.dismiss(loadingToast);
       toast.success("Category deleted successfully", toastConfig);
-      setCategoryDeleteDialogOpen(false);
-      setCategoryToDelete(null);
+      handleCloseCategoryDelete(); // Use this instead of direct setState calls
     } catch (error) {
       toast.dismiss(loadingToast);
       toast.error("Error deleting category: " + error.message, toastConfig);
@@ -991,6 +985,7 @@ const SkillForm = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
+        disableScrollLock={false}
       >
         <StyledDialogTitle>
           <Box
@@ -1143,6 +1138,7 @@ const SkillForm = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
+        disableScrollLock={false}
       >
         <StyledDialogTitle>
           <Box

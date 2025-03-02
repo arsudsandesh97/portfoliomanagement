@@ -200,9 +200,17 @@ const dialogStyles = {
   },
   content: {
     p: { xs: 2.5, sm: 3 },
+    pt: { xs: 3, sm: 4 }, // Add more top padding
+    mt: 1, // Add margin top
     "& .MuiTextField-root": {
       mb: { xs: 2, sm: 2.5 },
     },
+  },
+  header: {
+    background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+    color: "white",
+    px: 3,
+    py: 2.5, // Increase vertical padding
   },
 };
 
@@ -668,7 +676,14 @@ const ExperienceForm = () => {
           </Box>
         </DialogTitle>
 
-        <DialogContent sx={dialogStyles.content}>
+        <DialogContent
+          sx={{
+            ...dialogStyles.content,
+            "&.MuiDialogContent-root": {
+              paddingTop: "24px !important", // Override Material-UI's default padding
+            },
+          }}
+        >
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <TextField
