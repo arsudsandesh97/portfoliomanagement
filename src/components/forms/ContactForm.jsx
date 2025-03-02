@@ -34,6 +34,9 @@ import {
 } from "@mui/icons-material";
 import { contactsApi } from "../../api/SupabaseData";
 import { Toaster, toast } from "react-hot-toast";
+import { styled } from "@mui/system";
+import { motion } from "framer-motion";
+import { useScrollLock } from "../../hooks/useScrollLock";
 
 const formatDateTime = (dateString) => {
   const date = new Date(dateString);
@@ -147,6 +150,36 @@ const styles = {
     overflow: "hidden",
     textOverflow: "ellipsis",
   },
+  deleteButton: {
+    background: "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)",
+    color: "white",
+    px: 3,
+    py: 1.5,
+    borderRadius: 2,
+    textTransform: "none",
+    fontWeight: 600,
+    boxShadow: "0 4px 12px rgba(239,68,68,0.2)",
+    "&:hover": {
+      background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 16px rgba(239,68,68,0.3)",
+    },
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+  },
+  cancelButton: {
+    borderColor: "#E2E8F0",
+    color: "#64748B",
+    borderRadius: "12px",
+    textTransform: "none",
+    fontWeight: 500,
+    px: 3,
+    "&:hover": {
+      borderColor: "#CBD5E1",
+      backgroundColor: "#F1F5F9",
+      transform: "translateY(-2px)",
+    },
+    transition: "all 0.2s ease-in-out",
+  },
 };
 
 // Add mobile-optimized dialog styles
@@ -233,6 +266,34 @@ const toastConfig = {
   },
 };
 
+const StyledDialog = styled(Dialog)`
+  .MuiDialog-paper {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(241, 245, 249, 0.2);
+    border-radius: 24px;
+    box-shadow: rgb(0 0 0 / 8%) 0px 20px 40px, rgb(0 0 0 / 6%) 0px 1px 3px;
+    overflow: hidden;
+  }
+`;
+
+const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
+  background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+  color: "white",
+  padding: "24px",
+  position: "relative",
+  "&::after": {
+    content: '""',
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: "1px",
+    background:
+      "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+  },
+}));
+
 const ContactForm = () => {
   const [contacts, setContacts] = useState([]);
   const [open, setOpen] = useState(false);
@@ -247,6 +308,7 @@ const ContactForm = () => {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const { enableBodyScroll, disableBodyScroll } = useScrollLock();
 
   // Fetch contacts on component mount
   useEffect(() => {
@@ -345,7 +407,19 @@ const ContactForm = () => {
     setOpen(true);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = (item) => {
+    setItemToDelete(item);
+    setDeleteDialogOpen(true);
+    disableBodyScroll();
+  };
+
+  const handleCloseDelete = () => {
+    setDeleteDialogOpen(false);
+    setItemToDelete(null);
+    enableBodyScroll();
+  };
+
+  const handleDeleteConfirm = async () => {
     const loadingToast = toast.loading(
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
         <Typography>Deleting contact...</Typography>
@@ -510,10 +584,7 @@ const ContactForm = () => {
                             <EditIcon />
                           </IconButton>
                           <IconButton
-                            onClick={() => {
-                              setItemToDelete(contact);
-                              setDeleteDialogOpen(true);
-                            }}
+                            onClick={() => handleDelete(contact)}
                             sx={{
                               color: "#EF4444",
                               "&:hover": { color: "#DC2626" },
@@ -590,10 +661,7 @@ const ContactForm = () => {
                         <EditIcon fontSize="small" />
                       </IconButton>
                       <IconButton
-                        onClick={() => {
-                          setItemToDelete(contact);
-                          setDeleteDialogOpen(true);
-                        }}
+                        onClick={() => handleDelete(contact)}
                         size="small"
                         sx={{ color: "#EF4444" }}
                       >
@@ -737,16 +805,25 @@ const ContactForm = () => {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog
+      <StyledDialog
         open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
+        onClose={handleCloseDelete}
         maxWidth="sm"
         fullWidth
+        TransitionComponent={motion.div}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        disableScrollLock={false}
+        onBackdropClick={handleCloseDelete}
         PaperProps={{
-          sx: dialogStyles.paper,
+          sx: {
+            m: 2,
+            maxHeight: "calc(100% - 64px)",
+          },
         }}
       >
-        <DialogTitle sx={styles.dialogHeader}>
+        <StyledDialogTitle>
           <Box
             sx={{
               display: "flex",
@@ -754,14 +831,14 @@ const ContactForm = () => {
               alignItems: "center",
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <DeleteIcon sx={{ color: "#EF4444" }} />
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
                 Delete Contact
               </Typography>
             </Box>
             <IconButton
-              onClick={() => setDeleteDialogOpen(false)}
+              onClick={handleCloseDelete}
               sx={{
                 color: "white",
                 "&:hover": {
@@ -774,49 +851,129 @@ const ContactForm = () => {
               <CloseIcon />
             </IconButton>
           </Box>
-        </DialogTitle>
+        </StyledDialogTitle>
 
-        <DialogContent sx={{ p: 3 }}>
+        <DialogContent sx={styles.dialogContent}>
           {itemToDelete && (
-            <Box>
-              <Typography variant="body1" sx={{ mb: 2, color: "#1E293B" }}>
-                Are you sure you want to delete the contact from{" "}
-                <Box component="span" sx={{ fontWeight: 600 }}>
-                  {itemToDelete.name}
-                </Box>
-                ?
-              </Typography>
-
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
               <Box
                 sx={{
-                  p: 2,
-                  borderRadius: 2,
-                  bgcolor: "rgba(239, 68, 68, 0.1)",
-                  border: "1px solid rgba(239, 68, 68, 0.2)",
                   display: "flex",
-                  alignItems: "center",
-                  gap: 2,
+                  flexDirection: "column",
+                  gap: 2.5,
+                  mb: 3,
+                  p: 3,
+                  borderRadius: 2,
+                  backgroundColor: "rgba(241, 245, 249, 0.5)",
+                  backdropFilter: "blur(8px)",
                 }}
               >
+                <Box sx={{ display: "flex", gap: 2.5 }}>
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 2,
+                      backgroundColor: "#F8FAFC",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      overflow: "hidden",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    }}
+                  >
+                    <EmailIcon sx={{ fontSize: 24, color: "#94A3B8" }} />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography
+                      variant="h6"
+                      sx={{ fontWeight: 600, color: "#1E293B", mb: 0.5 }}
+                    >
+                      {itemToDelete.name}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#64748B" }}>
+                      {itemToDelete.email}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {itemToDelete.subject && (
+                  <Box sx={{ mt: 1 }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: "#475569", mb: 0.5 }}
+                    >
+                      Subject
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#1E293B" }}>
+                      {itemToDelete.subject}
+                    </Typography>
+                  </Box>
+                )}
+
+                {itemToDelete.message && (
+                  <Box sx={{ mt: 1 }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: "#475569", mb: 0.5 }}
+                    >
+                      Message
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#1E293B" }}>
+                      {itemToDelete.message}
+                    </Typography>
+                  </Box>
+                )}
+
                 <Box
                   sx={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 1,
-                    bgcolor: "rgba(239, 68, 68, 0.2)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
+                    mt: 1,
+                    pt: 2,
+                    borderTop: "1px dashed rgba(203, 213, 225, 0.5)",
                   }}
                 >
-                  <DeleteIcon sx={{ color: "#EF4444" }} />
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "#64748B",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 0.5,
+                    }}
+                  >
+                    <AccessTimeIcon sx={{ fontSize: 16 }} />
+                    Received on {
+                      formatDateTime(itemToDelete.created_at).date
+                    }{" "}
+                    at {formatDateTime(itemToDelete.created_at).time}
+                  </Typography>
                 </Box>
-                <Typography variant="body2" sx={{ color: "#EF4444" }}>
-                  This action cannot be undone. The contact will be permanently
-                  removed.
-                </Typography>
               </Box>
-            </Box>
+
+              <Typography
+                variant="body1"
+                sx={{ color: "#1E293B", mb: 2, fontWeight: 500 }}
+              >
+                Are you sure you want to delete this contact?
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "#64748B",
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: "rgba(239, 68, 68, 0.1)",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                }}
+              >
+                ⚠️ This action cannot be undone. The contact and all associated
+                information will be permanently removed.
+              </Typography>
+            </motion.div>
           )}
         </DialogContent>
 
@@ -828,37 +985,21 @@ const ContactForm = () => {
           }}
         >
           <Button
-            onClick={() => setDeleteDialogOpen(false)}
+            onClick={handleCloseDelete}
             variant="outlined"
-            sx={{
-              color: "#64748B",
-              borderColor: "#E2E8F0",
-              "&:hover": {
-                borderColor: "#CBD5E1",
-                backgroundColor: "#F1F5F9",
-              },
-            }}
+            sx={styles.cancelButton}
           >
             Cancel
           </Button>
           <Button
-            onClick={handleDelete}
+            onClick={handleDeleteConfirm}
             variant="contained"
-            sx={{
-              background: "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)",
-              color: "white",
-              "&:hover": {
-                background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
-                transform: "translateY(-2px)",
-                boxShadow: "0 4px 12px rgba(239,68,68,0.25)",
-              },
-              transition: "all 0.2s ease-in-out",
-            }}
+            sx={styles.deleteButton}
           >
             Delete Contact
           </Button>
         </DialogActions>
-      </Dialog>
+      </StyledDialog>
 
       <Toaster
         position="top-center"

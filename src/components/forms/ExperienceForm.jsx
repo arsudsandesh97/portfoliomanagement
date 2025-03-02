@@ -30,6 +30,37 @@ import {
 } from "@mui/icons-material";
 import { experienceApi } from "../../api/SupabaseData";
 import { Toaster, toast } from "react-hot-toast";
+import { styled } from "@mui/material/styles";
+import { motion } from "framer-motion";
+import { useScrollLock } from "../../hooks/useScrollLock";
+
+const StyledDialog = styled(Dialog)`
+  .MuiDialog-paper {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(241, 245, 249, 0.2);
+    border-radius: 24px;
+    box-shadow: rgb(0 0 0 / 8%) 0px 20px 40px, rgb(0 0 0 / 6%) 0px 1px 3px;
+    overflow: hidden;
+  }
+`;
+
+const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
+  background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+  color: "white",
+  padding: "24px",
+  position: "relative",
+  "&::after": {
+    content: '""',
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: "1px",
+    background:
+      "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+  },
+}));
 
 const styles = {
   container: {
@@ -123,6 +154,41 @@ const styles = {
       background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
     },
   },
+  dialogContent: {
+    p: 3,
+    background:
+      "linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)",
+  },
+  cancelButton: {
+    borderColor: "#E2E8F0",
+    color: "#64748B",
+    borderRadius: "12px",
+    textTransform: "none",
+    fontWeight: 500,
+    px: 3,
+    "&:hover": {
+      borderColor: "#CBD5E1",
+      backgroundColor: "#F1F5F9",
+      transform: "translateY(-2px)",
+    },
+    transition: "all 0.2s ease-in-out",
+  },
+  deleteButton: {
+    background: "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)",
+    color: "white",
+    px: 3,
+    py: 1.5,
+    borderRadius: "12px",
+    textTransform: "none",
+    fontWeight: 600,
+    boxShadow: "0 4px 12px rgba(239,68,68,0.2)",
+    "&:hover": {
+      background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 16px rgba(239,68,68,0.3)",
+    },
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+  },
 };
 
 const dialogStyles = {
@@ -201,6 +267,7 @@ const toastConfig = {
 };
 
 const ExperienceForm = () => {
+  const { enableBodyScroll, disableBodyScroll } = useScrollLock();
   const [experiences, setExperiences] = useState([]);
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -319,8 +386,12 @@ const ExperienceForm = () => {
   };
 
   const handleDelete = (experienceId) => {
-    setItemToDelete({ id: experienceId });
+    const experienceToDelete = experiences.find(
+      (exp) => exp.id === experienceId
+    );
+    setItemToDelete(experienceToDelete); // Set the entire experience object
     setDeleteDialogOpen(true);
+    disableBodyScroll();
   };
 
   const handleConfirmDelete = async () => {
@@ -332,6 +403,7 @@ const ExperienceForm = () => {
       toast.success("Experience deleted successfully");
       setDeleteDialogOpen(false);
       setItemToDelete(null);
+      enableBodyScroll();
     } catch (error) {
       toast.dismiss(loadingToast);
       toast.error("Error deleting experience: " + error.message);
@@ -352,6 +424,12 @@ const ExperienceForm = () => {
       skills: [],
       doc: "",
     });
+  };
+
+  const handleCloseDelete = () => {
+    setDeleteDialogOpen(false);
+    setItemToDelete(null);
+    enableBodyScroll();
   };
 
   return (
@@ -788,25 +866,25 @@ const ExperienceForm = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog
+      <StyledDialog
         open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
+        onClose={handleCloseDelete}
+        maxWidth="sm"
+        fullWidth
+        TransitionComponent={motion.div}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        disableScrollLock={false}
+        onBackdropClick={handleCloseDelete}
         PaperProps={{
           sx: {
-            borderRadius: 3,
-            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-            overflow: "hidden",
+            m: 2,
+            maxHeight: "calc(100% - 64px)",
           },
         }}
       >
-        <DialogTitle
-          sx={{
-            background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
-            color: "white",
-            px: 3,
-            py: 2,
-          }}
-        >
+        <StyledDialogTitle>
           <Box
             sx={{
               display: "flex",
@@ -814,62 +892,176 @@ const ExperienceForm = () => {
               alignItems: "center",
             }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Delete Experience
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <DeleteIcon sx={{ color: "#EF4444" }} />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Delete Experience
+              </Typography>
+            </Box>
             <IconButton
-              onClick={() => setDeleteDialogOpen(false)}
+              onClick={handleCloseDelete}
               sx={{
                 color: "white",
-                "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
+                "&:hover": {
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                  transform: "rotate(90deg)",
+                },
+                transition: "all 0.3s ease",
               }}
             >
               <CloseIcon />
             </IconButton>
           </Box>
-        </DialogTitle>
-        <DialogContent sx={{ p: 3, pt: 4 }}>
-          <Typography>
-            Are you sure you want to delete this experience?
-          </Typography>
-          <Typography variant="body2" sx={{ color: "#64748B", mt: 1 }}>
-            This action cannot be undone.
-          </Typography>
+        </StyledDialogTitle>
+
+        <DialogContent sx={styles.dialogContent}>
+          {itemToDelete && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2.5,
+                  mb: 3,
+                  p: 3,
+                  borderRadius: 2,
+                  backgroundColor: "rgba(241, 245, 249, 0.5)",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                {/* Company Logo and Basic Info */}
+                <Box sx={{ display: "flex", gap: 2.5 }}>
+                  <Box
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: 2,
+                      backgroundColor: "#F8FAFC",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      overflow: "hidden",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    }}
+                  >
+                    {itemToDelete.img ? (
+                      <Box
+                        component="img"
+                        src={itemToDelete.img}
+                        alt={itemToDelete.company}
+                        sx={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                          p: 2,
+                        }}
+                      />
+                    ) : (
+                      <WorkIcon sx={{ fontSize: 40, color: "#94A3B8" }} />
+                    )}
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography
+                      variant="h6"
+                      sx={{ fontWeight: 600, color: "#1E293B", mb: 0.5 }}
+                    >
+                      {itemToDelete.role}
+                    </Typography>
+                    <Typography variant="subtitle1" sx={{ color: "#64748B" }}>
+                      {itemToDelete.company}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "#94A3B8", display: "block", mt: 1 }}
+                    >
+                      {itemToDelete.date}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Skills */}
+                {itemToDelete.skills && itemToDelete.skills.length > 0 && (
+                  <Box sx={{ mt: 1 }}>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "#94A3B8", display: "block", mb: 1 }}
+                    >
+                      Skills & Technologies
+                    </Typography>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      flexWrap="wrap"
+                      sx={{ gap: 1 }}
+                    >
+                      {itemToDelete.skills.map((skill, index) => (
+                        <Chip
+                          key={index}
+                          label={skill}
+                          size="small"
+                          sx={{
+                            backgroundColor: "rgba(241, 245, 249, 0.8)",
+                            color: "#475569",
+                            fontSize: "0.75rem",
+                            height: "24px",
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                  </Box>
+                )}
+              </Box>
+
+              <Typography
+                variant="body1"
+                sx={{ color: "#1E293B", mb: 2, fontWeight: 500 }}
+              >
+                Are you sure you want to delete this experience?
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "#64748B",
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: "rgba(239, 68, 68, 0.1)",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                }}
+              >
+                ⚠️ This action cannot be undone. The experience entry will be
+                permanently removed along with all associated information.
+              </Typography>
+            </motion.div>
+          )}
         </DialogContent>
-        <DialogActions sx={{ p: 3, backgroundColor: "#F8FAFC" }}>
+
+        <DialogActions
+          sx={{
+            p: 3,
+            backgroundColor: "#F8FAFC",
+            borderTop: "1px solid rgba(226, 232, 240, 0.8)",
+          }}
+        >
           <Button
-            onClick={() => setDeleteDialogOpen(false)}
+            onClick={handleCloseDelete}
             variant="outlined"
-            sx={{
-              borderColor: "#E2E8F0",
-              color: "#64748B",
-              "&:hover": {
-                borderColor: "#CBD5E1",
-                backgroundColor: "#F1F5F9",
-              },
-            }}
+            sx={styles.cancelButton}
           >
             Cancel
           </Button>
           <Button
             onClick={handleConfirmDelete}
             variant="contained"
-            sx={{
-              background: "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)",
-              color: "white",
-              px: 3,
-              py: 1,
-              borderRadius: 2,
-              textTransform: "none",
-              "&:hover": {
-                background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
-              },
-            }}
+            sx={styles.deleteButton}
           >
-            Delete
+            Delete Experience
           </Button>
         </DialogActions>
-      </Dialog>
+      </StyledDialog>
 
       <Fab
         color="primary"

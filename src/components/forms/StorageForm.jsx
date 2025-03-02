@@ -57,6 +57,9 @@ import { Toaster, toast } from "react-hot-toast";
 import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
 
+// Add import
+import { useScrollLock } from "../../hooks/useScrollLock";
+
 // Create styled components
 const StyledDialog = styled(Dialog)`
   .MuiDialog-paper {
@@ -192,9 +195,10 @@ const styles = {
   tableContainer: {
     mt: 4,
     borderRadius: 2,
-    boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
     overflow: "auto",
     width: "100%",
+    border: "1px solid rgba(226, 232, 240, 0.8)",
     "& .MuiTable-root": {
       minWidth: "100%",
     },
@@ -216,18 +220,28 @@ const styles = {
   },
   tableHeader: {
     backgroundColor: "#F8FAFC",
+    "& th": {
+      borderBottom: "2px solid rgba(226, 232, 240, 0.8)",
+    },
   },
   tableHeaderCell: {
-    color: "#1E293B",
+    color: "#64748B",
     fontWeight: 600,
     fontSize: "0.875rem",
     whiteSpace: "nowrap",
     py: 2,
+    px: 3,
+    transition: "all 0.2s ease",
   },
   tableRow: {
-    transition: "background-color 0.2s ease",
+    transition: "all 0.2s ease",
     "&:hover": {
-      backgroundColor: "#F8FAFC",
+      backgroundColor: "#F1F5F9",
+    },
+    "& td": {
+      borderBottom: "1px solid rgba(226, 232, 240, 0.8)",
+      py: 2,
+      px: 3,
     },
   },
 
@@ -464,6 +478,8 @@ const toastConfig = {
 };
 
 const StorageForm = () => {
+  const { enableBodyScroll, disableBodyScroll } = useScrollLock();
+
   // Copy the state and functions related to bucket images from ImageUploadForm
   const [bucketImages, setBucketImages] = useState([]);
   const [page, setPage] = useState(0);
@@ -608,10 +624,16 @@ const StorageForm = () => {
     );
   };
 
-  const handleDelete = (image) => {
-    // Pass the full image object instead of just the path
-    setItemToDelete(image);
+  const handleDelete = (item) => {
+    setItemToDelete(item);
     setDeleteDialogOpen(true);
+    disableBodyScroll();
+  };
+
+  const handleCloseDelete = () => {
+    setDeleteDialogOpen(false);
+    setItemToDelete(null);
+    enableBodyScroll();
   };
 
   const handleConfirmDelete = async () => {
@@ -645,8 +667,7 @@ const StorageForm = () => {
           id: loadingToast,
         }
       );
-      setDeleteDialogOpen(false);
-      setItemToDelete(null);
+      handleCloseDelete();
     } catch (error) {
       toast.error(
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -1080,26 +1101,23 @@ const StorageForm = () => {
             <Table sx={{ width: "100%" }}>
               <TableHead>
                 <TableRow sx={styles.tableHeader}>
-                  <TableCell sx={{ ...styles.tableHeaderCell, width: "10%" }}>
+                  <TableCell sx={{ ...styles.tableHeaderCell, width: "15%" }}>
                     Preview
                   </TableCell>
-                  <TableCell sx={{ ...styles.tableHeaderCell, width: "20%" }}>
+                  <TableCell sx={{ ...styles.tableHeaderCell, width: "25%" }}>
                     File Name
                   </TableCell>
-                  <TableCell sx={{ ...styles.tableHeaderCell, width: "15%" }}>
-                    Folder
-                  </TableCell>
-                  <TableCell sx={{ ...styles.tableHeaderCell, width: "15%" }}>
+                  <TableCell sx={{ ...styles.tableHeaderCell, width: "20%" }}>
                     Type
                   </TableCell>
-                  <TableCell sx={{ ...styles.tableHeaderCell, width: "10%" }}>
+                  <TableCell sx={{ ...styles.tableHeaderCell, width: "15%" }}>
                     Size
                   </TableCell>
                   <TableCell sx={{ ...styles.tableHeaderCell, width: "15%" }}>
                     Upload Date
                   </TableCell>
                   <TableCell
-                    sx={{ ...styles.tableHeaderCell, width: "15%" }}
+                    sx={{ ...styles.tableHeaderCell, width: "10%" }}
                     align="right"
                   >
                     Actions
@@ -1112,90 +1130,110 @@ const StorageForm = () => {
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((image) => (
                     <TableRow key={image.id} sx={styles.tableRow}>
-                      <TableCell sx={{ width: "10%" }}>
+                      <TableCell>
                         <Box
                           component="img"
                           src={image.url}
                           alt={image.name}
                           sx={{
-                            width: 80,
-                            height: 80,
+                            width: 60,
+                            height: 60,
                             objectFit: "cover",
-                            borderRadius: 1,
+                            borderRadius: "8px",
                             transition: "transform 0.2s ease",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
                             "&:hover": {
                               transform: "scale(1.05)",
+                              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                             },
                           }}
                         />
                       </TableCell>
-                      <TableCell sx={{ width: "20%" }}>
-                        <Tooltip title={image.name}>
-                          <Typography noWrap>{image.name}</Typography>
-                        </Tooltip>
+                      <TableCell>
+                        <Typography
+                          sx={{
+                            fontWeight: 500,
+                            color: "#1E293B",
+                            fontSize: "0.875rem",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            maxWidth: "200px",
+                          }}
+                        >
+                          {image.name}
+                        </Typography>
                       </TableCell>
-                      <TableCell sx={{ width: "15%" }}>
-                        <Tooltip title={image.folder}>
-                          <Typography noWrap>{image.folder}</Typography>
-                        </Tooltip>
+                      <TableCell>
+                        <Typography
+                          sx={{
+                            color: "#64748B",
+                            fontSize: "0.875rem",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
+                        >
+                          <FileCopyIcon sx={{ fontSize: 16 }} />
+                          {image.contentType.split("/")[1].toUpperCase()}
+                        </Typography>
                       </TableCell>
-                      <TableCell sx={{ width: "15%" }}>
-                        <Tooltip title={image.contentType}>
-                          <Typography noWrap>{image.contentType}</Typography>
-                        </Tooltip>
+                      <TableCell>
+                        <Typography
+                          sx={{ color: "#64748B", fontSize: "0.875rem" }}
+                        >
+                          {formatFileSize(image.size)}
+                        </Typography>
                       </TableCell>
-                      <TableCell sx={{ width: "10%" }}>
-                        {formatFileSize(image.size)}
+                      <TableCell>
+                        <Typography
+                          sx={{ color: "#64748B", fontSize: "0.875rem" }}
+                        >
+                          {new Date(image.uploadTime).toLocaleDateString()}
+                        </Typography>
                       </TableCell>
-                      <TableCell sx={{ width: "15%" }}>
-                        {new Date(image.uploadTime).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell sx={{ width: "15%" }} align="right">
-                        <Tooltip title="Rename">
-                          <IconButton
-                            onClick={() => handleOpenRenameDialog(image)}
-                            sx={{
-                              color: "#1E293B",
-                              "&:hover": {
-                                backgroundColor: "#F1F5F9",
-                                transform: "translateY(-2px)",
-                              },
-                              transition: "all 0.2s ease",
-                            }}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Copy URL">
-                          <IconButton
-                            onClick={() => handleCopyUrl(image.url)}
-                            sx={{
-                              color: "#1E293B",
-                              "&:hover": {
-                                backgroundColor: "#F1F5F9",
-                                transform: "translateY(-2px)",
-                              },
-                              transition: "all 0.2s ease",
-                            }}
-                          >
-                            <ContentCopyIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Delete">
-                          <IconButton
-                            onClick={() => handleDelete(image)} // Pass the full image object
-                            sx={{
-                              color: "#EF4444",
-                              "&:hover": {
-                                backgroundColor: "#FEE2E2",
-                                transform: "translateY(-2px)",
-                              },
-                              transition: "all 0.2s ease",
-                            }}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Tooltip>
+                      <TableCell align="right">
+                        <Box
+                          sx={{
+                            display: "flex",
+                            gap: 1,
+                            justifyContent: "flex-end",
+                          }}
+                        >
+                          <Tooltip title="Copy URL">
+                            <IconButton
+                              onClick={() => handleCopyUrl(image.url)}
+                              sx={{
+                                color: "#64748B",
+                                "&:hover": {
+                                  backgroundColor: "#F1F5F9",
+                                  color: "#1E293B",
+                                  transform: "translateY(-2px)",
+                                },
+                                transition: "all 0.2s ease",
+                              }}
+                              size="small"
+                            >
+                              <ContentCopyIcon sx={{ fontSize: 20 }} />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete">
+                            <IconButton
+                              onClick={() => handleDelete(image)}
+                              sx={{
+                                color: "#EF4444",
+                                "&:hover": {
+                                  backgroundColor: "#FEE2E2",
+                                  transform: "translateY(-2px)",
+                                },
+                                transition: "all 0.2s ease",
+                              }}
+                              size="small"
+                            >
+                              <DeleteIcon sx={{ fontSize: 20 }} />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -1466,7 +1504,7 @@ const StorageForm = () => {
 
       <StyledDialog
         open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
+        onClose={handleCloseDelete}
         maxWidth="sm"
         fullWidth
         TransitionComponent={motion.div}
@@ -1489,7 +1527,7 @@ const StorageForm = () => {
               </Typography>
             </Box>
             <IconButton
-              onClick={() => setDeleteDialogOpen(false)}
+              onClick={handleCloseDelete}
               sx={{
                 color: "white",
                 "&:hover": {
@@ -1597,7 +1635,7 @@ const StorageForm = () => {
           }}
         >
           <Button
-            onClick={() => setDeleteDialogOpen(false)}
+            onClick={handleCloseDelete}
             variant="outlined"
             sx={styles.cancelButton}
           >

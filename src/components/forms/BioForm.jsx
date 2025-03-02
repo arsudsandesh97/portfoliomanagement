@@ -29,10 +29,17 @@ import {
   ErrorOutline as ErrorIcon,
   Info as InfoIcon,
   Sync as LoadingIcon,
+  WbSunny as MorningIcon,
+  WbSunnyOutlined as AfternoonIcon,
+  Brightness2 as EveningIcon,
+  NightsStay as NightIcon,
+  Delete as DeleteIcon,
 } from "@mui/icons-material";
 import { bioApi, copyrightApi } from "../../api/SupabaseData";
 import { Toaster, toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { useScrollLock } from "../../hooks/useScrollLock";
+import { styled } from "@mui/material/styles";
 
 // Add these utility functions
 const isMobile = () => window.innerWidth < 600;
@@ -224,7 +231,219 @@ const buttonStyles = {
   borderRadius: { xs: "10px", sm: "12px" },
 };
 
+const GreetingMessage = ({ userName }) => {
+  const getCurrentTimeGreeting = () => {
+    const hour = new Date().getHours();
+
+    if (hour >= 5 && hour < 12)
+      return {
+        text: "Good morning",
+        icon: <MorningIcon />,
+        color: "#FDB813",
+        gradientStart: "#FF512F",
+        gradientEnd: "#F09819",
+        bgPattern:
+          "radial-gradient(circle at top right, #FDB81315, transparent 70%)",
+      };
+
+    if (hour >= 12 && hour < 17)
+      return {
+        text: "Good afternoon",
+        icon: <AfternoonIcon />,
+        color: "#FFB100",
+        gradientStart: "#1E293B",
+        gradientEnd: "#334155",
+        bgPattern:
+          "radial-gradient(circle at top right, #FFB10015, transparent 70%)",
+      };
+
+    if (hour >= 17 && hour < 22)
+      return {
+        text: "Good evening",
+        icon: <EveningIcon />,
+        color: "#60A5FA",
+        gradientStart: "#2D3A69",
+        gradientEnd: "#1E293B",
+        bgPattern:
+          "radial-gradient(circle at top right, #60A5FA15, transparent 70%)",
+      };
+
+    return {
+      text: "Good night",
+      icon: <NightIcon />,
+      color: "#A78BFA",
+      gradientStart: "#0F172A",
+      gradientEnd: "#1E293B",
+      bgPattern:
+        "radial-gradient(circle at top right, #A78BFA15, transparent 70%)",
+    };
+  };
+
+  const greeting = getCurrentTimeGreeting();
+
+  return (
+    <Box
+      component={motion.div}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      sx={{
+        mb: 4,
+        p: { xs: 2.5, sm: 3 },
+        borderRadius: { xs: 3, sm: 4 },
+        background: `linear-gradient(135deg, ${greeting.gradientStart} 0%, ${greeting.gradientEnd} 100%)`,
+        color: "white",
+        position: "relative",
+        overflow: "hidden",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+        backdropFilter: "blur(10px)",
+        border: "1px solid rgba(255,255,255,0.1)",
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: greeting.bgPattern,
+          opacity: 0.6,
+          pointerEvents: "none",
+        },
+      }}
+    >
+      <motion.div
+        initial={{ scale: 0.5, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.5, ease: "easeOut" }}
+      >
+        <Typography
+          variant="h5"
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            fontWeight: 700,
+            mb: 1.5,
+            fontSize: { xs: "1.5rem", sm: "1.75rem" },
+          }}
+        >
+          <Box
+            component={motion.div}
+            initial={{ rotate: -30, scale: 0.5 }}
+            animate={{ rotate: 0, scale: 1 }}
+            transition={{
+              delay: 0.3,
+              duration: 0.5,
+              ease: "easeOut",
+              type: "spring",
+              stiffness: 200,
+            }}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: { xs: 40, sm: 48 },
+              height: { xs: 40, sm: 48 },
+              borderRadius: "14px",
+              backgroundColor: `${greeting.color}20`,
+              border: `2px solid ${greeting.color}40`,
+              color: greeting.color,
+              boxShadow: `0 4px 12px ${greeting.color}30`,
+              transition: "all 0.3s ease",
+              cursor: "pointer",
+              "&:hover": {
+                transform: "scale(1.1) rotate(5deg)",
+                backgroundColor: `${greeting.color}30`,
+                border: `2px solid ${greeting.color}60`,
+                boxShadow: `0 6px 16px ${greeting.color}40`,
+              },
+            }}
+          >
+            {greeting.icon}
+          </Box>
+          <Box
+            sx={{
+              background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
+              backgroundClip: "text",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            {`${greeting.text}, ${userName || "there"}!`}
+          </Box>
+        </Typography>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.4, duration: 0.5 }}
+      >
+        <Typography
+          variant="body1"
+          sx={{
+            color: "#94A3B8",
+            lineHeight: 1.7,
+            fontSize: { xs: "0.875rem", sm: "1rem" },
+            maxWidth: "600px",
+            letterSpacing: "0.01em",
+            "& strong": {
+              color: "#E2E8F0",
+              fontWeight: 600,
+            },
+          }}
+        >
+          Welcome to your <strong>portfolio management dashboard</strong>. Here
+          you can update your bio information and manage your{" "}
+          <strong>social media presence</strong>.
+        </Typography>
+      </motion.div>
+
+      <Box
+        component={motion.div}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6, duration: 0.5 }}
+        sx={{
+          display: "flex",
+          gap: 1,
+          mt: 2.5,
+          flexWrap: "wrap",
+        }}
+      >
+        {["Bio", "Social Links", "Copyright"].map((item, index) => (
+          <Chip
+            key={item}
+            label={item}
+            sx={{
+              backgroundColor: "rgba(255,255,255,0.08)",
+              color: "#E2E8F0",
+              borderRadius: "10px",
+              border: "1px solid rgba(255,255,255,0.1)",
+              backdropFilter: "blur(8px)",
+              fontSize: { xs: "0.75rem", sm: "0.813rem" },
+              height: { xs: "28px", sm: "32px" },
+              transition: "all 0.2s ease",
+              "&:hover": {
+                backgroundColor: "rgba(255,255,255,0.12)",
+                transform: "translateY(-1px)",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              },
+              animation: `fadeIn 0.5s ease forwards ${0.7 + index * 0.1}s`,
+              "@keyframes fadeIn": {
+                "0%": { opacity: 0, transform: "translateY(10px)" },
+                "100%": { opacity: 1, transform: "translateY(0)" },
+              },
+            }}
+          />
+        ))}
+      </Box>
+    </Box>
+  );
+};
+
 const BioForm = () => {
+  const { enableBodyScroll, disableBodyScroll } = useScrollLock();
   const [bio, setBio] = useState({
     name: "",
     roles: [], // Should be configured as a text array in Supabase
@@ -243,6 +462,8 @@ const BioForm = () => {
     role: "",
     index: -1,
   });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   const commonButtonSx = {
     background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
@@ -568,8 +789,61 @@ const BioForm = () => {
     setRoleInput(e.target.value);
   };
 
+  const handleDelete = (item) => {
+    setItemToDelete(item);
+    setDeleteDialogOpen(true);
+    disableBodyScroll();
+  };
+
+  const handleCloseDelete = () => {
+    setDeleteDialogOpen(false);
+    setItemToDelete(null);
+    enableBodyScroll();
+  };
+
+  const handleConfirmDelete = async () => {
+    const loadingToast = toast.loading("Deleting bio...", toastConfig);
+    try {
+      await bioApi.delete(itemToDelete.id);
+      await fetchBio();
+      toast.dismiss(loadingToast);
+      toast.success("Bio deleted successfully", toastConfig);
+      handleCloseDelete();
+    } catch (error) {
+      toast.dismiss(loadingToast);
+      toast.error("Error deleting bio: " + error.message, toastConfig);
+    }
+  };
+
+  // Update the role delete dialog handlers
+  const handleOpenDeleteRole = (role, index) => {
+    setDeleteRoleDialog({ open: true, role, index });
+    disableBodyScroll();
+  };
+
+  const handleCloseDeleteRole = () => {
+    setDeleteRoleDialog({ open: false, role: "", index: -1 });
+    enableBodyScroll();
+  };
+
+  const handleConfirmDeleteRole = () => {
+    setBio((prev) => ({
+      ...prev,
+      roles: prev.roles.filter((_, i) => i !== deleteRoleDialog.index),
+    }));
+    toast.success(`Removed role: ${deleteRoleDialog.role}`);
+    handleCloseDeleteRole(); // Use this instead of direct setState
+  };
+
+  useEffect(() => {
+    return () => {
+      enableBodyScroll(); // Cleanup on unmount
+    };
+  }, []);
+
   return (
     <Box sx={formStyles.container}>
+      <GreetingMessage userName={bio.name} /> {/* Add this line */}
       <Paper sx={paperStyles}>
         <Box sx={formStyles.header}>
           <Typography variant="h4" sx={formStyles.headerTitle}>
@@ -688,9 +962,7 @@ const BioForm = () => {
                     >
                       <Chip
                         label={role}
-                        onDelete={() =>
-                          setDeleteRoleDialog({ open: true, role, index })
-                        }
+                        onDelete={() => handleOpenDeleteRole(role, index)}
                         sx={{
                           maxWidth: "180px",
                           backgroundColor: `hsl(${
@@ -849,18 +1121,25 @@ const BioForm = () => {
           </Grid>
         </Box>
 
-        <Dialog
+        <StyledDialog
           open={deleteRoleDialog.open}
-          onClose={() =>
-            setDeleteRoleDialog({ open: false, role: "", index: -1 })
-          }
+          onClose={handleCloseDeleteRole}
           maxWidth="sm"
           fullWidth
+          TransitionComponent={motion.div}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          disableScrollLock={false}
+          onBackdropClick={handleCloseDeleteRole}
           PaperProps={{
-            sx: dialogStyles.paper,
+            sx: {
+              m: 2,
+              maxHeight: "calc(100% - 64px)",
+            },
           }}
         >
-          <DialogTitle sx={dialogStyles.title}>
+          <StyledDialogTitle>
             <Box
               sx={{
                 display: "flex",
@@ -868,71 +1147,100 @@ const BioForm = () => {
                 alignItems: "center",
               }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <WarningIcon sx={{ color: "#EF4444" }} />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                <DeleteIcon sx={{ color: "#EF4444" }} />
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
                   Delete Role
-                </Box>
-              </Typography>
+                </Typography>
+              </Box>
               <IconButton
-                onClick={() =>
-                  setDeleteRoleDialog({ open: false, role: "", index: -1 })
-                }
+                onClick={handleCloseDeleteRole}
                 sx={{
                   color: "white",
-                  "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
+                  "&:hover": {
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                    transform: "rotate(90deg)",
+                  },
+                  transition: "all 0.3s ease",
                 }}
               >
                 <CloseIcon />
               </IconButton>
             </Box>
-          </DialogTitle>
+          </StyledDialogTitle>
 
-          <DialogContent sx={dialogStyles.content}>
-            <Typography sx={{ color: "#1E293B", fontSize: "1rem", mb: 2 }}>
-              Are you sure you want to delete the role "
-              <Box component="span" sx={{ fontWeight: 600, color: "#0F172A" }}>
-                {deleteRoleDialog.role}
+          <DialogContent sx={styles.dialogContent}>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Box sx={styles.warningBox}>
+                <Box sx={styles.warningIconBox}>
+                  <WarningIcon sx={{ color: "#EF4444", fontSize: 28 }} />
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 600,
+                      color: "#1E293B",
+                      mb: 0.5,
+                    }}
+                  >
+                    {deleteRoleDialog.role}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#64748B" }}>
+                    Role to be deleted
+                  </Typography>
+                </Box>
               </Box>
-              "?
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#64748B" }}>
-              This action cannot be undone.
-            </Typography>
+
+              <Typography
+                variant="body1"
+                sx={{
+                  color: "#1E293B",
+                  mb: 2,
+                  fontWeight: 500,
+                }}
+              >
+                Are you sure you want to delete this role?
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "#64748B",
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: "rgba(239, 68, 68, 0.1)",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                }}
+              >
+                ⚠️ This action cannot be undone. The role will be permanently
+                removed from your profile.
+              </Typography>
+            </motion.div>
           </DialogContent>
 
-          <DialogActions sx={dialogStyles.actions}>
+          <DialogActions sx={styles.dialogActions}>
             <Button
-              onClick={() =>
-                setDeleteRoleDialog({ open: false, role: "", index: -1 })
-              }
+              onClick={handleCloseDeleteRole}
               variant="outlined"
-              sx={dialogButtonStyles.cancelButton}
+              sx={styles.cancelButton}
             >
               Cancel
             </Button>
             <Button
-              onClick={() => {
-                setBio((prev) => ({
-                  ...prev,
-                  roles: prev.roles.filter(
-                    (_, i) => i !== deleteRoleDialog.index
-                  ),
-                }));
-                toast.success(`Removed role: ${deleteRoleDialog.role}`);
-                setDeleteRoleDialog({ open: false, role: "", index: -1 });
-              }}
+              onClick={handleConfirmDeleteRole}
               variant="contained"
-              sx={dialogButtonStyles.deleteButton}
+              sx={styles.deleteButton}
             >
               Delete Role
             </Button>
           </DialogActions>
-        </Dialog>
+        </StyledDialog>
       </Paper>
-
       <Divider sx={formStyles.divider} />
-
       {/* Social Links Preview */}
       <Paper sx={previewStyles.previewSection}>
         <Typography variant="h6" sx={previewStyles.previewTitle}>
@@ -1015,9 +1323,7 @@ const BioForm = () => {
           )}
         </Box>
       </Paper>
-
       <Divider sx={formStyles.divider} />
-
       {/* Copyright Section */}
       <Paper sx={{ ...paperStyles, mt: 3, p: { xs: 2, sm: 3 } }}>
         <Box
@@ -1087,6 +1393,130 @@ const BioForm = () => {
         }}
         gutter={8}
       />
+      <StyledDialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDelete}
+        maxWidth="sm"
+        fullWidth
+        TransitionComponent={motion.div}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        disableScrollLock={false}
+        onBackdropClick={handleCloseDelete}
+        PaperProps={{
+          sx: {
+            m: 2,
+            maxHeight: "calc(100% - 64px)",
+          },
+        }}
+      >
+        <StyledDialogTitle>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <DeleteIcon sx={{ color: "#EF4444" }} />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Delete Bio
+              </Typography>
+            </Box>
+            <IconButton
+              onClick={handleCloseDelete}
+              sx={{
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                  transform: "rotate(90deg)",
+                },
+                transition: "all 0.3s ease",
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </StyledDialogTitle>
+
+        <DialogContent sx={styles.dialogContent}>
+          {itemToDelete && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2.5,
+                  mb: 3,
+                  p: 3,
+                  borderRadius: 2,
+                  backgroundColor: "rgba(241, 245, 249, 0.5)",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 600, color: "#1E293B" }}
+                >
+                  {itemToDelete.title}
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#64748B" }}>
+                  {itemToDelete.description}
+                </Typography>
+              </Box>
+
+              <Typography
+                variant="body1"
+                sx={{ color: "#1E293B", mb: 2, fontWeight: 500 }}
+              >
+                Are you sure you want to delete this bio?
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "#64748B",
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: "rgba(239, 68, 68, 0.1)",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                }}
+              >
+                ⚠️ This action cannot be undone. The bio entry will be
+                permanently removed.
+              </Typography>
+            </motion.div>
+          )}
+        </DialogContent>
+
+        <DialogActions
+          sx={{
+            p: 3,
+            backgroundColor: "#F8FAFC",
+            borderTop: "1px solid rgba(226, 232, 240, 0.8)",
+          }}
+        >
+          <Button
+            onClick={handleCloseDelete}
+            variant="outlined"
+            sx={styles.cancelButton}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            variant="contained"
+            sx={styles.deleteButton}
+          >
+            Delete Bio
+          </Button>
+        </DialogActions>
+      </StyledDialog>
     </Box>
   );
 };
@@ -1116,5 +1546,96 @@ const SectionHeader = ({ title, subtitle }) => (
     )}
   </Box>
 );
+
+const StyledDialog = styled(Dialog)`
+  .MuiDialog-paper {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(241, 245, 249, 0.2);
+    border-radius: 24px;
+    box-shadow: rgb(0 0 0 / 8%) 0px 20px 40px, rgb(0 0 0 / 6%) 0px 1px 3px;
+    overflow: hidden;
+  }
+`;
+
+const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
+  background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+  color: "white",
+  padding: "24px",
+  position: "relative",
+  "&::after": {
+    content: '""',
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: "1px",
+    background:
+      "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+  },
+}));
+
+// Add these styles to your existing styles object
+const styles = {
+  // ...existing styles...
+
+  dialogContent: {
+    p: 3,
+    background:
+      "linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)",
+  },
+  warningBox: {
+    display: "flex",
+    gap: 2.5,
+    mb: 3,
+    p: 2,
+    borderRadius: 2,
+    backgroundColor: "rgba(241, 245, 249, 0.5)",
+    backdropFilter: "blur(8px)",
+  },
+  warningIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 2,
+    backgroundColor: "rgba(239, 68, 68, 0.1)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dialogActions: {
+    p: 3,
+    backgroundColor: "#F8FAFC",
+    borderTop: "1px solid rgba(226, 232, 240, 0.8)",
+  },
+  cancelButton: {
+    borderColor: "#E2E8F0",
+    color: "#64748B",
+    borderRadius: "12px",
+    textTransform: "none",
+    fontWeight: 500,
+    "&:hover": {
+      borderColor: "#CBD5E1",
+      backgroundColor: "#F1F5F9",
+      transform: "translateY(-2px)",
+    },
+    transition: "all 0.2s ease-in-out",
+  },
+  deleteButton: {
+    background: "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)",
+    color: "white",
+    px: 3,
+    py: 1.5,
+    borderRadius: "12px",
+    textTransform: "none",
+    fontWeight: 600,
+    boxShadow: "0 4px 12px rgba(239,68,68,0.2)",
+    "&:hover": {
+      background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 16px rgba(239,68,68,0.3)",
+    },
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+  },
+};
 
 export default BioForm;

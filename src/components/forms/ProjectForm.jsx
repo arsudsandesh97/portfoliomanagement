@@ -44,6 +44,38 @@ import {
 } from "../../api/SupabaseData";
 import { Toaster, toast } from "react-hot-toast";
 import { supabase } from "../../config/supabase";
+import { styled } from "@mui/system";
+import { motion } from "framer-motion";
+import { useScrollLock } from "../../hooks/useScrollLock";
+
+// Add these styled components at the top of your file
+const StyledDialog = styled(Dialog)`
+  .MuiDialog-paper {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(241, 245, 249, 0.2);
+    border-radius: 24px;
+    box-shadow: rgb(0 0 0 / 8%) 0px 20px 40px, rgb(0 0 0 / 6%) 0px 1px 3px;
+    overflow: hidden;
+  }
+`;
+
+const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
+  background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+  color: "white",
+  padding: "24px",
+  position: "relative",
+  "&::after": {
+    content: '""',
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: "1px",
+    background:
+      "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+  },
+}));
 
 // Add these responsive styles
 const styles = {
@@ -103,6 +135,9 @@ const styles = {
         width: { xs: "100%", sm: "auto" },
       },
     },
+    p: 3,
+    background:
+      "linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)",
   },
 
   buttonContainer: {
@@ -128,6 +163,36 @@ const styles = {
     "& .MuiInputLabel-root": {
       fontSize: { xs: "0.875rem", sm: "1rem" },
     },
+  },
+  cancelButton: {
+    borderColor: "#E2E8F0",
+    color: "#64748B",
+    borderRadius: "12px",
+    textTransform: "none",
+    fontWeight: 500,
+    px: 3,
+    "&:hover": {
+      borderColor: "#CBD5E1",
+      backgroundColor: "#F1F5F9",
+      transform: "translateY(-2px)",
+    },
+    transition: "all 0.2s ease-in-out",
+  },
+  deleteButton: {
+    background: "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)",
+    color: "white",
+    px: 3,
+    py: 1.5,
+    borderRadius: "12px",
+    textTransform: "none",
+    fontWeight: 600,
+    boxShadow: "0 4px 12px rgba(239,68,68,0.2)",
+    "&:hover": {
+      background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 16px rgba(239,68,68,0.3)",
+    },
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
   },
 };
 
@@ -192,6 +257,7 @@ const toastConfig = {
 };
 
 const ProjectForm = () => {
+  const { enableBodyScroll, disableBodyScroll } = useScrollLock();
   const [projects, setProjects] = useState([]);
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -438,6 +504,7 @@ const ProjectForm = () => {
   const handleDelete = (project) => {
     setItemToDelete(project);
     setDeleteDialogOpen(true);
+    disableBodyScroll();
   };
 
   const handleClose = () => {
@@ -655,11 +722,18 @@ const ProjectForm = () => {
       toast.success("Project deleted successfully");
       setDeleteDialogOpen(false);
       setItemToDelete(null);
+      enableBodyScroll();
     } catch (error) {
       toast.dismiss(loadingToast);
       console.error("Error deleting project:", error);
       toast.error("Error deleting project: " + error.message);
     }
+  };
+
+  const handleCloseDelete = () => {
+    setDeleteDialogOpen(false);
+    setItemToDelete(null);
+    enableBodyScroll();
   };
 
   return (
@@ -1592,25 +1666,17 @@ const ProjectForm = () => {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog
+      <StyledDialog
         open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-            overflow: "hidden",
-          },
-        }}
+        onClose={handleCloseDelete}
+        maxWidth="sm"
+        fullWidth
+        TransitionComponent={motion.div}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
       >
-        <DialogTitle
-          sx={{
-            background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
-            color: "white",
-            px: 3,
-            py: 2,
-          }}
-        >
+        <StyledDialogTitle>
           <Box
             sx={{
               display: "flex",
@@ -1618,60 +1684,185 @@ const ProjectForm = () => {
               alignItems: "center",
             }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Delete Project
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <DeleteIcon sx={{ color: "#EF4444" }} />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Delete Project
+              </Typography>
+            </Box>
             <IconButton
-              onClick={() => setDeleteDialogOpen(false)}
+              onClick={handleCloseDelete}
               sx={{
                 color: "white",
-                "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
+                "&:hover": {
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                  transform: "rotate(90deg)",
+                },
+                transition: "all 0.3s ease",
               }}
             >
               <CloseIcon />
             </IconButton>
           </Box>
-        </DialogTitle>
-        <DialogContent sx={{ p: 3, pt: 4 }}>
-          <Typography>Are you sure you want to delete this project?</Typography>
-          <Typography variant="body2" sx={{ color: "#64748B", mt: 1 }}>
-            This action cannot be undone.
-          </Typography>
+        </StyledDialogTitle>
+
+        <DialogContent sx={styles.dialogContent}>
+          {itemToDelete && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2.5,
+                  mb: 3,
+                  p: 3,
+                  borderRadius: 2,
+                  backgroundColor: "rgba(241, 245, 249, 0.5)",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                {/* Project Preview */}
+                <Box sx={{ display: "flex", gap: 2.5 }}>
+                  <Box
+                    sx={{
+                      width: 120,
+                      height: 80,
+                      borderRadius: 2,
+                      backgroundColor: "#F8FAFC",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      overflow: "hidden",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    }}
+                  >
+                    {itemToDelete.image ? (
+                      <Box
+                        component="img"
+                        src={itemToDelete.image}
+                        alt={itemToDelete.title}
+                        sx={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    ) : (
+                      <CodeIcon sx={{ fontSize: 40, color: "#94A3B8" }} />
+                    )}
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography
+                      variant="h6"
+                      sx={{ fontWeight: 600, color: "#1E293B", mb: 0.5 }}
+                    >
+                      {itemToDelete.title}
+                    </Typography>
+                    <Chip
+                      label={itemToDelete.category}
+                      size="small"
+                      sx={{
+                        backgroundColor: "rgba(241, 245, 249, 0.8)",
+                        color: "#475569",
+                        fontSize: "0.75rem",
+                        height: "24px",
+                      }}
+                    />
+                  </Box>
+                </Box>
+
+                {/* Project Details */}
+                <Box
+                  sx={{
+                    mt: 2,
+                    pt: 2,
+                    borderTop: "1px dashed rgba(203, 213, 225, 0.5)",
+                  }}
+                >
+                  {/* Tags */}
+                  {itemToDelete.tags && itemToDelete.tags.length > 0 && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "#94A3B8", display: "block", mb: 1 }}
+                      >
+                        Technologies & Tools
+                      </Typography>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        flexWrap="wrap"
+                        sx={{ gap: 1 }}
+                      >
+                        {itemToDelete.tags.map((tag, index) => (
+                          <Chip
+                            key={index}
+                            label={tag}
+                            size="small"
+                            sx={{
+                              backgroundColor: "rgba(241, 245, 249, 0.8)",
+                              color: "#475569",
+                              fontSize: "0.75rem",
+                              height: "24px",
+                            }}
+                          />
+                        ))}
+                      </Stack>
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+
+              <Typography
+                variant="body1"
+                sx={{ color: "#1E293B", mb: 2, fontWeight: 500 }}
+              >
+                Are you sure you want to delete this project?
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "#64748B",
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: "rgba(239, 68, 68, 0.1)",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                }}
+              >
+                ⚠️ This action cannot be undone. The project and all associated
+                data (members, associations, etc.) will be permanently removed.
+              </Typography>
+            </motion.div>
+          )}
         </DialogContent>
-        <DialogActions sx={{ p: 3, backgroundColor: "#F8FAFC" }}>
+
+        <DialogActions
+          sx={{
+            p: 3,
+            backgroundColor: "#F8FAFC",
+            borderTop: "1px solid rgba(226, 232, 240, 0.8)",
+          }}
+        >
           <Button
-            onClick={() => setDeleteDialogOpen(false)}
+            onClick={handleCloseDelete}
             variant="outlined"
-            sx={{
-              borderColor: "#E2E8F0",
-              color: "#64748B",
-              "&:hover": {
-                borderColor: "#CBD5E1",
-                backgroundColor: "#F1F5F9",
-              },
-            }}
+            sx={styles.cancelButton}
           >
             Cancel
           </Button>
           <Button
             onClick={handleConfirmDelete}
             variant="contained"
-            sx={{
-              background: "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)",
-              color: "white",
-              px: 3,
-              py: 1,
-              borderRadius: 2,
-              textTransform: "none",
-              "&:hover": {
-                background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
-              },
-            }}
+            sx={styles.deleteButton}
           >
-            Delete
+            Delete Project
           </Button>
         </DialogActions>
-      </Dialog>
+      </StyledDialog>
     </Box>
   );
 };
