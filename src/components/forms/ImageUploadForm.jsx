@@ -34,6 +34,9 @@ import {
   Delete as DeleteIcon,
   Info as InfoIcon,
   Refresh as RefreshIcon,
+  CheckCircleOutline as SuccessIcon,
+  ErrorOutline as ErrorIcon,
+  Sync as LoadingIcon,
 } from "@mui/icons-material";
 import { storage as configuredStorage } from "../../config/firebase";
 import {
@@ -229,6 +232,67 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
+// Add modern toast configuration
+const toastConfig = {
+  position: "top-center",
+  style: {
+    background: "rgba(15, 23, 42, 0.95)",
+    color: "white",
+    backdropFilter: "blur(8px)",
+    borderRadius: "16px",
+    padding: "16px 24px",
+    maxWidth: "500px",
+    width: "90%",
+    border: "1px solid rgba(255,255,255,0.1)",
+    fontSize: "14px",
+    fontWeight: 500,
+    boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+  },
+  success: {
+    icon: (
+      <SuccessIcon
+        sx={{
+          animation: "rotate 0.5s ease-out",
+          "@keyframes rotate": {
+            "0%": { transform: "scale(0.5) rotate(-180deg)" },
+            "100%": { transform: "scale(1) rotate(0)" },
+          },
+        }}
+      />
+    ),
+    duration: 2000,
+  },
+  error: {
+    icon: (
+      <ErrorIcon
+        sx={{
+          animation: "shake 0.5s ease-in-out",
+          "@keyframes shake": {
+            "0%, 100%": { transform: "translateX(0)" },
+            "25%": { transform: "translateX(-4px)" },
+            "75%": { transform: "translateX(4px)" },
+          },
+        }}
+      />
+    ),
+    duration: 3000,
+  },
+  loading: {
+    icon: (
+      <LoadingIcon
+        sx={{
+          animation: "spin 1s linear infinite",
+          "@keyframes spin": {
+            "0%": { transform: "rotate(0deg)" },
+            "100%": { transform: "rotate(360deg)" },
+          },
+        }}
+      />
+    ),
+    duration: Infinity,
+  },
+};
+
 const ImageUploadForm = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -252,6 +316,7 @@ const ImageUploadForm = () => {
     });
   };
 
+  // Update these functions to remove unnecessary notifications
   const handleFileSelect = async (event) => {
     const file = event.target.files[0];
     if (file && file.type.startsWith("image/")) {
@@ -261,7 +326,7 @@ const ImageUploadForm = () => {
         setPreviewUrl(reader.result);
         const dims = await getImageDimensions(reader.result);
         setDimensions(dims);
-        toast.success("Image selected successfully!");
+        // Removed success toast - visual feedback is enough
       };
       reader.readAsDataURL(file);
     } else {
@@ -272,11 +337,11 @@ const ImageUploadForm = () => {
   // Update the handleUpload function to use the selected folder
   const handleUpload = async () => {
     if (!selectedFile) {
-      toast.error("Please select an image to upload");
+      toast.error("Please select an image");
       return;
     }
 
-    const loadingToast = toast.loading("Uploading image...");
+    const loadingToast = toast.loading("Uploading...");
     try {
       setLoading(true);
       const fileExtension = selectedFile.name.split(".").pop();
@@ -323,12 +388,12 @@ const ImageUploadForm = () => {
       ]);
 
       toast.dismiss(loadingToast);
-      toast.success("Image uploaded successfully!");
+      toast.success("Upload complete!");
       handleClear();
     } catch (error) {
       console.error("Upload error:", error);
       toast.dismiss(loadingToast);
-      toast.error(`Upload failed: ${error.message}`);
+      toast.error("Upload failed");
     } finally {
       setLoading(false);
     }
@@ -336,7 +401,9 @@ const ImageUploadForm = () => {
 
   const handleCopyUrl = (url) => {
     navigator.clipboard.writeText(url);
-    toast.success("URL copied to clipboard!", {
+    toast.success("URL copied!", {
+      // Simplified message
+      duration: 2000,
       icon: "📋",
     });
   };
@@ -347,22 +414,20 @@ const ImageUploadForm = () => {
     setDownloadUrl("");
     setImageName("");
     setDimensions(null);
-    toast.success("Form cleared", {
-      duration: 2000,
-    });
+    // Removed success toast - visual feedback is enough
   };
 
   const handleDelete = async (imagePath) => {
-    const loadingToast = toast.loading("Deleting image...");
+    const loadingToast = toast.loading("Deleting...");
     try {
       const fileRef = ref(configuredStorage, imagePath);
       await deleteObject(fileRef);
       toast.dismiss(loadingToast);
-      toast.success("Image deleted successfully!");
+      toast.success("Image deleted");
     } catch (error) {
       console.error("Delete error:", error);
       toast.dismiss(loadingToast);
-      toast.error(`Failed to delete image: ${error.message}`);
+      toast.error("Failed to delete");
     }
   };
 
@@ -376,7 +441,6 @@ const ImageUploadForm = () => {
 
   // Add this function after the existing state declarations
   const fetchBucketFolders = async () => {
-    const loadingToast = toast.loading("Fetching folders...");
     try {
       const storageRef = ref(configuredStorage);
       const result = await listAll(storageRef);
@@ -385,7 +449,7 @@ const ImageUploadForm = () => {
       const fetchPromises = result.items.map(async (item) => {
         const metadata = await getMetadata(item);
         const fullPath = metadata.fullPath;
-        return fullPath.split("/")[0]; // Get the first level folder
+        return fullPath.split("/")[0];
       });
 
       // Get folders from prefixes
@@ -406,13 +470,14 @@ const ImageUploadForm = () => {
       // Always include root and ensure unique values
       const finalFolders = ["root", ...validFolders];
       setFolders(finalFolders);
-
-      toast.dismiss(loadingToast);
-      toast.success(`Found ${validFolders.length} Items`);
     } catch (error) {
       console.error("Error fetching folders:", error);
-      toast.dismiss(loadingToast);
-      toast.error(`Failed to load folders: ${error.message}`);
+      toast.error(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Failed to load folders</Typography>
+        </Box>,
+        { ...toastConfig }
+      );
     }
   };
 
@@ -437,41 +502,12 @@ const ImageUploadForm = () => {
   return (
     <Box sx={{ maxWidth: 800, margin: "0 auto", p: 3 }}>
       <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            padding: "16px",
-            borderRadius: "8px",
-            fontSize: "14px",
-          },
-          success: {
-            style: {
-              background: "#10B981",
-              color: "white",
-            },
-            iconTheme: {
-              primary: "white",
-              secondary: "#10B981",
-            },
-          },
-          error: {
-            style: {
-              background: "#EF4444",
-              color: "white",
-            },
-            iconTheme: {
-              primary: "white",
-              secondary: "#EF4444",
-            },
-          },
-          loading: {
-            style: {
-              background: "#1E293B",
-              color: "white",
-            },
-          },
+        position="top-center"
+        toastOptions={toastConfig}
+        containerStyle={{
+          top: 20,
         }}
+        gutter={8}
       />
       <Paper sx={styles.paper}>
         <Box sx={styles.gradientHeader}>

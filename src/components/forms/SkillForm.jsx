@@ -23,6 +23,9 @@ import {
   Delete as DeleteIcon,
   Save as SaveIcon,
   Close as CloseIcon,
+  CheckCircleOutline as SuccessIcon,
+  ErrorOutline as ErrorIcon,
+  Sync as LoadingIcon,
 } from "@mui/icons-material";
 import { skillsApi, skillCategoriesApi } from "../../api/SupabaseData";
 import { Toaster, toast } from "react-hot-toast";
@@ -164,6 +167,65 @@ const styles = {
   },
 };
 
+const toastConfig = {
+  position: "top-center",
+  style: {
+    background: "rgba(15, 23, 42, 0.95)",
+    color: "white",
+    backdropFilter: "blur(8px)",
+    borderRadius: "16px",
+    padding: "16px 24px",
+    maxWidth: "500px",
+    width: "90%",
+    border: "1px solid rgba(255,255,255,0.1)",
+    fontSize: "14px",
+    fontWeight: 500,
+    boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+  },
+  success: {
+    icon: (
+      <SuccessIcon
+        sx={{
+          animation: "rotate 0.5s ease-out",
+          "@keyframes rotate": {
+            "0%": { transform: "scale(0.5) rotate(-180deg)" },
+            "100%": { transform: "scale(1) rotate(0)" },
+          },
+        }}
+      />
+    ),
+    duration: 2000,
+  },
+  error: {
+    icon: (
+      <ErrorIcon
+        sx={{
+          animation: "shake 0.5s ease-in-out",
+          "@keyframes shake": {
+            "0%, 100%": { transform: "translateX(0)" },
+            "25%": { transform: "translateX(-4px)" },
+            "75%": { transform: "translateX(4px)" },
+          },
+        }}
+      />
+    ),
+    duration: 3000,
+  },
+  loading: {
+    icon: (
+      <LoadingIcon
+        sx={{
+          animation: "spin 1s linear infinite",
+          "@keyframes spin": {
+            "0%": { transform: "rotate(0deg)" },
+            "100%": { transform: "rotate(360deg)" },
+          },
+        }}
+      />
+    ),
+  },
+};
+
 const SkillForm = () => {
   const [skills, setSkills] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -189,32 +251,41 @@ const SkillForm = () => {
   }, []);
 
   const fetchCategories = async () => {
+    const loadingToast = toast.loading("Loading categories...", toastConfig);
     try {
       const data = await skillCategoriesApi.fetch();
       setCategories(data || []);
+      toast.dismiss(loadingToast);
+      toast.success("Categories loaded successfully", toastConfig);
     } catch (error) {
+      toast.dismiss(loadingToast);
       console.error("Error fetching categories:", error);
-      toast.error("Error fetching categories: " + error.message);
+      toast.error("Error fetching categories: " + error.message, toastConfig);
     }
   };
 
   const fetchSkills = async () => {
+    const loadingToast = toast.loading("Loading skills...", toastConfig);
     try {
       const data = await skillsApi.fetchWithCategories();
       setSkills(data || []);
+      toast.dismiss(loadingToast);
+      toast.success("Skills loaded successfully", toastConfig);
     } catch (error) {
+      toast.dismiss(loadingToast);
       console.error("Error fetching skills:", error);
-      toast.error("Error fetching skills: " + error.message);
+      toast.error("Error fetching skills: " + error.message, toastConfig);
     }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const loadingToast = toast.loading("Saving skill...");
+    const loadingToast = toast.loading("Saving skill...", toastConfig);
 
     try {
       if (!currentSkill.name || !currentSkill.category_id) {
-        toast.error("Please fill in all required fields");
+        toast.dismiss(loadingToast);
+        toast.error("Please fill in all required fields", toastConfig);
         return;
       }
 
@@ -235,11 +306,12 @@ const SkillForm = () => {
       handleClose();
       toast.dismiss(loadingToast);
       toast.success(
-        editMode ? "Skill updated successfully" : "Skill added successfully"
+        editMode ? "Skill updated successfully" : "Skill added successfully",
+        toastConfig
       );
     } catch (error) {
       toast.dismiss(loadingToast);
-      toast.error("Error saving skill: " + error.message);
+      toast.error("Error saving skill: " + error.message, toastConfig);
     }
   };
 
@@ -255,18 +327,17 @@ const SkillForm = () => {
   };
 
   const handleConfirmDelete = async () => {
-    const loadingToast = toast.loading("Deleting skill...");
+    const loadingToast = toast.loading("Deleting skill...", toastConfig);
     try {
       await skillsApi.delete(itemToDelete.id);
       await fetchSkills();
       toast.dismiss(loadingToast);
-      toast.success("Skill deleted successfully");
+      toast.success("Skill deleted successfully", toastConfig);
       setDeleteDialogOpen(false);
       setItemToDelete(null);
     } catch (error) {
       toast.dismiss(loadingToast);
-      console.error("Error deleting skill:", error);
-      toast.error("Error deleting skill: " + error.message);
+      toast.error("Error deleting skill: " + error.message, toastConfig);
     }
   };
 
@@ -281,9 +352,11 @@ const SkillForm = () => {
   };
 
   const handleCategorySubmit = async () => {
+    const loadingToast = toast.loading("Saving category...", toastConfig);
     try {
       if (!currentCategory.title) {
-        toast.error("Please enter a category title");
+        toast.dismiss(loadingToast);
+        toast.error("Please enter a category title", toastConfig);
         return;
       }
 
@@ -300,14 +373,16 @@ const SkillForm = () => {
 
       await fetchCategories();
       handleCategoryClose();
+      toast.dismiss(loadingToast);
       toast.success(
         editingCategory
           ? "Category updated successfully"
-          : "Category added successfully"
+          : "Category added successfully",
+        toastConfig
       );
     } catch (error) {
-      console.error("Error saving category:", error);
-      toast.error("Error saving category: " + error.message);
+      toast.dismiss(loadingToast);
+      toast.error("Error saving category: " + error.message, toastConfig);
     }
   };
 
@@ -323,6 +398,7 @@ const SkillForm = () => {
   };
 
   const handleConfirmCategoryDelete = async () => {
+    const loadingToast = toast.loading("Deleting category...", toastConfig);
     try {
       // First update skills to remove category
       await skillsApi.updateCategoryNull(categoryToDelete.id);
@@ -332,11 +408,13 @@ const SkillForm = () => {
 
       await fetchCategories();
       await fetchSkills();
-      toast.success("Category deleted successfully");
+      toast.dismiss(loadingToast);
+      toast.success("Category deleted successfully", toastConfig);
       setCategoryDeleteDialogOpen(false);
       setCategoryToDelete(null);
     } catch (error) {
-      toast.error("Error deleting category: " + error.message);
+      toast.dismiss(loadingToast);
+      toast.error("Error deleting category: " + error.message, toastConfig);
     }
   };
 
@@ -451,7 +529,7 @@ const SkillForm = () => {
                             </IconButton>
                             <IconButton
                               size="small"
-                              onClick={() => handleDelete(skill)} // Pass the entire skill object instead of just skill.id
+                              onClick={() => handleDelete(skill)}
                               sx={{
                                 color: "#EF4444",
                                 transition: "all 0.2s ease",
@@ -984,14 +1062,12 @@ const SkillForm = () => {
         </DialogActions>
       </Dialog>
       <Toaster
-        position="top-right"
-        toastOptions={{
-          style: {
-            padding: "16px",
-            borderRadius: "8px",
-            fontSize: "14px",
-          },
+        position="top-center"
+        toastOptions={toastConfig}
+        containerStyle={{
+          top: 20,
         }}
+        gutter={8}
       />
     </Box>
   );

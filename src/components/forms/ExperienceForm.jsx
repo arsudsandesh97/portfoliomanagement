@@ -23,6 +23,10 @@ import {
   Work as WorkIcon,
   Save as SaveIcon,
   Close as CloseIcon,
+  CheckCircleOutline as SuccessIcon,
+  ErrorOutline as ErrorIcon,
+  Info as InfoIcon,
+  Sync as LoadingIcon,
 } from "@mui/icons-material";
 import { experienceApi } from "../../api/SupabaseData";
 import { Toaster, toast } from "react-hot-toast";
@@ -136,6 +140,66 @@ const dialogStyles = {
   },
 };
 
+const toastConfig = {
+  position: "top-center",
+  style: {
+    background: "rgba(15, 23, 42, 0.95)",
+    color: "white",
+    backdropFilter: "blur(8px)",
+    borderRadius: "16px",
+    padding: "16px 24px",
+    maxWidth: "500px",
+    width: "90%",
+    border: "1px solid rgba(255,255,255,0.1)",
+    fontSize: "14px",
+    fontWeight: 500,
+    boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+  },
+  success: {
+    icon: (
+      <SuccessIcon
+        sx={{
+          animation: "rotate 0.5s ease-out",
+          "@keyframes rotate": {
+            "0%": { transform: "scale(0.5) rotate(-180deg)" },
+            "100%": { transform: "scale(1) rotate(0)" },
+          },
+        }}
+      />
+    ),
+    duration: 2000,
+  },
+  error: {
+    icon: (
+      <ErrorIcon
+        sx={{
+          animation: "shake 0.5s ease-in-out",
+          "@keyframes shake": {
+            "0%, 100%": { transform: "translateX(0)" },
+            "25%": { transform: "translateX(-4px)" },
+            "75%": { transform: "translateX(4px)" },
+          },
+        }}
+      />
+    ),
+    duration: 3000,
+  },
+  loading: {
+    icon: (
+      <LoadingIcon
+        sx={{
+          animation: "spin 1s linear infinite",
+          "@keyframes spin": {
+            "0%": { transform: "rotate(0deg)" },
+            "100%": { transform: "rotate(360deg)" },
+          },
+        }}
+      />
+    ),
+    duration: Infinity,
+  },
+};
+
 const ExperienceForm = () => {
   const [experiences, setExperiences] = useState([]);
   const [open, setOpen] = useState(false);
@@ -159,24 +223,60 @@ const ExperienceForm = () => {
   }, []);
 
   const fetchExperiences = async () => {
+    const loadingToast = toast.loading(
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Typography>Loading experience details...</Typography>
+      </Box>,
+      { ...toastConfig }
+    );
+
     try {
       const data = await experienceApi.fetch();
-      console.log("Fetched experience data:", data);
       setExperiences(data || []);
+      toast.success(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Information loaded successfully</Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast,
+        }
+      );
     } catch (error) {
       console.error("Error details:", error);
-      toast.error("Error fetching experience data: " + error.message);
+      toast.error(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Failed to load experiences</Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast,
+        }
+      );
     }
   };
 
   const handleSubmit = async () => {
-    const loadingToast = toast.loading("Saving experience...");
-    try {
-      if (!currentExperience.role || !currentExperience.company) {
-        toast.error("Please fill in all required fields");
-        return;
-      }
+    if (!currentExperience.role || !currentExperience.company) {
+      toast.error(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Please fill in all required fields</Typography>
+        </Box>,
+        { ...toastConfig }
+      );
+      return;
+    }
 
+    const loadingToast = toast.loading(
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Typography>
+          {editMode ? "Updating" : "Adding"} experience...
+        </Typography>
+      </Box>,
+      { ...toastConfig }
+    );
+
+    try {
       if (editMode) {
         await experienceApi.update(currentExperience);
       } else {
@@ -185,15 +285,30 @@ const ExperienceForm = () => {
 
       await fetchExperiences();
       handleClose();
-      toast.dismiss(loadingToast);
+
       toast.success(
-        editMode
-          ? "Experience updated successfully"
-          : "Experience added successfully"
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>
+            Experience {editMode ? "updated" : "added"} successfully
+          </Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast,
+        }
       );
     } catch (error) {
-      toast.dismiss(loadingToast);
-      toast.error("Error saving experience: " + error.message);
+      toast.error(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>
+            Failed to {editMode ? "update" : "add"} experience
+          </Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast,
+        }
+      );
     }
   };
 
@@ -769,14 +884,12 @@ const ExperienceForm = () => {
       </Fab>
 
       <Toaster
-        position="top-right"
-        toastOptions={{
-          style: {
-            padding: "16px",
-            borderRadius: "8px",
-            fontSize: "14px",
-          },
+        position="top-center"
+        toastOptions={toastConfig}
+        containerStyle={{
+          top: 20,
         }}
+        gutter={8}
       />
     </Box>
   );

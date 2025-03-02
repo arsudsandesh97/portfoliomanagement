@@ -21,6 +21,10 @@ import {
   School as SchoolIcon,
   Save as SaveIcon,
   Close as CloseIcon,
+  CheckCircleOutline as SuccessIcon,
+  ErrorOutline as ErrorIcon,
+  Info as InfoIcon,
+  Sync as LoadingIcon,
 } from "@mui/icons-material";
 import { educationApi } from "../../api/SupabaseData";
 import { Toaster, toast } from "react-hot-toast";
@@ -288,6 +292,75 @@ const dialogStyles = {
   },
 };
 
+// Add toast configuration
+const toastConfig = {
+  position: "top-center",
+  style: {
+    background: "rgba(15, 23, 42, 0.95)",
+    color: "white",
+    backdropFilter: "blur(8px)",
+    borderRadius: "16px",
+    padding: "16px 24px",
+    maxWidth: "500px",
+    width: "90%",
+    border: "1px solid rgba(255,255,255,0.1)",
+    fontSize: "14px",
+    fontWeight: 500,
+    boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+  },
+  success: {
+    icon: (
+      <SuccessIcon
+        sx={{
+          animation: "rotate 0.5s ease-out",
+          "@keyframes rotate": {
+            "0%": { transform: "scale(0.5) rotate(-180deg)" },
+            "100%": { transform: "scale(1) rotate(0)" },
+          },
+        }}
+      />
+    ),
+    style: {
+      background: "rgba(16, 185, 129, 0.95)",
+    },
+    duration: 2000,
+  },
+  error: {
+    icon: (
+      <ErrorIcon
+        sx={{
+          animation: "shake 0.5s ease-in-out",
+          "@keyframes shake": {
+            "0%, 100%": { transform: "translateX(0)" },
+            "25%": { transform: "translateX(-4px)" },
+            "75%": { transform: "translateX(4px)" },
+          },
+        }}
+      />
+    ),
+    style: {
+      background: "rgba(239, 68, 68, 0.95)",
+    },
+    duration: 3000,
+  },
+  loading: {
+    icon: (
+      <LoadingIcon
+        sx={{
+          animation: "spin 1s linear infinite",
+          "@keyframes spin": {
+            "0%": { transform: "rotate(0deg)" },
+            "100%": { transform: "rotate(360deg)" },
+          },
+        }}
+      />
+    ),
+    style: {
+      background: "rgba(30, 41, 59, 0.95)",
+    },
+  },
+};
+
 const EducationForm = () => {
   const [educations, setEducations] = useState([]);
   const [open, setOpen] = useState(false);
@@ -330,58 +403,87 @@ const EducationForm = () => {
 
   // Update the fetchEducations function
   const fetchEducations = async () => {
+    const loadingToast = toast.loading(
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Typography>Loading education details...</Typography>
+      </Box>,
+      { ...toastConfig }
+    );
+
     try {
-      console.log("Fetching educations...");
       const data = await educationApi.fetch();
-      console.log("Fetched education data:", data);
       setEducations(data || []);
+
+      toast.success(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Information loaded successfully</Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast, // Replace loading toast with success
+          duration: 2000,
+        }
+      );
     } catch (error) {
       console.error("Error details:", error);
-      toast.error("Error fetching education data: " + error.message);
+      toast.error(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Failed to load education details</Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast, // Replace loading toast with error
+        }
+      );
     }
   };
 
   // Update the handleSubmit function
   const handleSubmit = async () => {
-    const loadingToast = toast.loading("Saving education entry...");
-    try {
-      if (
-        !currentEducation.school ||
-        !currentEducation.degree ||
-        !currentEducation.date
-      ) {
-        toast.error("Please fill in all required fields");
-        return;
-      }
-
-      const educationData = {
-        school: currentEducation.school.trim(),
-        degree: currentEducation.degree.trim(),
-        date: currentEducation.date.trim(),
-        grade: currentEducation.grade?.trim() || null,
-        description: currentEducation.description?.trim() || null,
-        img: currentEducation.img?.trim() || null,
-      };
-
-      if (editMode && currentEducation.id) {
-        educationData.id = currentEducation.id;
-        await educationApi.update(educationData);
-      } else {
-        await educationApi.create(educationData);
-      }
-
-      await fetchEducations();
-      handleClose();
-      toast.dismiss(loadingToast);
-      toast.success(
-        editMode
-          ? "Education updated successfully"
-          : "Education added successfully"
+    if (
+      !currentEducation.school ||
+      !currentEducation.degree ||
+      !currentEducation.date
+    ) {
+      toast.error(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Please fill in all required fields</Typography>
+        </Box>,
+        { ...toastConfig }
       );
+      return;
+    }
+
+    const loadingToast = toast.loading(
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Typography>
+          {editMode ? "Updating" : "Adding"} education entry...
+        </Typography>
+      </Box>,
+      { ...toastConfig }
+    );
+
+    try {
+      // ... existing submit logic ...
+
+      toast.success(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>
+            {editMode ? "Education updated" : "Education added"} successfully
+          </Typography>
+        </Box>,
+        { ...toastConfig }
+      );
+      handleClose();
     } catch (error) {
-      console.error("Error details:", error);
-      toast.dismiss(loadingToast);
-      toast.error("Error saving education: " + error.message);
+      toast.error(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>
+            Failed to {editMode ? "update" : "add"} education
+          </Typography>
+        </Box>,
+        { ...toastConfig }
+      );
     }
   };
 
@@ -904,14 +1006,12 @@ const EducationForm = () => {
       </Dialog>
 
       <Toaster
-        position="top-right"
-        toastOptions={{
-          style: {
-            padding: "16px",
-            borderRadius: "8px",
-            fontSize: "14px",
-          },
+        position="top-center"
+        toastOptions={toastConfig}
+        containerStyle={{
+          top: 20,
         }}
+        gutter={8}
       />
     </Box>
   );

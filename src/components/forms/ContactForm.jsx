@@ -27,6 +27,10 @@ import {
   AccessTime as AccessTimeIcon,
   Save as SaveIcon,
   Close as CloseIcon,
+  CheckCircleOutline as SuccessIcon,
+  ErrorOutline as ErrorIcon,
+  Info as InfoIcon,
+  Sync as LoadingIcon,
 } from "@mui/icons-material";
 import { contactsApi } from "../../api/SupabaseData";
 import { Toaster, toast } from "react-hot-toast";
@@ -161,6 +165,74 @@ const dialogStyles = {
   },
 };
 
+const toastConfig = {
+  position: "top-center",
+  style: {
+    background: "rgba(15, 23, 42, 0.95)",
+    color: "white",
+    backdropFilter: "blur(8px)",
+    borderRadius: "16px",
+    padding: "16px 24px",
+    maxWidth: "500px",
+    width: "90%",
+    border: "1px solid rgba(255,255,255,0.1)",
+    fontSize: "14px",
+    fontWeight: 500,
+    boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+  },
+  success: {
+    icon: (
+      <SuccessIcon
+        sx={{
+          animation: "rotate 0.5s ease-out",
+          "@keyframes rotate": {
+            "0%": { transform: "scale(0.5) rotate(-180deg)" },
+            "100%": { transform: "scale(1) rotate(0)" },
+          },
+        }}
+      />
+    ),
+    style: {
+      background: "rgba(16, 185, 129, 0.95)",
+    },
+    duration: 2000,
+  },
+  error: {
+    icon: (
+      <ErrorIcon
+        sx={{
+          animation: "shake 0.5s ease-in-out",
+          "@keyframes shake": {
+            "0%, 100%": { transform: "translateX(0)" },
+            "25%": { transform: "translateX(-4px)" },
+            "75%": { transform: "translateX(4px)" },
+          },
+        }}
+      />
+    ),
+    style: {
+      background: "rgba(239, 68, 68, 0.95)",
+    },
+    duration: 3000,
+  },
+  loading: {
+    icon: (
+      <LoadingIcon
+        sx={{
+          animation: "spin 1s linear infinite",
+          "@keyframes spin": {
+            "0%": { transform: "rotate(0deg)" },
+            "100%": { transform: "rotate(360deg)" },
+          },
+        }}
+      />
+    ),
+    style: {
+      background: "rgba(30, 41, 59, 0.95)",
+    },
+  },
+};
+
 const ContactForm = () => {
   const [contacts, setContacts] = useState([]);
   const [open, setOpen] = useState(false);
@@ -182,24 +254,58 @@ const ContactForm = () => {
   }, []);
 
   const fetchContacts = async () => {
+    const loadingToast = toast.loading(
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Typography>Loading contacts...</Typography>
+      </Box>,
+      { ...toastConfig }
+    );
+
     try {
       const data = await contactsApi.fetch();
-      console.log("Fetched contacts:", data); // For debugging
       setContacts(data || []);
+      toast.success(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Contacts loaded successfully</Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast,
+        }
+      );
     } catch (error) {
-      console.error("Error details:", error); // For debugging
-      toast.error("Error fetching contacts: " + error.message);
+      console.error("Error details:", error);
+      toast.error(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Failed to load contacts: {error.message}</Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast,
+        }
+      );
     }
   };
 
   const handleSubmit = async () => {
-    const loadingToast = toast.loading("Saving contact...");
-    try {
-      if (!currentContact.name || !currentContact.email) {
-        toast.error("Name and email are required");
-        return;
-      }
+    if (!currentContact.name || !currentContact.email) {
+      toast.error(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Name and email are required</Typography>
+        </Box>,
+        { ...toastConfig }
+      );
+      return;
+    }
 
+    const loadingToast = toast.loading(
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Typography>{editMode ? "Updating" : "Adding"} contact...</Typography>
+      </Box>,
+      { ...toastConfig }
+    );
+
+    try {
       if (editMode) {
         await contactsApi.update(currentContact);
       } else {
@@ -209,16 +315,27 @@ const ContactForm = () => {
       await fetchContacts();
       setOpen(false);
       resetForm();
-      toast.dismiss(loadingToast);
       toast.success(
-        editMode
-          ? "Contact updated successfully!"
-          : "Contact added successfully!"
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>
+            Contact {editMode ? "updated" : "added"} successfully!
+          </Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast,
+        }
       );
     } catch (error) {
-      console.error("Error details:", error); // For debugging
-      toast.dismiss(loadingToast);
-      toast.error("Error saving contact: " + error.message);
+      toast.error(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Error saving contact: {error.message}</Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast,
+        }
+      );
     }
   };
 
@@ -229,17 +346,36 @@ const ContactForm = () => {
   };
 
   const handleDelete = async () => {
-    const loadingToast = toast.loading("Deleting contact...");
+    const loadingToast = toast.loading(
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Typography>Deleting contact...</Typography>
+      </Box>,
+      { ...toastConfig }
+    );
+
     try {
       await contactsApi.delete(itemToDelete.id);
       await fetchContacts();
       setDeleteDialogOpen(false);
-      toast.dismiss(loadingToast);
-      toast.success("Contact deleted successfully!");
+      toast.success(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Contact deleted successfully!</Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast,
+        }
+      );
     } catch (error) {
-      console.error("Error details:", error); // For debugging
-      toast.dismiss(loadingToast);
-      toast.error("Error deleting contact: " + error.message);
+      toast.error(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Error deleting contact: {error.message}</Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast,
+        }
+      );
     }
   };
 
@@ -725,14 +861,12 @@ const ContactForm = () => {
       </Dialog>
 
       <Toaster
-        position="top-right"
-        toastOptions={{
-          style: {
-            padding: "16px",
-            borderRadius: "8px",
-            fontSize: "14px",
-          },
+        position="top-center"
+        toastOptions={toastConfig}
+        containerStyle={{
+          top: 20,
         }}
+        gutter={8}
       />
 
       {/* Mobile-specific FAB button */}

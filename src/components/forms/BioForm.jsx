@@ -25,6 +25,10 @@ import {
   Description as ResumeIcon,
   Warning as WarningIcon,
   Close as CloseIcon,
+  CheckCircleOutline as SuccessIcon,
+  ErrorOutline as ErrorIcon,
+  Info as InfoIcon,
+  Sync as LoadingIcon,
 } from "@mui/icons-material";
 import { bioApi, copyrightApi } from "../../api/SupabaseData";
 import { Toaster, toast } from "react-hot-toast";
@@ -371,6 +375,105 @@ const BioForm = () => {
     },
   };
 
+  // Add these loading toast styles
+  const loadingToastStyles = {
+    style: {
+      background: "rgba(15, 23, 42, 0.95)",
+      backdropFilter: "blur(8px)",
+      color: "white",
+      borderRadius: "16px",
+      padding: "16px 24px",
+      boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+      display: "flex",
+      alignItems: "center",
+      gap: "12px",
+      fontSize: "14px",
+      fontWeight: 500,
+      border: "1px solid rgba(255,255,255,0.1)",
+    },
+    icon: "🔄",
+    position: "bottom-center",
+    duration: Infinity,
+  };
+
+  // Update the toast configuration
+  const toastConfig = {
+    position: "top-center",
+    duration: 3000,
+    style: {
+      background: "rgba(15, 23, 42, 0.95)",
+      color: "white",
+      backdropFilter: "blur(8px)",
+      borderRadius: "16px",
+      padding: "16px 24px",
+      maxWidth: "500px",
+      width: "90%",
+      border: "1px solid rgba(255,255,255,0.1)",
+      fontSize: "14px",
+      fontWeight: 500,
+      boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+      display: "flex",
+      alignItems: "center",
+      gap: "12px",
+    },
+    success: {
+      style: {
+        background: "rgba(16, 185, 129, 0.95)",
+      },
+      icon: (
+        <SuccessIcon
+          sx={{
+            animation: "rotate 0.5s ease-out",
+            "@keyframes rotate": {
+              "0%": { transform: "scale(0.5) rotate(-180deg)" },
+              "100%": { transform: "scale(1) rotate(0)" },
+            },
+          }}
+        />
+      ),
+    },
+    error: {
+      style: {
+        background: "rgba(239, 68, 68, 0.95)",
+      },
+      icon: (
+        <ErrorIcon
+          sx={{
+            animation: "shake 0.5s ease-in-out",
+            "@keyframes shake": {
+              "0%, 100%": { transform: "translateX(0)" },
+              "25%": { transform: "translateX(-4px)" },
+              "75%": { transform: "translateX(4px)" },
+            },
+          }}
+        />
+      ),
+    },
+    loading: {
+      style: {
+        background: "rgba(30, 41, 59, 0.95)",
+      },
+      icon: (
+        <LoadingIcon
+          sx={{
+            animation: "spin 1s linear infinite",
+            "@keyframes spin": {
+              "0%": { transform: "rotate(0deg)" },
+              "100%": { transform: "rotate(360deg)" },
+            },
+          }}
+        />
+      ),
+      duration: Infinity,
+    },
+    info: {
+      style: {
+        background: "rgba(59, 130, 246, 0.95)",
+      },
+      icon: <InfoIcon sx={{ animation: "fadeIn 0.5s ease-in" }} />,
+    },
+  };
+
   useEffect(() => {
     fetchBio();
     fetchCopyright();
@@ -378,33 +481,60 @@ const BioForm = () => {
 
   // Update the fetchBio function to remove prefilled roles
   const fetchBio = async () => {
+    const loadingToast = toast.loading(
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <LoadingIcon sx={{ animation: "spin 1s linear infinite" }} />
+        <Typography>Loading your information...</Typography>
+      </Box>,
+      { ...toastConfig }
+    );
+
     try {
       const data = await bioApi.fetch();
       setBio({
         ...data,
         roles: Array.isArray(data?.roles) ? data.roles : [],
       });
-      setRoleInput(""); // Remove prefilled roles
+
+      toast.success(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Information loaded successfully</Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast, // Replace the loading toast with success
+          duration: 2000,
+        }
+      );
     } catch (error) {
-      toast.error("Error fetching bio: " + error.message);
+      toast.error(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Failed to load information</Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast, // Replace the loading toast with error
+          duration: 3000,
+        }
+      );
     }
   };
 
   const handleSubmit = async () => {
-    const loadingToast = toast.loading("Updating bio...");
+    const loadingToast = toast.loading("Saving changes...", toastConfig);
     try {
       if (!bio.name || !bio.description) {
-        toast.error("Please fill in all required fields");
+        toast.dismiss(loadingToast);
+        toast.error("Please fill in all required fields", toastConfig);
         return;
       }
 
       await bioApi.update(bio);
-      await fetchBio();
       toast.dismiss(loadingToast);
-      toast.success("Bio updated successfully!");
+      toast.success("Changes saved successfully", toastConfig);
     } catch (error) {
       toast.dismiss(loadingToast);
-      toast.error(`Failed to update bio: ${error.message}`);
+      toast.error("Failed to save changes", toastConfig);
     }
   };
 
@@ -413,33 +543,24 @@ const BioForm = () => {
       const data = await copyrightApi.fetch();
       setCopyright(data?.copyright || "");
     } catch (error) {
-      console.error("Error fetching copyright:", error);
-      toast.error("Error fetching copyright: " + error.message);
+      toast.error("Error loading copyright", toastConfig);
     }
   };
 
   const handleCopyrightSubmit = async () => {
-    let toastId = null;
+    if (!copyright.trim()) {
+      toast.error("Copyright text cannot be empty", toastConfig);
+      return;
+    }
+
+    const loadingToast = toast.loading("Saving copyright...", toastConfig);
     try {
-      // Input validation
-      if (!copyright.trim()) {
-        toast.error("Copyright text cannot be empty");
-        return;
-      }
-
-      // Show loading state
-      toastId = toast.loading("Updating copyright...");
-
-      // Simply pass the copyright text
       await copyrightApi.update(copyright.trim());
-      await fetchCopyright();
-
-      toast.dismiss(toastId);
-      toast.success("Copyright updated successfully");
+      toast.dismiss(loadingToast);
+      toast.success("Copyright saved", toastConfig);
     } catch (error) {
-      console.error("Error saving copyright:", error);
-      if (toastId) toast.dismiss(toastId);
-      toast.error(`Failed to update copyright: ${error.message}`);
+      toast.dismiss(loadingToast);
+      toast.error("Failed to save copyright", toastConfig);
     }
   };
 
@@ -957,14 +1078,14 @@ const BioForm = () => {
         </Box>
       </Paper>
       <Toaster
-        position="top-right"
-        toastOptions={{
-          style: {
-            padding: "16px",
-            borderRadius: "8px",
-            fontSize: "14px",
-          },
+        position="top-center"
+        toastOptions={toastConfig}
+        containerStyle={{
+          top: 20,
+          right: 20,
+          left: 20,
         }}
+        gutter={8}
       />
     </Box>
   );

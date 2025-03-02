@@ -37,6 +37,10 @@ import {
   FileCopy as FileCopyIcon,
   Storage as StorageIcon,
   Cloud as CloudIcon,
+  CheckCircleOutline as SuccessIcon,
+  ErrorOutline as ErrorIcon,
+  Info as InfoIcon,
+  Sync as LoadingIcon,
 } from "@mui/icons-material";
 import { storage as configuredStorage } from "../../config/firebase";
 import {
@@ -390,6 +394,75 @@ const dialogStyles = {
   },
 };
 
+// Add toast configuration
+const toastConfig = {
+  position: "top-center",
+  style: {
+    background: "rgba(15, 23, 42, 0.95)",
+    color: "white",
+    backdropFilter: "blur(8px)",
+    borderRadius: "16px",
+    padding: "16px 24px",
+    maxWidth: "500px",
+    width: "90%",
+    border: "1px solid rgba(255,255,255,0.1)",
+    fontSize: "14px",
+    fontWeight: 500,
+    boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+  },
+  success: {
+    icon: (
+      <SuccessIcon
+        sx={{
+          animation: "rotate 0.5s ease-out",
+          "@keyframes rotate": {
+            "0%": { transform: "scale(0.5) rotate(-180deg)" },
+            "100%": { transform: "scale(1) rotate(0)" },
+          },
+        }}
+      />
+    ),
+    style: {
+      background: "rgba(16, 185, 129, 0.95)",
+    },
+    duration: 2000,
+  },
+  error: {
+    icon: (
+      <ErrorIcon
+        sx={{
+          animation: "shake 0.5s ease-in-out",
+          "@keyframes shake": {
+            "0%, 100%": { transform: "translateX(0)" },
+            "25%": { transform: "translateX(-4px)" },
+            "75%": { transform: "translateX(4px)" },
+          },
+        }}
+      />
+    ),
+    style: {
+      background: "rgba(239, 68, 68, 0.95)",
+    },
+    duration: 3000,
+  },
+  loading: {
+    icon: (
+      <LoadingIcon
+        sx={{
+          animation: "spin 1s linear infinite",
+          "@keyframes spin": {
+            "0%": { transform: "rotate(0deg)" },
+            "100%": { transform: "rotate(360deg)" },
+          },
+        }}
+      />
+    ),
+    style: {
+      background: "rgba(30, 41, 59, 0.95)",
+    },
+  },
+};
+
 const StorageForm = () => {
   // Copy the state and functions related to bucket images from ImageUploadForm
   const [bucketImages, setBucketImages] = useState([]);
@@ -410,6 +483,13 @@ const StorageForm = () => {
 
   // Copy the necessary functions from ImageUploadForm
   const fetchBucketImages = async () => {
+    const loadingToast = toast.loading(
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Typography>Loading storage data...</Typography>
+      </Box>,
+      { ...toastConfig }
+    );
+
     try {
       const storageRef = ref(configuredStorage);
       const result = await listAll(storageRef);
@@ -459,9 +539,27 @@ const StorageForm = () => {
       setFolders(uniqueFolders);
 
       setBucketImages(validImages);
+
+      toast.success(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Storage data loaded successfully</Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast,
+        }
+      );
     } catch (error) {
       console.error("Error fetching bucket images:", error);
-      toast.error(`Failed to fetch images: ${error.message}`);
+      toast.error(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Failed to fetch storage data: {error.message}</Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast,
+        }
+      );
     }
   };
 
@@ -502,9 +600,12 @@ const StorageForm = () => {
 
   const handleCopyUrl = (url) => {
     navigator.clipboard.writeText(url);
-    toast.success("URL copied to clipboard!", {
-      icon: "📋",
-    });
+    toast.success(
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Typography>URL copied to clipboard!</Typography>
+      </Box>,
+      { ...toastConfig }
+    );
   };
 
   const handleDelete = (image) => {
@@ -514,7 +615,13 @@ const StorageForm = () => {
   };
 
   const handleConfirmDelete = async () => {
-    const loadingToast = toast.loading("Deleting file...");
+    const loadingToast = toast.loading(
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Typography>Deleting file...</Typography>
+      </Box>,
+      { ...toastConfig }
+    );
+
     try {
       if (!itemToDelete) {
         throw new Error("No file selected for deletion");
@@ -529,14 +636,27 @@ const StorageForm = () => {
       // Refresh the file list
       await fetchBucketImages();
 
-      toast.dismiss(loadingToast);
-      toast.success("File deleted successfully!");
+      toast.success(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>File deleted successfully!</Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast,
+        }
+      );
       setDeleteDialogOpen(false);
       setItemToDelete(null);
     } catch (error) {
-      toast.dismiss(loadingToast);
-      console.error("Error deleting file:", error);
-      toast.error(`Failed to delete file: ${error.message}`);
+      toast.error(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Failed to delete file: {error.message}</Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast,
+        }
+      );
     }
   };
 
@@ -688,11 +808,22 @@ const StorageForm = () => {
   const handleUploadFile = async (event) => {
     event.preventDefault();
     if (!selectedFile) {
-      toast.error("Please select a file");
+      toast.error(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Please select a file</Typography>
+        </Box>,
+        { ...toastConfig }
+      );
       return;
     }
 
-    const loadingToast = toast.loading("Uploading file...");
+    const loadingToast = toast.loading(
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Typography>Uploading file...</Typography>
+      </Box>,
+      { ...toastConfig }
+    );
+
     try {
       const filePath =
         selectedFolder === "root"
@@ -703,12 +834,27 @@ const StorageForm = () => {
       await uploadBytes(fileRef, selectedFile);
 
       await fetchBucketImages();
-      toast.dismiss(loadingToast);
-      toast.success("File uploaded successfully!");
+
+      toast.success(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>File uploaded successfully!</Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast,
+        }
+      );
       handleCloseFileDialog();
     } catch (error) {
-      toast.dismiss(loadingToast);
-      toast.error(`Failed to upload file: ${error.message}`);
+      toast.error(
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Typography>Failed to upload file: {error.message}</Typography>
+        </Box>,
+        {
+          ...toastConfig,
+          id: loadingToast,
+        }
+      );
     }
   };
 
@@ -790,41 +936,12 @@ const StorageForm = () => {
     // ... copy the bucket images table JSX from ImageUploadForm
     <Box sx={{ width: "100%", p: 3 }}>
       <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            padding: "16px",
-            borderRadius: "8px",
-            fontSize: "14px",
-          },
-          success: {
-            style: {
-              background: "#10B981",
-              color: "white",
-            },
-            iconTheme: {
-              primary: "white",
-              secondary: "#10B981",
-            },
-          },
-          error: {
-            style: {
-              background: "#EF4444",
-              color: "white",
-            },
-            iconTheme: {
-              primary: "white",
-              secondary: "#EF4444",
-            },
-          },
-          loading: {
-            style: {
-              background: "#1E293B",
-              color: "white",
-            },
-          },
+        position="top-center"
+        toastOptions={toastConfig}
+        containerStyle={{
+          top: 20,
         }}
+        gutter={8}
       />
       <Paper
         sx={{
