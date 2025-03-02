@@ -24,7 +24,6 @@ import {
   Save as SaveIcon,
   Close as CloseIcon,
 } from "@mui/icons-material";
-import { supabase } from "../../config/supabase";
 import { skillsApi, skillCategoriesApi } from "../../api/SupabaseData";
 import { Toaster, toast } from "react-hot-toast";
 
@@ -191,12 +190,7 @@ const SkillForm = () => {
 
   const fetchCategories = async () => {
     try {
-      const { data, error } = await supabase
-        .from("skill_categories")
-        .select("*")
-        .order("title");
-
-      if (error) throw error;
+      const data = await skillCategoriesApi.fetch();
       setCategories(data || []);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -206,55 +200,36 @@ const SkillForm = () => {
 
   const fetchSkills = async () => {
     try {
-      const { data, error } = await supabase
-        .from("skills")
-        .select(
-          `
-          id,
-          name,
-          image,
-          category_id,
-          skill_categories (
-            id,
-            title
-          )
-        `
-        )
-        .order("name");
-
-      if (error) throw error;
-
-      const processedSkills =
-        data?.map((skill) => ({
-          ...skill,
-          categoryTitle: skill.skill_categories?.title,
-        })) || [];
-
-      setSkills(processedSkills);
+      const data = await skillsApi.fetchWithCategories();
+      setSkills(data || []);
     } catch (error) {
       console.error("Error fetching skills:", error);
       toast.error("Error fetching skills: " + error.message);
     }
   };
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     const loadingToast = toast.loading("Saving skill...");
+
     try {
       if (!currentSkill.name || !currentSkill.category_id) {
-        toast.error("Please fill in required fields (Name and Category)");
+        toast.error("Please fill in all required fields");
         return;
       }
 
       const skillData = {
         name: currentSkill.name.trim(),
         category_id: currentSkill.category_id,
-        image: currentSkill.image?.trim() || null,
-        id: editMode ? currentSkill.id : undefined,
+        image: currentSkill.image || null,
       };
 
-      const { error } = await supabase.from("skills").upsert(skillData);
-
-      if (error) throw error;
+      if (editMode) {
+        skillData.id = currentSkill.id;
+        await skillsApi.update(skillData);
+      } else {
+        await skillsApi.create(skillData);
+      }
 
       await fetchSkills();
       handleClose();
@@ -264,7 +239,6 @@ const SkillForm = () => {
       );
     } catch (error) {
       toast.dismiss(loadingToast);
-      console.error("Error saving skill:", error);
       toast.error("Error saving skill: " + error.message);
     }
   };
@@ -283,13 +257,7 @@ const SkillForm = () => {
   const handleConfirmDelete = async () => {
     const loadingToast = toast.loading("Deleting skill...");
     try {
-      const { error } = await supabase
-        .from("skills")
-        .delete()
-        .eq("id", itemToDelete.id);
-
-      if (error) throw error;
-
+      await skillsApi.delete(itemToDelete.id);
       await fetchSkills();
       toast.dismiss(loadingToast);
       toast.success("Skill deleted successfully");
@@ -319,12 +287,16 @@ const SkillForm = () => {
         return;
       }
 
-      const { error } = await supabase.from("skill_categories").upsert({
-        id: editingCategory ? currentCategory.id : undefined,
-        title: currentCategory.title.trim(),
-      });
-
-      if (error) throw error;
+      if (editingCategory) {
+        await skillCategoriesApi.update({
+          id: currentCategory.id,
+          title: currentCategory.title.trim(),
+        });
+      } else {
+        await skillCategoriesApi.create({
+          title: currentCategory.title.trim(),
+        });
+      }
 
       await fetchCategories();
       handleCategoryClose();
@@ -352,19 +324,11 @@ const SkillForm = () => {
 
   const handleConfirmCategoryDelete = async () => {
     try {
-      const { error: updateError } = await supabase
-        .from("skills")
-        .update({ category_id: null })
-        .eq("category_id", categoryToDelete.id);
+      // First update skills to remove category
+      await skillsApi.updateCategoryNull(categoryToDelete.id);
 
-      if (updateError) throw updateError;
-
-      const { error: deleteError } = await supabase
-        .from("skill_categories")
-        .delete()
-        .eq("id", categoryToDelete.id);
-
-      if (deleteError) throw deleteError;
+      // Then delete the category
+      await skillCategoriesApi.delete(categoryToDelete.id);
 
       await fetchCategories();
       await fetchSkills();

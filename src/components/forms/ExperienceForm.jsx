@@ -14,6 +14,7 @@ import {
   TextField,
   Chip,
   Stack,
+  Fab,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -23,18 +24,35 @@ import {
   Save as SaveIcon,
   Close as CloseIcon,
 } from "@mui/icons-material";
-import { supabase } from "../../config/supabase";
 import { experienceApi } from "../../api/SupabaseData";
 import { Toaster, toast } from "react-hot-toast";
 
 const styles = {
+  container: {
+    maxWidth: "100%",
+    margin: "0 auto",
+    p: { xs: 2, sm: 3 },
+    "@media (min-width: 1200px)": {
+      maxWidth: 1200,
+    },
+  },
+
+  paper: {
+    borderRadius: { xs: 2, sm: 4 },
+    overflow: "hidden",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)",
+  },
+
   gradientHeader: {
     background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
     color: "white",
-    p: 4,
+    p: { xs: 2.5, sm: 4 },
   },
 
   headerText: {
+    fontSize: { xs: "1.75rem", sm: "2rem", md: "2.25rem" },
+    lineHeight: { xs: 1.3, sm: 1.4 },
     background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
     backgroundClip: "text",
     WebkitBackgroundClip: "text",
@@ -44,35 +62,76 @@ const styles = {
   },
 
   card: {
-    p: 3,
-    borderRadius: 3,
+    p: { xs: 2, sm: 3 },
+    borderRadius: { xs: 2, sm: 3 },
     backgroundColor: "white",
     transition: "all 0.3s ease",
     border: "1px solid",
     borderColor: "grey.200",
     "&:hover": {
-      transform: "translateY(-4px)",
-      boxShadow: "0 12px 24px rgba(0,0,0,0.1)",
+      transform: { xs: "none", sm: "translateY(-4px)" },
+      boxShadow: {
+        xs: "0 4px 12px rgba(0,0,0,0.05)",
+        sm: "0 12px 24px rgba(0,0,0,0.1)",
+      },
     },
   },
 
-  dialogField: {
-    "& .MuiOutlinedInput-root": {
-      borderRadius: 2,
-      transition: "all 0.2s ease",
-      "&:hover": {
-        backgroundColor: "#F8FAFC",
-        "& .MuiOutlinedInput-notchedOutline": {
-          borderColor: "#94A3B8",
-        },
-      },
-      "&.Mui-focused": {
-        backgroundColor: "#F8FAFC",
-        "& .MuiOutlinedInput-notchedOutline": {
-          borderColor: "#0F172A",
-          borderWidth: 2,
-        },
-      },
+  companyLogo: {
+    width: { xs: "80px", sm: "100%" },
+    height: { xs: "80px", sm: "auto" },
+    margin: { xs: "0 auto", sm: 0 },
+    aspectRatio: "1",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    bgcolor: "#F8FAFC",
+    borderRadius: "50%",
+    overflow: "hidden",
+    border: "1px solid",
+    borderColor: "grey.200",
+    p: 1,
+    transition: "transform 0.3s ease",
+    "&:hover": {
+      transform: { xs: "scale(1.02)", sm: "scale(1.05)" },
+    },
+  },
+
+  contentWrapper: {
+    flexDirection: { xs: "column", sm: "row" },
+    alignItems: { xs: "center", sm: "flex-start" },
+    textAlign: { xs: "center", sm: "left" },
+    gap: { xs: 2, sm: 3 },
+  },
+
+  actionButtons: {
+    justifyContent: { xs: "center", sm: "flex-end" },
+    mt: { xs: 2, sm: 0 },
+  },
+
+  fabButton: {
+    position: "fixed",
+    bottom: 20,
+    right: 20,
+    display: { xs: "flex", sm: "none" },
+    background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+    "&:hover": {
+      background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
+    },
+  },
+};
+
+const dialogStyles = {
+  paper: {
+    width: { xs: "95%", sm: "100%" },
+    maxWidth: { xs: "100%", sm: 800 },
+    m: { xs: 2, sm: 4 },
+    borderRadius: { xs: 2, sm: 3 },
+  },
+  content: {
+    p: { xs: 2.5, sm: 3 },
+    "& .MuiTextField-root": {
+      mb: { xs: 2, sm: 2.5 },
     },
   },
 };
@@ -101,9 +160,7 @@ const ExperienceForm = () => {
 
   const fetchExperiences = async () => {
     try {
-      const { data, error } = await supabase.from("experiences").select("*");
-
-      if (error) throw error;
+      const data = await experienceApi.fetch();
       console.log("Fetched experience data:", data);
       setExperiences(data || []);
     } catch (error) {
@@ -120,12 +177,11 @@ const ExperienceForm = () => {
         return;
       }
 
-      const { error } = await supabase.from("experiences").upsert({
-        ...currentExperience,
-        id: editMode ? currentExperience.id : undefined,
-      });
-
-      if (error) throw error;
+      if (editMode) {
+        await experienceApi.update(currentExperience);
+      } else {
+        await experienceApi.create(currentExperience);
+      }
 
       await fetchExperiences();
       handleClose();
@@ -155,11 +211,7 @@ const ExperienceForm = () => {
   const handleConfirmDelete = async () => {
     const loadingToast = toast.loading("Deleting experience...");
     try {
-      const { error } = await supabase
-        .from("experiences")
-        .delete()
-        .eq("id", itemToDelete.id); // Access the id property from itemToDelete object
-      if (error) throw error;
+      await experienceApi.delete(itemToDelete.id);
       await fetchExperiences();
       toast.dismiss(loadingToast);
       toast.success("Experience deleted successfully");
@@ -188,15 +240,8 @@ const ExperienceForm = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 1200, margin: "0 auto", p: 3 }}>
-      <Paper
-        sx={{
-          borderRadius: 4,
-          overflow: "hidden",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-          background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)",
-        }}
-      >
+    <Box sx={styles.container}>
+      <Paper sx={styles.paper}>
         <Box sx={styles.gradientHeader}>
           <Box
             sx={{
@@ -244,32 +289,14 @@ const ExperienceForm = () => {
           </Box>
         </Box>
 
-        <Box sx={{ p: 4 }}>
-          <Grid container spacing={3}>
+        <Box sx={{ p: { xs: 2, sm: 4 } }}>
+          <Grid container spacing={{ xs: 2, sm: 3 }}>
             {experiences.map((experience) => (
               <Grid item xs={12} key={experience.id}>
                 <Card sx={styles.card}>
-                  <Grid container spacing={3} alignItems="flex-start">
+                  <Grid container sx={styles.contentWrapper}>
                     <Grid item xs={12} sm={2}>
-                      <Box
-                        sx={{
-                          width: "100%",
-                          aspectRatio: "1",
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          bgcolor: "#F8FAFC",
-                          borderRadius: "50%",
-                          overflow: "hidden",
-                          border: "1px solid",
-                          borderColor: "grey.200",
-                          p: 1,
-                          transition: "transform 0.3s ease",
-                          "&:hover": {
-                            transform: "scale(1.05)",
-                          },
-                        }}
-                      >
+                      <Box sx={styles.companyLogo}>
                         {experience.img ? (
                           <Box
                             component="img"
@@ -294,86 +321,83 @@ const ExperienceForm = () => {
                     </Grid>
 
                     <Grid item xs={12} sm={8}>
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          color: "#1E293B",
-                          fontWeight: 600,
-                          mb: 1,
-                        }}
-                      >
-                        {experience.role}
-                      </Typography>
-                      <Typography
-                        variant="subtitle1"
-                        sx={{
-                          color: "#475569",
-                          fontWeight: 500,
-                          mb: 0.5,
-                        }}
-                      >
-                        {experience.company}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: "#64748B",
-                          mb: 2,
-                        }}
-                      >
-                        {experience.date}
-                      </Typography>
-                      {[
-                        experience.description,
-                        experience.description2,
-                        experience.description3,
-                      ]
-                        .filter(Boolean)
-                        .map((desc, index) => (
-                          <Typography
-                            key={index}
-                            variant="body2"
-                            sx={{
-                              color: "#64748B",
-                              mb: 1,
-                              lineHeight: 1.6,
-                            }}
-                          >
-                            {desc}
-                          </Typography>
-                        ))}
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        flexWrap="wrap"
-                        sx={{ gap: 1, mt: 2 }}
-                      >
-                        {experience.skills.map((skill, index) => (
-                          <Chip
-                            key={index}
-                            label={skill}
-                            size="small"
-                            sx={{
-                              backgroundColor: "#F1F5F9",
-                              color: "#475569",
-                              fontWeight: 500,
-                              "&:hover": {
-                                backgroundColor: "#E2E8F0",
-                              },
-                            }}
-                          />
-                        ))}
-                      </Stack>
+                      <Box sx={{ width: "100%" }}>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontSize: { xs: "1.125rem", sm: "1.25rem" },
+                            color: "#1E293B",
+                            fontWeight: 600,
+                            mb: 1,
+                          }}
+                        >
+                          {experience.role}
+                        </Typography>
+                        <Typography
+                          variant="subtitle1"
+                          sx={{
+                            color: "#475569",
+                            fontWeight: 500,
+                            mb: 0.5,
+                          }}
+                        >
+                          {experience.company}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: "#64748B",
+                            mb: 2,
+                          }}
+                        >
+                          {experience.date}
+                        </Typography>
+                        {[
+                          experience.description,
+                          experience.description2,
+                          experience.description3,
+                        ]
+                          .filter(Boolean)
+                          .map((desc, index) => (
+                            <Typography
+                              key={index}
+                              variant="body2"
+                              sx={{
+                                color: "#64748B",
+                                mb: 1,
+                                lineHeight: 1.6,
+                              }}
+                            >
+                              {desc}
+                            </Typography>
+                          ))}
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          flexWrap="wrap"
+                          sx={{ gap: 1, mt: 2 }}
+                        >
+                          {experience.skills.map((skill, index) => (
+                            <Chip
+                              key={index}
+                              label={skill}
+                              size="small"
+                              sx={{
+                                backgroundColor: "#F1F5F9",
+                                color: "#475569",
+                                fontWeight: 500,
+                                "&:hover": {
+                                  backgroundColor: "#E2E8F0",
+                                },
+                              }}
+                            />
+                          ))}
+                        </Stack>
+                      </Box>
                     </Grid>
 
                     <Grid item xs={12} sm={2}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "flex-end",
-                          gap: 1,
-                        }}
-                      >
+                      <Box sx={styles.actionButtons}>
                         <IconButton
                           onClick={() => handleEdit(experience)}
                           sx={{
@@ -416,11 +440,7 @@ const ExperienceForm = () => {
         maxWidth="md"
         fullWidth
         PaperProps={{
-          sx: {
-            borderRadius: 3,
-            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-            overflow: "hidden",
-          },
+          sx: dialogStyles.paper,
         }}
       >
         <DialogTitle
@@ -455,15 +475,7 @@ const ExperienceForm = () => {
           </Box>
         </DialogTitle>
 
-        <DialogContent
-          sx={{
-            p: 3,
-            pt: 4,
-            "&.MuiDialogContent-root": {
-              paddingTop: "24px !important",
-            },
-          }}
-        >
+        <DialogContent sx={dialogStyles.content}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <TextField
@@ -743,6 +755,18 @@ const ExperienceForm = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Fab
+        color="primary"
+        aria-label="add experience"
+        onClick={() => {
+          setEditMode(false);
+          setOpen(true);
+        }}
+        sx={styles.fabButton}
+      >
+        <AddIcon />
+      </Fab>
 
       <Toaster
         position="top-right"

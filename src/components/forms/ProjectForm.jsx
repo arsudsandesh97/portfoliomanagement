@@ -33,113 +33,96 @@ import {
   PersonAdd as PersonAddIcon,
   Business as BusinessIcon,
 } from "@mui/icons-material";
-import { supabase } from "../../config/supabase";
 import {
   projectsApi,
   projectMembersApi,
   projectAssociationsApi,
 } from "../../api/SupabaseData";
 import { Toaster, toast } from "react-hot-toast";
+import { supabase } from "../../config/supabase";
 
+// Add these responsive styles
 const styles = {
+  container: {
+    width: "100%",
+    p: { xs: 2, sm: 3 },
+    maxWidth: {
+      xs: "100%",
+      lg: 1200,
+    },
+    mx: "auto",
+  },
+
+  paper: {
+    borderRadius: { xs: 2, sm: 4 },
+    overflow: "hidden",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+  },
+
   gradientHeader: {
+    p: { xs: 2.5, sm: 4 },
     background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
     color: "white",
-    p: 4,
   },
 
   headerText: {
+    fontSize: { xs: "1.5rem", sm: "2rem", md: "2.25rem" },
+    lineHeight: { xs: 1.3, sm: 1.4 },
+    fontWeight: 700,
     background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
     backgroundClip: "text",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
-    fontWeight: 700,
-    letterSpacing: "-0.01em",
   },
 
   projectCard: {
-    p: 3,
-    borderRadius: 3,
-    backgroundColor: "white",
-    transition: "all 0.3s ease",
-    border: "1px solid",
-    borderColor: "grey.200",
-    "&:hover": {
-      transform: "translateY(-4px)",
-      boxShadow: "0 12px 24px rgba(0,0,0,0.1)",
+    p: { xs: 2, sm: 3 },
+    "& .MuiGrid-container": {
+      flexDirection: { xs: "column", sm: "row" },
     },
   },
 
   imageContainer: {
+    height: { xs: "200px", sm: "200px" },
     width: "100%",
-    height: "200px",
-    borderRadius: 2,
-    overflow: "hidden",
-    bgcolor: "#F8FAFC",
-    border: "1px solid",
-    borderColor: "grey.200",
-    transition: "transform 0.3s ease",
-    "&:hover": {
-      transform: "scale(1.02)",
+    mb: { xs: 2, sm: 0 },
+  },
+
+  contentSection: {
+    pl: { xs: 0, sm: 3 },
+  },
+
+  dialogContent: {
+    p: { xs: 2, sm: 3 },
+    "& .MuiGrid-container": {
+      "& .MuiGrid-item": {
+        width: { xs: "100%", sm: "auto" },
+      },
     },
   },
 
-  chip: {
-    backgroundColor: "#F1F5F9",
-    color: "#475569",
-    "&:hover": {
-      backgroundColor: "#E2E8F0",
-    },
+  buttonContainer: {
+    display: { xs: "none", sm: "block" },
   },
 
-  iconButton: {
-    color: "#1E293B",
-    transition: "all 0.2s ease",
+  fabButton: {
+    position: "fixed",
+    bottom: 20,
+    right: 20,
+    display: { xs: "flex", sm: "none" },
+    background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
     "&:hover": {
-      backgroundColor: "#F1F5F9",
-      transform: "translateY(-2px)",
+      background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
     },
   },
 
   dialogField: {
     "& .MuiOutlinedInput-root": {
-      borderRadius: 2,
-      transition: "all 0.2s ease",
-      "&:hover": {
-        backgroundColor: "#F8FAFC",
-        "& .MuiOutlinedInput-notchedOutline": {
-          borderColor: "#94A3B8",
-        },
-      },
-      "&.Mui-focused": {
-        backgroundColor: "#F8FAFC",
-        "& .MuiOutlinedInput-notchedOutline": {
-          borderColor: "#0F172A",
-          borderWidth: 2,
-        },
-      },
+      minHeight: { xs: "44px", sm: "48px" },
+      fontSize: { xs: "0.875rem", sm: "1rem" },
     },
-  },
-
-  memberCard: {
-    p: 2,
-    borderRadius: 2,
-    backgroundColor: "white",
-    transition: "all 0.3s ease",
-    border: "1px solid",
-    borderColor: "grey.200",
-    "&:hover": {
-      transform: "translateY(-2px)",
-      boxShadow: "0 8px 16px rgba(0,0,0,0.06)",
-    },
-  },
-
-  avatar: {
-    width: 40,
-    height: 40,
-    transition: "transform 0.3s ease",
-    "&:hover": {
-      transform: "scale(1.1)",
+    "& .MuiInputLabel-root": {
+      fontSize: { xs: "0.875rem", sm: "1rem" },
     },
   },
 };
@@ -202,34 +185,16 @@ const ProjectForm = () => {
   // Update the fetchProjects function
   const fetchProjects = async () => {
     try {
-      // First fetch all projects
-      const { data: projectsData, error: projectsError } = await supabase
-        .from("projects")
-        .select("*");
+      const projectsData = await projectsApi.fetch();
 
-      if (projectsError) throw projectsError;
-
-      // For each project, fetch its members and associations
+      // Fetch relations for each project
       const projectsWithRelations = await Promise.all(
         projectsData.map(async (project) => {
-          // Fetch members for this project
-          const { data: members, error: membersError } = await supabase
-            .from("members")
-            .select("*")
-            .eq("project_id", project.id);
+          const members = await projectMembersApi.fetchByProjectId(project.id);
+          const associations = await projectAssociationsApi.fetchByProjectId(
+            project.id
+          );
 
-          if (membersError) throw membersError;
-
-          // Fetch associations for this project
-          const { data: associations, error: associationsError } =
-            await supabase
-              .from("associations")
-              .select("*")
-              .eq("project_id", project.id);
-
-          if (associationsError) throw associationsError;
-
-          // Return project with its relations
           return {
             ...project,
             members: members || [],
@@ -246,13 +211,13 @@ const ProjectForm = () => {
     }
   };
 
+  // Replace the fetchCategories function
   const fetchCategories = async () => {
     try {
       const { data, error } = await supabase
         .from("projects")
         .select("category")
-        .not("category", "is", null)
-        .order("category");
+        .not("category", "is", null);
 
       if (error) throw error;
 
@@ -267,34 +232,11 @@ const ProjectForm = () => {
     }
   };
 
-  const fetchMembers = async (projectId) => {
-    try {
-      const { data, error } = await supabase
-        .from("members")
-        .select("*")
-        .eq("project_id", projectId);
-
-      if (error) throw error;
-      setMembers(data || []);
-    } catch (error) {
-      console.error("Error fetching members:", error);
-      toast.error("Error fetching members: " + error.message);
-    }
-  };
-
-  const fetchAssociations = async (projectId) => {
-    try {
-      const { data, error } = await supabase
-        .from("associations")
-        .select("*")
-        .eq("project_id", projectId);
-
-      if (error) throw error;
-      setAssociations(data || []);
-    } catch (error) {
-      console.error("Error fetching associations:", error);
-      toast.error("Error fetching associations: " + error.message);
-    }
+  // Add this function to handle category editing
+  const handleEditCategory = (category) => {
+    setNewCategory(category);
+    setEditingCategory(category);
+    setOpenCategoryDialog(true);
   };
 
   // Update the handleSubmit function to handle relations correctly
@@ -306,8 +248,7 @@ const ProjectForm = () => {
         return;
       }
 
-      // First save or update the project
-      const projectToSave = {
+      const projectData = {
         title: currentProject.title,
         description: currentProject.description,
         description2: currentProject.description2,
@@ -319,65 +260,37 @@ const ProjectForm = () => {
         dashboard: currentProject.dashboard,
       };
 
-      if (editMode) {
-        projectToSave.id = currentProject.id;
-      }
-
-      // Save project
-      const { data: savedProject, error: projectError } = await supabase
-        .from("projects")
-        .upsert(projectToSave)
-        .select()
-        .single();
-
-      if (projectError) throw projectError;
+      // Save or update project
+      const savedProject = editMode
+        ? await projectsApi.update({ ...projectData, id: currentProject.id })
+        : await projectsApi.create(projectData);
 
       // Handle members
       if (editMode) {
-        // Delete existing members
-        await supabase
-          .from("members")
-          .delete()
-          .eq("project_id", savedProject.id);
+        await projectMembersApi.deleteByProjectId(savedProject.id);
       }
 
       if (members.length > 0) {
-        const membersToSave = members.map((member) => ({
-          name: member.name,
-          img: member.img,
-          github: member.github,
-          linkedin: member.linkedin,
-          project_id: savedProject.id,
-        }));
-
-        const { error: membersError } = await supabase
-          .from("members")
-          .insert(membersToSave);
-
-        if (membersError) throw membersError;
+        await projectMembersApi.createMany(
+          members.map((member) => ({
+            ...member,
+            project_id: savedProject.id,
+          }))
+        );
       }
 
       // Handle associations
       if (editMode) {
-        // Delete existing associations
-        await supabase
-          .from("associations")
-          .delete()
-          .eq("project_id", savedProject.id);
+        await projectAssociationsApi.deleteByProjectId(savedProject.id);
       }
 
       if (associations.length > 0) {
-        const associationsToSave = associations.map((association) => ({
-          name: association.name,
-          img: association.img,
-          project_id: savedProject.id,
-        }));
-
-        const { error: associationsError } = await supabase
-          .from("associations")
-          .insert(associationsToSave);
-
-        if (associationsError) throw associationsError;
+        await projectAssociationsApi.createMany(
+          associations.map((association) => ({
+            ...association,
+            project_id: savedProject.id,
+          }))
+        );
       }
 
       await fetchProjects();
@@ -490,15 +403,12 @@ const ProjectForm = () => {
     }
   };
 
+  // Update the handleDeleteMember function
   const handleDeleteMember = async (memberId) => {
     try {
-      const { error } = await supabase
-        .from("members")
-        .delete()
-        .eq("id", memberId);
-
-      if (error) throw error;
-      await fetchMembers(currentProject.id);
+      await projectMembersApi.delete(memberId);
+      const updatedMembers = members.filter((member) => member.id !== memberId);
+      setMembers(updatedMembers);
       toast.success("Member deleted successfully");
     } catch (error) {
       toast.error("Error deleting member: " + error.message);
@@ -549,15 +459,14 @@ const ProjectForm = () => {
     }
   };
 
+  // Update the handleDeleteAssociation function
   const handleDeleteAssociation = async (associationId) => {
     try {
-      const { error } = await supabase
-        .from("associations")
-        .delete()
-        .eq("id", associationId);
-
-      if (error) throw error;
-      await fetchAssociations(currentProject.id);
+      await projectAssociationsApi.delete(associationId);
+      const updatedAssociations = associations.filter(
+        (assoc) => assoc.id !== associationId
+      );
+      setAssociations(updatedAssociations);
       toast.success("Association deleted successfully");
     } catch (error) {
       toast.error("Error deleting association: " + error.message);
@@ -565,6 +474,7 @@ const ProjectForm = () => {
   };
 
   // Add new functions for category management
+  // Replace the handleAddCategory function
   const handleAddCategory = async () => {
     try {
       if (!newCategory.trim()) {
@@ -589,6 +499,12 @@ const ProjectForm = () => {
         toast.success("Category updated successfully");
       } else {
         // Add new category
+        const { error } = await supabase
+          .from("projects")
+          .insert([{ category: newCategory.trim() }]);
+
+        if (error) throw error;
+
         setCategories([...categories, newCategory.trim()]);
         toast.success("Category added successfully");
       }
@@ -601,33 +517,21 @@ const ProjectForm = () => {
     }
   };
 
-  const handleEditCategory = (category) => {
-    setNewCategory(category);
-    setEditingCategory(category);
-    setOpenCategoryDialog(true);
-  };
-
+  // Replace the handleDeleteCategory function
   const handleDeleteCategory = async (categoryToDelete) => {
     try {
+      const { error } = await supabase
+        .from("projects")
+        .update({ category: null })
+        .eq("category", categoryToDelete);
+
+      if (error) throw error;
+
       // Remove category from the list
       const updatedCategories = categories.filter(
         (cat) => cat !== categoryToDelete
       );
       setCategories(updatedCategories);
-
-      // Update any projects using this category to have no category
-      const { data: projectsToUpdate } = await supabase
-        .from("projects")
-        .select("id")
-        .eq("category", categoryToDelete);
-
-      if (projectsToUpdate?.length > 0) {
-        await supabase
-          .from("projects")
-          .update({ category: null })
-          .eq("category", categoryToDelete);
-      }
-
       toast.success("Category deleted successfully");
     } catch (error) {
       console.error("Error deleting category:", error);
@@ -638,22 +542,10 @@ const ProjectForm = () => {
   const handleConfirmDelete = async () => {
     const loadingToast = toast.loading("Deleting project...");
     try {
-      // First delete all associated members
-      await supabase.from("members").delete().eq("project_id", itemToDelete.id);
-
-      // Then delete all associated associations
-      await supabase
-        .from("associations")
-        .delete()
-        .eq("project_id", itemToDelete.id);
-
-      // Finally delete the project
-      const { error } = await supabase
-        .from("projects")
-        .delete()
-        .eq("id", itemToDelete.id);
-
-      if (error) throw error;
+      // Delete all related records using the APIs
+      await projectMembersApi.deleteByProjectId(itemToDelete.id);
+      await projectAssociationsApi.deleteByProjectId(itemToDelete.id);
+      await projectsApi.delete(itemToDelete.id);
 
       await fetchProjects();
       toast.dismiss(loadingToast);
@@ -1096,6 +988,67 @@ const ProjectForm = () => {
                 }
                 sx={styles.dialogField}
               />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Image URL"
+                value={currentProject.image || ""}
+                onChange={(e) =>
+                  setCurrentProject({
+                    ...currentProject,
+                    image: e.target.value,
+                  })
+                }
+                sx={styles.dialogField}
+                helperText="Enter the URL of the project image"
+              />
+              {currentProject.image && (
+                <Box
+                  sx={{
+                    mt: 2,
+                    borderRadius: 1,
+                    overflow: "hidden",
+                    border: "1px solid",
+                    borderColor: "grey.200",
+                    position: "relative",
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={currentProject.image}
+                    alt="Project preview"
+                    sx={{
+                      width: "100%",
+                      height: "200px",
+                      objectFit: "cover",
+                    }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src =
+                        "https://via.placeholder.com/400x200?text=Invalid+Image+URL";
+                    }}
+                  />
+                  <IconButton
+                    size="small"
+                    onClick={() =>
+                      setCurrentProject({ ...currentProject, image: "" })
+                    }
+                    sx={{
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      backgroundColor: "rgba(0, 0, 0, 0.5)",
+                      color: "white",
+                      "&:hover": {
+                        backgroundColor: "rgba(0, 0, 0, 0.7)",
+                      },
+                    }}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              )}
             </Grid>
             <Grid item xs={12}>
               <Box sx={{ mb: 2 }}>

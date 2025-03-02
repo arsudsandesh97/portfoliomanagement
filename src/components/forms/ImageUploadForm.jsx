@@ -14,7 +14,6 @@ import {
   TableHead,
   TableRow,
   Tooltip,
-  TablePagination,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -28,10 +27,13 @@ import {
   CloudUpload,
   ContentCopy,
   Close,
-  Delete,
   Home as HomeIcon,
   Folder as FolderIcon,
   Close as CloseIcon,
+  ContentCopy as ContentCopyIcon,
+  Delete as DeleteIcon,
+  Info as InfoIcon,
+  Refresh as RefreshIcon,
 } from "@mui/icons-material";
 import { storage as configuredStorage } from "../../config/firebase";
 import {
@@ -44,37 +46,49 @@ import {
 } from "firebase/storage";
 import { v4 as uuidv4 } from "uuid";
 import { Toaster, toast } from "react-hot-toast";
-import { supabase } from "../../config/supabase";
-import LinkIcon from "@mui/icons-material/Link";
-import RefreshIcon from "@mui/icons-material/Refresh";
-import {
-  ContentCopy as ContentCopyIcon,
-  Delete as DeleteIcon,
-  Info as InfoIcon,
-} from "@mui/icons-material";
 
-// Update the styles object
+// Update the styles object with modern design elements
 const styles = {
+  // Enhanced gradient header with more depth
   gradientHeader: {
     background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
     color: "white",
     p: 4,
+    position: "relative",
+    "&::after": {
+      content: '""',
+      position: "absolute",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: "1px",
+      background:
+        "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+    },
   },
-  headerText: {
-    background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
-    backgroundClip: "text",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    fontWeight: 700,
-    letterSpacing: "-0.01em",
+
+  // Modern paper styles with subtle shadows and hover effects
+  paper: {
+    borderRadius: "16px",
+    overflow: "hidden",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+    transition: "all 0.3s ease",
+    border: "1px solid rgba(241, 245, 249, 0.2)",
+    backdropFilter: "blur(20px)",
+    "&:hover": {
+      transform: "translateY(-4px)",
+      boxShadow: "0 12px 30px rgba(0,0,0,0.08)",
+    },
   },
+
+  // Enhanced upload button with modern gradient
   uploadButton: {
     background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
     color: "#0F172A",
     fontWeight: 600,
-    px: 3,
-    py: 1,
-    borderRadius: 2,
+    px: 4,
+    py: 1.5,
+    borderRadius: "12px",
     textTransform: "none",
     boxShadow: "0 4px 12px rgba(255,255,255,0.15)",
     "&:hover": {
@@ -82,186 +96,56 @@ const styles = {
       transform: "translateY(-2px)",
       boxShadow: "0 6px 16px rgba(255,255,255,0.2)",
     },
-    transition: "all 0.2s ease-in-out",
   },
-  previewBox: {
-    mt: 3,
-    p: 3,
-    borderRadius: 2,
-    border: "1px solid",
-    borderColor: "grey.200",
-    backgroundColor: "#F8FAFC",
-    transition: "all 0.3s ease",
-    "&:hover": {
-      transform: "translateY(-4px)",
-      boxShadow: "0 12px 24px rgba(0,0,0,0.1)",
-    },
-  },
-  urlField: {
-    "& .MuiOutlinedInput-root": {
-      borderRadius: 2,
-      transition: "all 0.2s ease",
-      "&:hover": {
-        backgroundColor: "#F8FAFC",
-        "& .MuiOutlinedInput-notchedOutline": {
-          borderColor: "#94A3B8",
-        },
-      },
-      "&.Mui-focused": {
-        backgroundColor: "#F8FAFC",
-        "& .MuiOutlinedInput-notchedOutline": {
-          borderColor: "#0F172A",
-          borderWidth: 2,
-        },
-      },
-    },
-  },
-  nameField: {
-    mt: 2,
-    "& .MuiOutlinedInput-root": {
-      borderRadius: 2,
-      transition: "all 0.2s ease",
-      "&:hover": {
-        backgroundColor: "#F8FAFC",
-        "& .MuiOutlinedInput-notchedOutline": {
-          borderColor: "#94A3B8",
-        },
-      },
-      "&.Mui-focused": {
-        backgroundColor: "#F8FAFC",
-        "& .MuiOutlinedInput-notchedOutline": {
-          borderColor: "#0F172A",
-          borderWidth: 2,
-        },
-      },
-    },
-  },
-  previewContainer: {
-    position: "relative",
-    width: "100%",
-    minHeight: 200,
-    backgroundColor: "#F8FAFC",
-    borderRadius: 2,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-    mb: 3,
-  },
-  previewImage: {
-    maxWidth: "100%",
-    maxHeight: "400px",
-    objectFit: "contain",
-    borderRadius: 2,
-    transition: "transform 0.3s ease",
-    "&:hover": {
-      transform: "scale(1.02)",
-    },
-  },
-  closeButton: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    bgcolor: "rgba(15, 23, 42, 0.7)",
-    color: "white",
-    backdropFilter: "blur(4px)",
-    "&:hover": {
-      bgcolor: "rgba(15, 23, 42, 0.9)",
-      transform: "scale(1.1)",
-    },
-    transition: "all 0.2s ease-in-out",
-  },
-  imageDimensions: {
-    position: "absolute",
-    bottom: 8,
-    left: 8,
-    bgcolor: "rgba(15, 23, 42, 0.7)",
-    color: "white",
-    padding: "4px 8px",
-    borderRadius: 1,
-    fontSize: "0.75rem",
-    backdropFilter: "blur(4px)",
-  },
+
+  // Modern table design
   tableContainer: {
     mt: 4,
-    borderRadius: 2,
-    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-    overflow: "auto",
-    maxWidth: "100vw",
+    borderRadius: "16px",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+    overflow: "hidden",
+    border: "1px solid rgba(241, 245, 249, 0.2)",
+    backdropFilter: "blur(20px)",
     "& .MuiTable-root": {
       minWidth: 1400,
     },
+    "& .MuiTableRow-root": {
+      transition: "background-color 0.2s ease",
+      "&:hover": {
+        backgroundColor: "#F8FAFC",
+      },
+    },
   },
-  tableHeader: {
+
+  // Modern dialog design
+  dialogPaper: {
+    borderRadius: "16px",
+    boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
+    overflow: "hidden",
+    backdropFilter: "blur(20px)",
+  },
+
+  // Enhanced upload area
+  uploadArea: {
+    position: "relative",
+    width: "100%",
+    minHeight: 300,
     backgroundColor: "#F8FAFC",
-  },
-  tableHeaderCell: {
-    color: "#1E293B",
-    fontWeight: 600,
-    fontSize: "0.875rem",
-  },
-  imagePreviewCell: {
-    width: 100,
-    p: 1,
-    minWidth: 100, // Added minimum width
-  },
-  imageThumb: {
-    width: 80,
-    height: 80,
-    objectFit: "cover",
-    borderRadius: 1,
-    transition: "transform 0.2s ease",
-    "&:hover": {
-      transform: "scale(1.05)",
-    },
-  },
-  urlCell: {
-    maxWidth: 200, // Reduced from 300
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-  },
-  folderCell: {
-    maxWidth: 150,
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-  },
-  typeCell: {
-    maxWidth: 120,
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-  },
-  sizeCell: {
-    width: 100,
-    minWidth: 100,
-  },
-  dateCell: {
-    width: 120,
-    minWidth: 120,
-  },
-  actionsCell: {
-    width: 120,
-    minWidth: 120,
-  },
-  actionButton: {
-    transition: "all 0.2s ease",
-    "&:hover": {
-      transform: "translateY(-2px)",
-    },
-  },
-  dimensionHelper: {
+    borderRadius: "16px",
+    border: "2px dashed #CBD5E1",
     display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
     alignItems: "center",
-    gap: 1,
-    mt: 2,
-    color: "#64748B",
-    fontSize: "0.875rem",
-    padding: "8px 12px",
-    backgroundColor: "#F1F5F9",
-    borderRadius: 1,
-    border: "1px solid #E2E8F0",
+    padding: "2rem",
+    transition: "all 0.3s ease",
+    cursor: "pointer",
+    "&:hover": {
+      borderColor: "#94A3B8",
+      backgroundColor: "#F1F5F9",
+      transform: "translateY(-2px)",
+      boxShadow: "0 12px 24px rgba(0,0,0,0.05)",
+    },
   },
 };
 
@@ -350,15 +234,13 @@ const ImageUploadForm = () => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [downloadUrl, setDownloadUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [shortUrl, setShortUrl] = useState("");
-  const [shorteningLoading, setShorteningLoading] = useState(false);
   const [imageName, setImageName] = useState("");
   const [dimensions, setDimensions] = useState(null);
   const [uploadedImages, setUploadedImages] = useState([]);
   const [openFileDialog, setOpenFileDialog] = useState(false);
   const [selectedFolder, setSelectedFolder] = useState("root");
-  const [folders, setFolders] = useState(["root"]); // Remove hardcoded folders
-  const [foldersLoading, setFoldersLoading] = useState(true);
+  const [folders, setFolders] = useState(["root"]);
+  const [foldersLoading] = useState(true); // Remove setter if not used
 
   const getImageDimensions = (url) => {
     return new Promise((resolve) => {
@@ -492,44 +374,6 @@ const ImageUploadForm = () => {
     setOpenFileDialog(false);
   };
 
-  const handleUploadFile = (event) => {
-    event.preventDefault();
-    handleUpload();
-    handleCloseFileDialog();
-  };
-
-  // const handleShortenUrl = async () => {
-  //   if (!downloadUrl) {
-  //     toast.error("Please upload an image first");
-  //     return;
-  //   }
-
-  //   try {
-  //     setShorteningLoading(true);
-  //     const shortCode = Math.random().toString(36).substr(2, 6);
-
-  //     const { error } = await supabase.from("short_urls").insert([
-  //       {
-  //         long_url: downloadUrl,
-  //         short_code: shortCode,
-  //         created_at: new Date().toISOString(),
-  //       },
-  //     ]);
-
-  //     if (error) throw error;
-
-  //     // Generate consistent short URLs
-  //     const shortUrl = `${window.location.origin}/portfoliomanagement/r/${shortCode}`;
-  //     setShortUrl(shortUrl);
-  //     toast.success("URL shortened successfully!");
-  //   } catch (error) {
-  //     console.error("Shortening error:", error);
-  //     toast.error(`Failed to shorten URL: ${error.message}`);
-  //   } finally {
-  //     setShorteningLoading(false);
-  //   }
-  // };
-
   // Add this function after the existing state declarations
   const fetchBucketFolders = async () => {
     const loadingToast = toast.loading("Fetching folders...");
@@ -629,13 +473,7 @@ const ImageUploadForm = () => {
           },
         }}
       />
-      <Paper
-        sx={{
-          borderRadius: 4,
-          overflow: "hidden",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-        }}
-      >
+      <Paper sx={styles.paper}>
         <Box sx={styles.gradientHeader}>
           <Box
             sx={{
@@ -767,41 +605,6 @@ const ImageUploadForm = () => {
                   <ContentCopy />
                 </IconButton>
               </Box>
-
-              {shortUrl && (
-                <Box sx={{ mt: 3 }}>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{ mb: 1, color: "#1E293B", fontWeight: 600 }}
-                  >
-                    Shortened URL
-                  </Typography>
-                  <Box sx={{ display: "flex", gap: 1 }}>
-                    <TextField
-                      fullWidth
-                      value={shortUrl}
-                      InputProps={{ readOnly: true }}
-                      sx={styles.urlField}
-                    />
-                    <IconButton
-                      onClick={() => {
-                        navigator.clipboard.writeText(shortUrl);
-                        toast.success("Short URL copied to clipboard!");
-                      }}
-                      sx={{
-                        color: "#1E293B",
-                        "&:hover": {
-                          backgroundColor: "#F1F5F9",
-                          transform: "translateY(-2px)",
-                        },
-                        transition: "all 0.2s ease",
-                      }}
-                    >
-                      <ContentCopy />
-                    </IconButton>
-                  </Box>
-                </Box>
-              )}
             </Box>
           )}
         </Box>
@@ -885,11 +688,7 @@ const ImageUploadForm = () => {
         maxWidth="sm"
         fullWidth
         PaperProps={{
-          sx: {
-            borderRadius: 3,
-            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-            overflow: "hidden",
-          },
+          sx: styles.dialogPaper,
         }}
       >
         <DialogTitle

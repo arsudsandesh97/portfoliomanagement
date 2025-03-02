@@ -8,7 +8,6 @@ import {
   TextField,
   InputAdornment,
   IconButton,
-  Divider,
 } from "@mui/material";
 import {
   Login as LoginIcon,

@@ -12,12 +12,7 @@ import {
   TablePagination,
   IconButton,
   Tooltip,
-  CircularProgress,
-  LinearProgress,
-  Chip,
-  Divider,
   Breadcrumbs,
-  Link,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -28,21 +23,20 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  OutlinedInput,
-  InputAdornment,
 } from "@mui/material";
+
+// Add all required icons
 import {
   ContentCopy as ContentCopyIcon,
   Delete as DeleteIcon,
   Folder as FolderIcon,
-  FilterList as FilterListIcon,
   Add as AddIcon,
   Edit as EditIcon,
   Home as HomeIcon,
+  Close as CloseIcon,
   FileCopy as FileCopyIcon,
   Storage as StorageIcon,
-  CloudQueue as CloudIcon,
-  Close as CloseIcon,
+  Cloud as CloudIcon,
 } from "@mui/icons-material";
 import { storage as configuredStorage } from "../../config/firebase";
 import {
@@ -54,6 +48,39 @@ import {
   uploadBytes,
 } from "firebase/storage";
 import { Toaster, toast } from "react-hot-toast";
+
+// Add these imports at the top
+import { styled } from "@mui/material/styles";
+import { motion } from "framer-motion";
+
+// Create styled components
+const StyledDialog = styled(Dialog)`
+  .MuiDialog-paper {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(241, 245, 249, 0.2);
+    border-radius: 24px;
+    box-shadow: rgb(0 0 0 / 8%) 0px 20px 40px, rgb(0 0 0 / 6%) 0px 1px 3px;
+    overflow: hidden;
+  }
+`;
+
+const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
+  background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+  color: "white",
+  padding: "24px",
+  position: "relative",
+  "&::after": {
+    content: '""',
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: "1px",
+    background:
+      "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+  },
+}));
 
 // Copy the styles object from ImageUploadForm
 const styles = {
@@ -232,24 +259,14 @@ const styles = {
     },
   },
   deleteButton: {
-    color: "#EF4444",
+    background: "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)",
+    color: "white",
+    px: 3,
+    py: 1,
+    borderRadius: 2,
+    textTransform: "none",
     "&:hover": {
-      backgroundColor: "#FEE2E2",
-    },
-  },
-
-  // Input styles
-  input: {
-    width: "100%",
-    padding: "10px 14px",
-    border: "1px solid #E2E8F0",
-    borderRadius: "8px",
-    fontSize: "16px",
-    outline: "none",
-    transition: "all 0.2s ease",
-    "&:focus": {
-      borderColor: "#0F172A",
-      boxShadow: "0 0 0 2px rgba(15, 23, 42, 0.1)",
+      background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
     },
   },
 
@@ -279,16 +296,61 @@ const styles = {
       backgroundColor: "#F1F5F9",
     },
   },
+
+  // Update the styles object
+  dialogHeader: {
+    background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+    color: "white",
+    px: 3,
+    py: 2.5,
+    position: "relative",
+    "&::after": {
+      content: '""',
+      position: "absolute",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: "1px",
+      background:
+        "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+    },
+  },
+
+  dialogContent: {
+    p: 4,
+    background:
+      "linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)",
+  },
+
   deleteButton: {
     background: "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)",
     color: "white",
     px: 3,
-    py: 1,
-    borderRadius: 2,
+    py: 1.5,
+    borderRadius: "12px",
     textTransform: "none",
+    fontWeight: 600,
+    boxShadow: "0 4px 12px rgba(239,68,68,0.2)",
     "&:hover": {
       background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 16px rgba(239,68,68,0.3)",
     },
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+  },
+
+  cancelButton: {
+    borderColor: "#E2E8F0",
+    color: "#64748B",
+    borderRadius: "12px",
+    textTransform: "none",
+    fontWeight: 500,
+    "&:hover": {
+      borderColor: "#CBD5E1",
+      backgroundColor: "#F1F5F9",
+      transform: "translateY(-2px)",
+    },
+    transition: "all 0.2s ease-in-out",
   },
 };
 
@@ -326,20 +388,6 @@ const dialogStyles = {
       backgroundColor: "#F1F5F9",
     },
   },
-  folderIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: "8px",
-    backgroundColor: "#F1F5F9",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    mb: 2,
-    "& svg": {
-      fontSize: 28,
-      color: "#64748B",
-    },
-  },
 };
 
 const StorageForm = () => {
@@ -347,8 +395,6 @@ const StorageForm = () => {
   const [bucketImages, setBucketImages] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [loading, setLoading] = useState(true);
-  const [totalSize, setTotalSize] = useState(0);
   const [folders, setFolders] = useState([]);
   const [currentFolder, setCurrentFolder] = useState("root");
   const [breadcrumbs, setBreadcrumbs] = useState(["root"]);
@@ -365,7 +411,6 @@ const StorageForm = () => {
   // Copy the necessary functions from ImageUploadForm
   const fetchBucketImages = async () => {
     try {
-      setLoading(true);
       const storageRef = ref(configuredStorage);
       const result = await listAll(storageRef);
       const allItems = [];
@@ -410,10 +455,6 @@ const StorageForm = () => {
         (a, b) => new Date(b.uploadTime) - new Date(a.uploadTime)
       );
 
-      // Calculate total size and unique folders
-      const totalBytes = validImages.reduce((sum, img) => sum + img.size, 0);
-      setTotalSize(totalBytes);
-
       const uniqueFolders = [...new Set(validImages.map((img) => img.folder))];
       setFolders(uniqueFolders);
 
@@ -421,8 +462,6 @@ const StorageForm = () => {
     } catch (error) {
       console.error("Error fetching bucket images:", error);
       toast.error(`Failed to fetch images: ${error.message}`);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -533,27 +572,55 @@ const StorageForm = () => {
 
     const loadingToast = toast.loading("Renaming file...");
     try {
+      // Create references for old and new paths
       const oldRef = ref(configuredStorage, fileToRename.path);
-      const newPath = fileToRename.path.replace(fileToRename.name, newFileName);
+      const fileExtension = fileToRename.name.split(".").pop();
+      const newName = `${newFileName.trim()}.${fileExtension}`;
+      const newPath = fileToRename.path.replace(fileToRename.name, newName);
       const newRef = ref(configuredStorage, newPath);
 
-      const response = await fetch(fileToRename.url);
-      const blob = await response.blob();
+      // Get file metadata
+      const metadata = await getMetadata(oldRef);
 
-      await uploadBytes(newRef, blob, {
-        contentType: fileToRename.contentType,
-        customMetadata: {
-          ...fileToRename.customMetadata,
-          customName: newFileName,
-        },
-      });
+      try {
+        // Download the file using fetch with CORS mode
+        const response = await fetch(fileToRename.url, {
+          mode: "cors",
+          headers: {
+            Origin: window.location.origin,
+          },
+        });
 
-      await deleteObject(oldRef);
-      await fetchBucketImages();
-      toast.dismiss(loadingToast);
-      toast.success("File renamed successfully!");
-      handleCloseRenameDialog();
+        if (!response.ok) throw new Error("Failed to download file");
+
+        // Get the file content as blob
+        const blob = await response.blob();
+
+        // Upload with new name
+        await uploadBytes(newRef, blob, {
+          contentType: metadata.contentType,
+          customMetadata: {
+            ...metadata.customMetadata,
+            customName: newName,
+            originalName: fileToRename.name,
+          },
+        });
+
+        // Delete old file
+        await deleteObject(oldRef);
+
+        // Refresh the file list
+        await fetchBucketImages();
+
+        toast.dismiss(loadingToast);
+        toast.success("File renamed successfully!");
+        handleCloseRenameDialog();
+      } catch (downloadError) {
+        console.error("Error downloading file:", downloadError);
+        throw new Error("Failed to download file for renaming");
+      }
     } catch (error) {
+      console.error("Error renaming file:", error);
       toast.dismiss(loadingToast);
       toast.error(`Failed to rename file: ${error.message}`);
     }
@@ -1280,66 +1347,138 @@ const StorageForm = () => {
         </form>
       </Dialog>
 
-      <Dialog
+      <StyledDialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
         maxWidth="sm"
         fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-            overflow: "hidden",
-          },
-        }}
+        TransitionComponent={motion.div}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
       >
-        <DialogTitle sx={styles.dialogHeader}>
-          <Box sx={styles.dialogHeaderContent}>
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Delete File
-            </Typography>
+        <StyledDialogTitle>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <DeleteIcon sx={{ color: "#EF4444" }} />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Delete File
+              </Typography>
+            </Box>
             <IconButton
               onClick={() => setDeleteDialogOpen(false)}
-              sx={styles.dialogCloseButton}
+              sx={{
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                  transform: "rotate(90deg)",
+                },
+                transition: "all 0.3s ease",
+              }}
             >
               <CloseIcon />
             </IconButton>
           </Box>
-        </DialogTitle>
-        <DialogContent sx={{ p: 3, pt: 4 }}>
+        </StyledDialogTitle>
+
+        <DialogContent sx={styles.dialogContent}>
           {itemToDelete && (
-            <>
-              <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2.5,
+                  mb: 3,
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: "rgba(241, 245, 249, 0.5)",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
                 <Box
                   component="img"
                   src={itemToDelete.url}
                   alt={itemToDelete.name}
                   sx={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: 1,
+                    width: 80,
+                    height: 80,
+                    borderRadius: 2,
                     objectFit: "cover",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                   }}
                 />
-                <Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                <Box sx={{ flex: 1 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 600,
+                      color: "#1E293B",
+                      mb: 0.5,
+                    }}
+                  >
                     {itemToDelete.name}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" sx={{ color: "#64748B" }}>
                     {formatFileSize(itemToDelete.size)}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "#94A3B8",
+                      display: "block",
+                      mt: 1,
+                    }}
+                  >
+                    Uploaded on{" "}
+                    {new Date(itemToDelete.uploadTime).toLocaleDateString()}
                   </Typography>
                 </Box>
               </Box>
-              <Typography>
+
+              <Typography
+                variant="body1"
+                sx={{
+                  color: "#1E293B",
+                  mb: 2,
+                  fontWeight: 500,
+                }}
+              >
                 Are you sure you want to delete this file?
               </Typography>
-              <Typography variant="body2" sx={{ color: "#64748B", mt: 1 }}>
-                This action cannot be undone.
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "#64748B",
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: "rgba(239, 68, 68, 0.1)",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                }}
+              >
+                ⚠️ This action cannot be undone. The file will be permanently
+                removed from storage.
               </Typography>
-            </>
+            </motion.div>
           )}
         </DialogContent>
-        <DialogActions sx={{ p: 3, backgroundColor: "#F8FAFC" }}>
+
+        <DialogActions
+          sx={{
+            p: 3,
+            backgroundColor: "#F8FAFC",
+            borderTop: "1px solid rgba(226, 232, 240, 0.8)",
+          }}
+        >
           <Button
             onClick={() => setDeleteDialogOpen(false)}
             variant="outlined"
@@ -1352,10 +1491,10 @@ const StorageForm = () => {
             variant="contained"
             sx={styles.deleteButton}
           >
-            Delete
+            Delete File
           </Button>
         </DialogActions>
-      </Dialog>
+      </StyledDialog>
     </Box>
   );
 };
