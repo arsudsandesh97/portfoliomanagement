@@ -835,6 +835,27 @@ const BioForm = () => {
     handleCloseDeleteRole(); // Use this instead of direct setState
   };
 
+  // Add this new handler function
+  const handleAddRole = () => {
+    const newRole = roleInput.trim();
+    if (newRole && !bio.roles.includes(newRole)) {
+      setBio((prev) => ({
+        ...prev,
+        roles: [...prev.roles, newRole],
+      }));
+      setRoleInput("");
+      toast.success(`Added role: ${newRole}`, {
+        icon: "🎯",
+        duration: 2000,
+      });
+    } else if (bio.roles.includes(newRole)) {
+      toast.error("This role already exists", {
+        icon: "⚠️",
+        duration: 3000,
+      });
+    }
+  };
+
   useEffect(() => {
     return () => {
       enableBodyScroll(); // Cleanup on unmount
@@ -903,97 +924,79 @@ const BioForm = () => {
 
             {/* Roles */}
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Add Role"
-                value={roleInput}
-                onChange={handleRoleChange}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && roleInput.trim()) {
-                    e.preventDefault();
-                    const newRole = roleInput.trim();
-                    if (!bio.roles.includes(newRole)) {
-                      setBio((prev) => ({
-                        ...prev,
-                        roles: [...prev.roles, newRole],
-                      }));
-                      setRoleInput("");
-                      toast.success(`Added role: ${newRole}`, {
-                        icon: "🎯",
-                        duration: 2000,
-                      });
-                    } else {
-                      toast.error("This role already exists", {
-                        icon: "⚠️",
-                        duration: 3000,
-                      });
+              <Box sx={roleStyles.inputContainer}>
+                <TextField
+                  fullWidth
+                  label="Add Role"
+                  value={roleInput}
+                  onChange={handleRoleChange}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && roleInput.trim()) {
+                      e.preventDefault();
+                      handleAddRole();
                     }
-                  }
-                }}
-                placeholder="Type a role and press Enter"
-                helperText="Press Enter to add a role"
-                sx={textFieldStyles}
-                InputProps={{
-                  sx: {
-                    "&::placeholder": {
-                      color: "rgba(100, 116, 139, 0.8)",
-                    },
-                  },
-                }}
-              />
-              <AnimatePresence>
-                <Stack
-                  direction="row"
-                  flexWrap="wrap"
-                  sx={chipStyles}
-                  component={motion.div}
-                  layout
-                >
-                  {bio.roles.map((role, index) => (
-                    <motion.div
-                      key={role}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      transition={{
-                        duration: 0.2,
-                        ease: "easeInOut",
-                      }}
-                    >
-                      <Chip
-                        label={role}
-                        onDelete={() => handleOpenDeleteRole(role, index)}
-                        sx={{
-                          maxWidth: "180px",
-                          backgroundColor: `hsl(${
-                            (index * 75) % 360
-                          }, 85%, 97%)`,
-                          borderColor: `hsl(${(index * 75) % 360}, 85%, 90%)`,
-                          color: `hsl(${(index * 75) % 360}, 85%, 35%)`,
-                          "&:hover": {
+                  }}
+                  placeholder="Type a role and press Enter"
+                  helperText="Press Enter or use the Add button to add a role"
+                  sx={roleStyles.roleInput}
+                  InputProps={{
+                    endAdornment: (
+                      <Button
+                        variant="contained"
+                        onClick={handleAddRole}
+                        disabled={!roleInput.trim()}
+                        sx={roleStyles.addButton}
+                      >
+                        Add
+                      </Button>
+                    ),
+                  }}
+                />
+
+                <AnimatePresence>
+                  <Stack
+                    direction="row"
+                    flexWrap="wrap"
+                    sx={roleStyles.chipContainer}
+                    component={motion.div}
+                    layout
+                  >
+                    {bio.roles.map((role, index) => (
+                      <motion.div
+                        key={role}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                      >
+                        <Chip
+                          label={role}
+                          onDelete={() => handleOpenDeleteRole(role, index)}
+                          sx={{
+                            ...roleStyles.chip,
                             backgroundColor: `hsl(${
                               (index * 75) % 360
-                            }, 85%, 95%)`,
-                            borderColor: `hsl(${(index * 75) % 360}, 85%, 85%)`,
-                          },
-                          "& .MuiChip-label": {
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            fontWeight: 600,
-                          },
-                          "& .MuiChip-deleteIcon": {
+                            }, 85%, 97%)`,
                             color: `hsl(${(index * 75) % 360}, 85%, 35%)`,
+                            border: "1px solid",
+                            borderColor: `hsl(${(index * 75) % 360}, 85%, 90%)`,
                             "&:hover": {
-                              color: `hsl(${(index * 75) % 360}, 85%, 25%)`,
+                              backgroundColor: `hsl(${
+                                (index * 75) % 360
+                              }, 85%, 95%)`,
+                              borderColor: `hsl(${
+                                (index * 75) % 360
+                              }, 85%, 85%)`,
+                              transform: "translateY(-2px)",
                             },
-                          },
-                        }}
-                      />
-                    </motion.div>
-                  ))}
-                </Stack>
-              </AnimatePresence>
+                            transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                          }}
+                        />
+                      </motion.div>
+                    ))}
+                  </Stack>
+                </AnimatePresence>
+              </Box>
             </Grid>
 
             {/* Description */}
@@ -1635,6 +1638,135 @@ const styles = {
       boxShadow: "0 6px 16px rgba(239,68,68,0.3)",
     },
     transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+  },
+};
+
+// Update the role input and chips section
+const mobileStyles = {
+  roleInput: {
+    "& .MuiOutlinedInput-root": {
+      minHeight: { xs: "48px", sm: "56px" },
+      fontSize: { xs: "0.875rem", sm: "1rem" },
+      padding: { xs: "12px 14px", sm: "16px" },
+    },
+    "& .MuiInputLabel-root": {
+      fontSize: { xs: "0.875rem", sm: "1rem" },
+    },
+    "& .MuiFormHelperText-root": {
+      fontSize: { xs: "0.75rem", sm: "0.875rem" },
+      margin: { xs: "4px 0 0 0", sm: "8px 0 0 0" },
+    },
+  },
+  chipContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: { xs: 1, sm: 1.5 },
+    mt: 2,
+    justifyContent: { xs: "center", sm: "flex-start" },
+    px: { xs: 1, sm: 0 },
+  },
+  chip: {
+    height: { xs: 32, sm: 36 },
+    "& .MuiChip-label": {
+      px: { xs: 1, sm: 1.5 },
+      fontSize: { xs: "0.813rem", sm: "0.875rem" },
+    },
+    "& .MuiChip-deleteIcon": {
+      fontSize: { xs: "1.125rem", sm: "1.25rem" },
+      margin: { xs: "0 4px", sm: "0 5px" },
+    },
+  },
+};
+
+// Add these role input specific styles
+const roleStyles = {
+  inputContainer: {
+    position: "relative",
+    width: "100%",
+  },
+
+  roleInput: {
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "12px",
+      backgroundColor: "#F8FAFC",
+      minHeight: { xs: "48px", sm: "56px" },
+      fontSize: { xs: "0.875rem", sm: "1rem" },
+      transition: "all 0.2s ease-in-out",
+      "&:hover": {
+        backgroundColor: "#F1F5F9",
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: "#94A3B8",
+          borderWidth: "2px",
+        },
+      },
+    },
+    "& .MuiInputLabel-root": {
+      fontSize: { xs: "0.875rem", sm: "1rem" },
+      color: "#64748B",
+      "&.Mui-focused": {
+        color: "#0F172A",
+      },
+    },
+    "& .MuiFormHelperText-root": {
+      margin: { xs: "4px 0 0 0", sm: "8px 0 0 0" },
+      fontSize: { xs: "0.75rem", sm: "0.813rem" },
+      color: "#94A3B8",
+    },
+  },
+
+  addButton: {
+    minWidth: "unset",
+    height: "36px",
+    px: { xs: 2, sm: 3 },
+    ml: 1,
+    borderRadius: "10px",
+    background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
+    color: "white",
+    fontSize: { xs: "0.813rem", sm: "0.875rem" },
+    fontWeight: 600,
+    textTransform: "none",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+    "&:hover": {
+      background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 16px rgba(0,0,0,0.12)",
+    },
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+    "&.Mui-disabled": {
+      background: "#E2E8F0",
+      color: "#94A3B8",
+    },
+  },
+
+  chipContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: { xs: 1, sm: 1.5 },
+    mt: 2,
+    px: { xs: 1, sm: 0 },
+    justifyContent: { xs: "center", sm: "flex-start" },
+  },
+
+  chip: {
+    height: { xs: 32, sm: 36 },
+    borderRadius: "10px",
+    px: { xs: 1, sm: 1.5 },
+    "& .MuiChip-label": {
+      px: { xs: 1.5, sm: 2 },
+      fontSize: { xs: "0.813rem", sm: "0.875rem" },
+      fontWeight: 600,
+    },
+    "& .MuiChip-deleteIcon": {
+      fontSize: { xs: "1.125rem", sm: "1.25rem" },
+      margin: { xs: "0 4px", sm: "0 5px" },
+      color: "inherit",
+      opacity: 0.7,
+      transition: "all 0.2s ease",
+      "&:hover": {
+        opacity: 1,
+        transform: "scale(1.1)",
+      },
+    },
   },
 };
 

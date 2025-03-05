@@ -632,8 +632,10 @@ const EducationForm = () => {
           <Box
             sx={{
               display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
               justifyContent: "space-between",
-              alignItems: "flex-start",
+              alignItems: { xs: "stretch", sm: "flex-start" },
+              gap: { xs: 2, sm: 0 },
             }}
           >
             <Box>
@@ -660,11 +662,43 @@ const EducationForm = () => {
                 setOpen(true);
               }}
               sx={{
+                display: { xs: "none", sm: "flex" }, // Hide on mobile
                 background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
                 color: "#0F172A",
                 fontWeight: 600,
                 px: 3,
                 py: 1,
+                borderRadius: 2,
+                textTransform: "none",
+                boxShadow: "0 4px 12px rgba(255,255,255,0.15)",
+                "&:hover": {
+                  background:
+                    "linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%)",
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 6px 16px rgba(255,255,255,0.2)",
+                },
+                transition: "all 0.2s ease-in-out",
+              }}
+            >
+              Add Education
+            </Button>
+
+            {/* Mobile Add Button */}
+            <Button
+              variant="contained"
+              fullWidth
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setEditMode(false);
+                setOpen(true);
+              }}
+              sx={{
+                display: { xs: "flex", sm: "none" }, // Show only on mobile
+                background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
+                color: "#0F172A",
+                fontWeight: 600,
+                px: 3,
+                py: 1.5,
                 borderRadius: 2,
                 textTransform: "none",
                 boxShadow: "0 4px 12px rgba(255,255,255,0.15)",

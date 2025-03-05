@@ -101,8 +101,7 @@ const styles = {
     borderRadius: { xs: 2, sm: 3 },
     backgroundColor: "white",
     transition: "all 0.3s ease",
-    border: "1px solid",
-    borderColor: "grey.200",
+    border: "1px solid rgba(241, 245, 249, 0.1)",
     "&:hover": {
       transform: { xs: "none", sm: "translateY(-4px)" },
       boxShadow: {
@@ -121,11 +120,11 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     bgcolor: "#F8FAFC",
-    borderRadius: "50%",
+    borderRadius: { xs: "12px", sm: "16px" },
     overflow: "hidden",
     border: "1px solid",
     borderColor: "grey.200",
-    p: 1,
+    p: { xs: 1.5, sm: 2 },
     transition: "transform 0.3s ease",
     "&:hover": {
       transform: { xs: "scale(1.02)", sm: "scale(1.05)" },
@@ -140,8 +139,10 @@ const styles = {
   },
 
   actionButtons: {
+    display: "flex",
     justifyContent: { xs: "center", sm: "flex-end" },
     mt: { xs: 2, sm: 0 },
+    gap: 1,
   },
 
   fabButton: {
@@ -209,8 +210,8 @@ const dialogStyles = {
   header: {
     background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
     color: "white",
-    px: 3,
-    py: 2.5, // Increase vertical padding
+    px: { xs: 2, sm: 3 },
+    py: { xs: 2, sm: 2.5 }, // Increase vertical padding
   },
 };
 
@@ -281,11 +282,196 @@ const chipStyles = {
   gap: { xs: 1, sm: 1.5 },
   mt: 2,
   "& .MuiChip-root": {
-    height: { xs: 32, sm: 36 },
-    borderRadius: { xs: "10px", sm: "12px" },
-    fontSize: { xs: "0.813rem", sm: "0.875rem" },
+    height: { xs: 28, sm: 32 },
+    borderRadius: { xs: "8px", sm: "10px" },
+    fontSize: { xs: "0.75rem", sm: "0.875rem" },
     "& .MuiChip-label": {
-      px: { xs: 2, sm: 3 },
+      px: { xs: 1.5, sm: 2 },
+    },
+  },
+};
+
+const buttonStyles = {
+  addButton: {
+    background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
+    color: "#0F172A",
+    fontWeight: 600,
+    px: { xs: 2, sm: 3 },
+    py: { xs: 1, sm: 1.5 },
+    borderRadius: "12px",
+    textTransform: "none",
+    boxShadow: "0 4px 12px rgba(255,255,255,0.15)",
+    "&:hover": {
+      background: "linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 16px rgba(255,255,255,0.2)",
+    },
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    fontSize: { xs: "0.875rem", sm: "1rem" },
+  },
+
+  dialogButton: {
+    background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+    color: "white",
+    fontWeight: 600,
+    px: 3,
+    py: 1.5,
+    borderRadius: "12px",
+    textTransform: "none",
+    "&:hover": {
+      background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+    },
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  },
+
+  deleteButton: {
+    background: "linear-gradient(135deg, #DC2626 0%, #EF4444 100%)",
+    color: "white",
+    fontWeight: 600,
+    px: 3,
+    py: 1.5,
+    borderRadius: "12px",
+    textTransform: "none",
+    "&:hover": {
+      background: "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 4px 12px rgba(239,68,68,0.25)",
+    },
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  },
+};
+
+// Add these skill input specific styles
+const skillStyles = {
+  inputContainer: {
+    position: "relative",
+    width: "100%",
+  },
+
+  skillInput: {
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "12px",
+      backgroundColor: "#F8FAFC",
+      minHeight: { xs: "48px", sm: "56px" },
+      fontSize: { xs: "0.875rem", sm: "1rem" },
+      transition: "all 0.2s ease-in-out",
+      "&:hover": {
+        backgroundColor: "#F1F5F9",
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: "#94A3B8",
+          borderWidth: "2px",
+        },
+      },
+    },
+    "& .MuiInputLabel-root": {
+      fontSize: { xs: "0.875rem", sm: "1rem" },
+      color: "#64748B",
+      "&.Mui-focused": {
+        color: "#0F172A",
+      },
+    },
+    "& .MuiFormHelperText-root": {
+      margin: { xs: "4px 0 0 0", sm: "8px 0 0 0" },
+      fontSize: { xs: "0.75rem", sm: "0.813rem" },
+      color: "#94A3B8",
+    },
+  },
+
+  addButton: {
+    minWidth: "unset",
+    height: "36px",
+    px: { xs: 2, sm: 3 },
+    ml: 1,
+    borderRadius: "10px",
+    background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
+    color: "white",
+    fontSize: { xs: "0.813rem", sm: "0.875rem" },
+    fontWeight: 600,
+    textTransform: "none",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+    "&:hover": {
+      background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 16px rgba(0,0,0,0.12)",
+    },
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+    "&.Mui-disabled": {
+      background: "#E2E8F0",
+      color: "#94A3B8",
+    },
+  },
+
+  chipContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: { xs: 1, sm: 1.5 },
+    mt: 2,
+    px: { xs: 1, sm: 0 },
+    justifyContent: { xs: "center", sm: "flex-start" },
+  },
+
+  chip: {
+    height: { xs: 32, sm: 36 },
+    borderRadius: "10px",
+    px: { xs: 1, sm: 1.5 },
+    "& .MuiChip-label": {
+      px: { xs: 1.5, sm: 2 },
+      fontSize: { xs: "0.813rem", sm: "0.875rem" },
+      fontWeight: 600,
+    },
+    "& .MuiChip-deleteIcon": {
+      fontSize: { xs: "1.125rem", sm: "1.25rem" },
+      margin: { xs: "0 4px", sm: "0 5px" },
+      color: "inherit",
+      opacity: 0.7,
+      transition: "all 0.2s ease",
+      "&:hover": {
+        opacity: 1,
+        transform: "scale(1.1)",
+      },
+    },
+  },
+};
+
+// Add these form field styles
+const formFieldStyles = {
+  textField: {
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "12px",
+      backgroundColor: "#F8FAFC",
+      minHeight: { xs: "48px", sm: "56px" },
+      fontSize: { xs: "0.875rem", sm: "1rem" },
+      transition: "all 0.2s ease-in-out",
+      "&:hover": {
+        backgroundColor: "#F1F5F9",
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: "#94A3B8",
+          borderWidth: "2px",
+        },
+      },
+      "&.Mui-focused": {
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: "#0F172A",
+          borderWidth: "2px",
+        },
+      },
+      "&.MuiInputBase-multiline": {
+        padding: "12px",
+      },
+    },
+    "& .MuiInputLabel-root": {
+      fontSize: { xs: "0.875rem", sm: "1rem" },
+      color: "#64748B",
+      "&.Mui-focused": {
+        color: "#0F172A",
+      },
+    },
+    "& .MuiFormHelperText-root": {
+      margin: { xs: "4px 0 0 0", sm: "8px 0 0 0" },
+      fontSize: { xs: "0.75rem", sm: "0.813rem" },
+      color: "#94A3B8",
     },
   },
 };
@@ -464,19 +650,29 @@ const ExperienceForm = () => {
           <Box
             sx={{
               display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
               justifyContent: "space-between",
-              alignItems: "flex-start",
+              alignItems: { xs: "stretch", sm: "flex-start" },
+              gap: { xs: 2, sm: 0 },
             }}
           >
             <Box>
               <Typography variant="h4" sx={styles.headerText}>
                 Experience
               </Typography>
-              <Typography variant="body1" sx={{ color: "#94A3B8", mt: 1 }}>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: "#94A3B8",
+                  mt: 1,
+                  fontSize: { xs: "0.875rem", sm: "1rem" },
+                }}
+              >
                 Manage your work experience
               </Typography>
             </Box>
 
+            {/* Desktop Add Button */}
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -485,21 +681,26 @@ const ExperienceForm = () => {
                 setOpen(true);
               }}
               sx={{
-                background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
-                color: "#0F172A",
-                fontWeight: 600,
-                px: 3,
-                py: 1,
-                borderRadius: 2,
-                textTransform: "none",
-                boxShadow: "0 4px 12px rgba(255,255,255,0.15)",
-                "&:hover": {
-                  background:
-                    "linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%)",
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 6px 16px rgba(255,255,255,0.2)",
-                },
-                transition: "all 0.2s ease-in-out",
+                display: { xs: "none", sm: "flex" },
+                ...buttonStyles.addButton,
+              }}
+            >
+              Add Experience
+            </Button>
+
+            {/* Mobile Add Button */}
+            <Button
+              variant="contained"
+              fullWidth
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setEditMode(false);
+                setOpen(true);
+              }}
+              sx={{
+                display: { xs: "flex", sm: "none" },
+                ...buttonStyles.addButton,
+                py: 1.5,
               }}
             >
               Add Experience
@@ -724,7 +925,7 @@ const ExperienceForm = () => {
                     img: e.target.value,
                   })
                 }
-                sx={styles.dialogField}
+                sx={formFieldStyles.textField}
               />
               {currentExperience.img && (
                 <Box sx={{ mt: 2, mb: 2 }}>
@@ -753,7 +954,7 @@ const ExperienceForm = () => {
                     role: e.target.value,
                   })
                 }
-                sx={styles.dialogField}
+                sx={formFieldStyles.textField}
               />
             </Grid>
             <Grid item xs={12}>
@@ -768,7 +969,7 @@ const ExperienceForm = () => {
                     company: e.target.value,
                   })
                 }
-                sx={styles.dialogField}
+                sx={formFieldStyles.textField}
               />
             </Grid>
             <Grid item xs={12}>
@@ -784,7 +985,7 @@ const ExperienceForm = () => {
                   })
                 }
                 helperText="e.g., October 2022 - October 2023"
-                sx={styles.dialogField}
+                sx={formFieldStyles.textField}
               />
             </Grid>
             <Grid item xs={12}>
@@ -800,7 +1001,7 @@ const ExperienceForm = () => {
                     description: e.target.value,
                   })
                 }
-                sx={styles.dialogField}
+                sx={formFieldStyles.textField}
               />
             </Grid>
             <Grid item xs={12}>
@@ -816,7 +1017,7 @@ const ExperienceForm = () => {
                     description2: e.target.value,
                   })
                 }
-                sx={styles.dialogField}
+                sx={formFieldStyles.textField}
               />
             </Grid>
             <Grid item xs={12}>
@@ -832,101 +1033,128 @@ const ExperienceForm = () => {
                     description3: e.target.value,
                   })
                 }
-                sx={styles.dialogField}
+                sx={formFieldStyles.textField}
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Add Skill"
-                value={skillInput}
-                onChange={(e) => setSkillInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && skillInput.trim()) {
-                    e.preventDefault();
-                    const newSkill = skillInput.trim();
-                    if (!currentExperience.skills.includes(newSkill)) {
-                      setCurrentExperience((prev) => ({
-                        ...prev,
-                        skills: [...prev.skills, newSkill],
-                      }));
-                      setSkillInput("");
-                      toast.success(`Added skill: ${newSkill}`, {
-                        icon: "🎯",
-                        duration: 2000,
-                      });
-                    } else {
-                      toast.error("This skill already exists", {
-                        icon: "⚠️",
-                        duration: 3000,
-                      });
+              <Box sx={skillStyles.inputContainer}>
+                <TextField
+                  fullWidth
+                  label="Add Skill"
+                  value={skillInput}
+                  onChange={(e) => setSkillInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && skillInput.trim()) {
+                      e.preventDefault();
+                      const newSkill = skillInput.trim();
+                      if (!currentExperience.skills.includes(newSkill)) {
+                        setCurrentExperience((prev) => ({
+                          ...prev,
+                          skills: [...prev.skills, newSkill],
+                        }));
+                        setSkillInput("");
+                        toast.success(`Added skill: ${newSkill}`, {
+                          icon: "🎯",
+                          duration: 2000,
+                        });
+                      } else {
+                        toast.error("This skill already exists", {
+                          icon: "⚠️",
+                          duration: 3000,
+                        });
+                      }
                     }
-                  }
-                }}
-                placeholder="Type a skill and press Enter"
-                helperText="Press Enter to add a skill"
-                sx={styles.dialogField}
-              />
-              <AnimatePresence>
-                <Stack
-                  direction="row"
-                  flexWrap="wrap"
-                  sx={chipStyles}
-                  component={motion.div}
-                  layout
-                >
-                  {currentExperience.skills.map((skill, index) => (
-                    <motion.div
-                      key={skill}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      transition={{
-                        duration: 0.2,
-                        ease: "easeInOut",
-                      }}
-                    >
-                      <Chip
-                        label={skill}
-                        onDelete={() => {
-                          setCurrentExperience((prev) => ({
-                            ...prev,
-                            skills: prev.skills.filter((s) => s !== skill),
-                          }));
-                          toast.success(`Removed skill: ${skill}`);
+                  }}
+                  placeholder="Type a skill and press Enter"
+                  helperText="Press Enter or use the Add button to add a skill"
+                  sx={skillStyles.skillInput}
+                  InputProps={{
+                    endAdornment: (
+                      <Button
+                        variant="contained"
+                        onClick={() => {
+                          const newSkill = skillInput.trim();
+                          if (
+                            newSkill &&
+                            !currentExperience.skills.includes(newSkill)
+                          ) {
+                            setCurrentExperience((prev) => ({
+                              ...prev,
+                              skills: [...prev.skills, newSkill],
+                            }));
+                            setSkillInput("");
+                            toast.success(`Added skill: ${newSkill}`, {
+                              icon: "🎯",
+                              duration: 2000,
+                            });
+                          } else if (
+                            currentExperience.skills.includes(newSkill)
+                          ) {
+                            toast.error("This skill already exists", {
+                              icon: "⚠️",
+                              duration: 3000,
+                            });
+                          }
                         }}
-                        sx={{
-                          maxWidth: "180px",
-                          backgroundColor: `hsl(${
-                            (index * 75) % 360
-                          }, 85%, 97%)`,
-                          borderColor: `hsl(${(index * 75) % 360}, 85%, 90%)`,
-                          color: `hsl(${(index * 75) % 360}, 85%, 35%)`,
-                          border: "1px solid",
-                          "&:hover": {
+                        disabled={!skillInput.trim()}
+                        sx={skillStyles.addButton}
+                      >
+                        Add
+                      </Button>
+                    ),
+                  }}
+                />
+
+                <AnimatePresence>
+                  <Stack
+                    direction="row"
+                    flexWrap="wrap"
+                    sx={skillStyles.chipContainer}
+                    component={motion.div}
+                    layout
+                  >
+                    {currentExperience.skills.map((skill, index) => (
+                      <motion.div
+                        key={skill}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                      >
+                        <Chip
+                          label={skill}
+                          onDelete={() => {
+                            setCurrentExperience((prev) => ({
+                              ...prev,
+                              skills: prev.skills.filter((s) => s !== skill),
+                            }));
+                            toast.success(`Removed skill: ${skill}`);
+                          }}
+                          sx={{
+                            ...skillStyles.chip,
                             backgroundColor: `hsl(${
                               (index * 75) % 360
-                            }, 85%, 95%)`,
-                            borderColor: `hsl(${(index * 75) % 360}, 85%, 85%)`,
-                          },
-                          "& .MuiChip-label": {
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            fontWeight: 600,
-                          },
-                          "& .MuiChip-deleteIcon": {
+                            }, 85%, 97%)`,
                             color: `hsl(${(index * 75) % 360}, 85%, 35%)`,
+                            border: "1px solid",
+                            borderColor: `hsl(${(index * 75) % 360}, 85%, 90%)`,
                             "&:hover": {
-                              color: `hsl(${(index * 75) % 360}, 85%, 25%)`,
+                              backgroundColor: `hsl(${
+                                (index * 75) % 360
+                              }, 85%, 95%)`,
+                              borderColor: `hsl(${
+                                (index * 75) % 360
+                              }, 85%, 85%)`,
+                              transform: "translateY(-2px)",
                             },
-                          },
-                        }}
-                      />
-                    </motion.div>
-                  ))}
-                </Stack>
-              </AnimatePresence>
+                            transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                          }}
+                        />
+                      </motion.div>
+                    ))}
+                  </Stack>
+                </AnimatePresence>
+              </Box>
             </Grid>
             <Grid item xs={12}>
               <TextField
@@ -939,7 +1167,7 @@ const ExperienceForm = () => {
                     doc: e.target.value,
                   })
                 }
-                sx={styles.dialogField}
+                sx={formFieldStyles.textField}
               />
             </Grid>
           </Grid>

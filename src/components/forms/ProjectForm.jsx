@@ -212,6 +212,135 @@ const chipStyles = {
   },
 };
 
+// Add these tag input specific styles
+const tagStyles = {
+  inputContainer: {
+    position: "relative",
+    width: "100%",
+  },
+
+  tagInput: {
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "12px",
+      backgroundColor: "#F8FAFC",
+      minHeight: { xs: "48px", sm: "56px" },
+      fontSize: { xs: "0.875rem", sm: "1rem" },
+      transition: "all 0.2s ease-in-out",
+      "&:hover": {
+        backgroundColor: "#F1F5F9",
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: "#94A3B8",
+          borderWidth: "2px",
+        },
+      },
+    },
+    "& .MuiInputLabel-root": {
+      fontSize: { xs: "0.875rem", sm: "1rem" },
+      color: "#64748B",
+      "&.Mui-focused": {
+        color: "#0F172A",
+      },
+    },
+    "& .MuiFormHelperText-root": {
+      margin: { xs: "4px 0 0 0", sm: "8px 0 0 0" },
+      fontSize: { xs: "0.75rem", sm: "0.813rem" },
+      color: "#94A3B8",
+    },
+  },
+
+  addButton: {
+    minWidth: "unset",
+    height: "36px",
+    px: { xs: 2, sm: 3 },
+    ml: 1,
+    borderRadius: "10px",
+    background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
+    color: "white",
+    fontSize: { xs: "0.813rem", sm: "0.875rem" },
+    fontWeight: 600,
+    textTransform: "none",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+    "&:hover": {
+      background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 16px rgba(0,0,0,0.12)",
+    },
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+    "&.Mui-disabled": {
+      background: "#E2E8F0",
+      color: "#94A3B8",
+    },
+  },
+
+  chipContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: { xs: 1, sm: 1.5 },
+    mt: 2,
+    px: { xs: 1, sm: 0 },
+    justifyContent: { xs: "center", sm: "flex-start" },
+  },
+
+  chip: {
+    height: { xs: 32, sm: 36 },
+    borderRadius: "10px",
+    px: { xs: 1, sm: 1.5 },
+    "& .MuiChip-label": {
+      px: { xs: 1.5, sm: 2 },
+      fontSize: { xs: "0.813rem", sm: "0.875rem" },
+      fontWeight: 600,
+    },
+    "& .MuiChip-deleteIcon": {
+      fontSize: { xs: "1.125rem", sm: "1.25rem" },
+      margin: { xs: "0 4px", sm: "0 5px" },
+      color: "inherit",
+      opacity: 0.7,
+      transition: "all 0.2s ease",
+      "&:hover": {
+        opacity: 1,
+        transform: "scale(1.1)",
+      },
+    },
+  },
+};
+
+// Update the common input field styles
+const formFieldStyles = {
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "12px",
+    backgroundColor: "#F8FAFC",
+    minHeight: { xs: "48px", sm: "56px" },
+    fontSize: { xs: "0.875rem", sm: "1rem" },
+    transition: "all 0.2s ease-in-out",
+    "&:hover": {
+      backgroundColor: "#F1F5F9",
+      "& .MuiOutlinedInput-notchedOutline": {
+        borderColor: "#94A3B8",
+        borderWidth: "2px",
+      },
+    },
+    "&.Mui-focused": {
+      backgroundColor: "#F1F5F9",
+      "& .MuiOutlinedInput-notchedOutline": {
+        borderColor: "#0F172A",
+        borderWidth: "2px",
+      },
+    },
+  },
+  "& .MuiInputLabel-root": {
+    fontSize: { xs: "0.875rem", sm: "1rem" },
+    color: "#64748B",
+    "&.Mui-focused": {
+      color: "#0F172A",
+    },
+  },
+  "& .MuiFormHelperText-root": {
+    marginLeft: 1,
+    color: "#94A3B8",
+    fontSize: { xs: "0.75rem", sm: "0.813rem" },
+  },
+};
+
 const toastConfig = {
   position: "top-center",
   style: {
@@ -1152,128 +1281,122 @@ const ProjectForm = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Add Tag"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && tagInput.trim()) {
-                    e.preventDefault();
-                    const newTag = tagInput.trim();
-                    if (!currentProject.tags.includes(newTag)) {
-                      setCurrentProject((prev) => ({
-                        ...prev,
-                        tags: [...prev.tags, newTag],
-                      }));
-                      setTagInput("");
-                      toast.success(`Added tag: ${newTag}`, {
-                        icon: "🏷️",
-                        duration: 2000,
-                      });
-                    } else {
-                      toast.error("This tag already exists", {
-                        icon: "⚠️",
-                        duration: 3000,
-                      });
+              <Box sx={tagStyles.inputContainer}>
+                <TextField
+                  fullWidth
+                  label="Add Tag"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && tagInput.trim()) {
+                      e.preventDefault();
+                      const newTag = tagInput.trim();
+                      if (!currentProject.tags.includes(newTag)) {
+                        setCurrentProject((prev) => ({
+                          ...prev,
+                          tags: [...prev.tags, newTag],
+                        }));
+                        setTagInput("");
+                        toast.success(`Added tag: ${newTag}`, {
+                          icon: "🏷️",
+                          duration: 2000,
+                        });
+                      } else {
+                        toast.error("This tag already exists", {
+                          icon: "⚠️",
+                          duration: 3000,
+                        });
+                      }
                     }
-                  }
-                }}
-                placeholder="Type a tag and press Enter"
-                helperText="Press Enter to add a tag"
-                sx={styles.dialogField}
-              />
-              <AnimatePresence>
-                <Stack
-                  direction="row"
-                  flexWrap="wrap"
-                  sx={chipStyles}
-                  component={motion.div}
-                  layout
-                >
-                  {currentProject.tags.map((tag, index) => (
-                    <motion.div
-                      key={tag}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      transition={{
-                        duration: 0.2,
-                        ease: "easeInOut",
-                      }}
-                    >
-                      <Chip
-                        label={tag}
-                        onDelete={() => {
-                          setCurrentProject((prev) => ({
-                            ...prev,
-                            tags: prev.tags.filter((t) => t !== tag),
-                          }));
-                          toast.success(`Removed tag: ${tag}`, {
-                            icon: "🗑️",
-                            duration: 2000,
-                          });
+                  }}
+                  placeholder="Type a tag and press Enter"
+                  helperText="Press Enter or use the Add button to add a tag"
+                  sx={tagStyles.tagInput}
+                  InputProps={{
+                    endAdornment: (
+                      <Button
+                        variant="contained"
+                        onClick={() => {
+                          const newTag = tagInput.trim();
+                          if (newTag && !currentProject.tags.includes(newTag)) {
+                            setCurrentProject((prev) => ({
+                              ...prev,
+                              tags: [...prev.tags, newTag],
+                            }));
+                            setTagInput("");
+                            toast.success(`Added tag: ${newTag}`, {
+                              icon: "🏷️",
+                              duration: 2000,
+                            });
+                          } else if (currentProject.tags.includes(newTag)) {
+                            toast.error("This tag already exists", {
+                              icon: "⚠️",
+                              duration: 3000,
+                            });
+                          }
                         }}
-                        sx={{
-                          maxWidth: "180px",
-                          backgroundColor: `hsl(${
-                            (index * 75) % 360
-                          }, 85%, 97%)`,
-                          borderColor: `hsl(${(index * 75) % 360}, 85%, 90%)`,
-                          color: `hsl(${(index * 75) % 360}, 85%, 35%)`,
-                          border: "1px solid",
-                          "&:hover": {
+                        disabled={!tagInput.trim()}
+                        sx={tagStyles.addButton}
+                      >
+                        Add
+                      </Button>
+                    ),
+                  }}
+                />
+
+                <AnimatePresence>
+                  <Stack
+                    direction="row"
+                    flexWrap="wrap"
+                    sx={tagStyles.chipContainer}
+                    component={motion.div}
+                    layout
+                  >
+                    {currentProject.tags.map((tag, index) => (
+                      <motion.div
+                        key={tag}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                      >
+                        <Chip
+                          label={tag}
+                          onDelete={() => {
+                            setCurrentProject((prev) => ({
+                              ...prev,
+                              tags: prev.tags.filter((t) => t !== tag),
+                            }));
+                            toast.success(`Removed tag: ${tag}`, {
+                              icon: "🗑️",
+                              duration: 2000,
+                            });
+                          }}
+                          sx={{
+                            ...tagStyles.chip,
                             backgroundColor: `hsl(${
                               (index * 75) % 360
-                            }, 85%, 95%)`,
-                            borderColor: `hsl(${(index * 75) % 360}, 85%, 85%)`,
-                          },
-                          "& .MuiChip-label": {
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            fontWeight: 600,
-                          },
-                          "& .MuiChip-deleteIcon": {
+                            }, 85%, 97%)`,
                             color: `hsl(${(index * 75) % 360}, 85%, 35%)`,
+                            border: "1px solid",
+                            borderColor: `hsl(${(index * 75) % 360}, 85%, 90%)`,
                             "&:hover": {
-                              color: `hsl(${(index * 75) % 360}, 85%, 25%)`,
+                              backgroundColor: `hsl(${
+                                (index * 75) % 360
+                              }, 85%, 95%)`,
+                              borderColor: `hsl(${
+                                (index * 75) % 360
+                              }, 85%, 85%)`,
+                              transform: "translateY(-2px)",
                             },
-                          },
-                        }}
-                      />
-                    </motion.div>
-                  ))}
-                </Stack>
-              </AnimatePresence>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="GitHub URL"
-                value={currentProject.github || ""}
-                onChange={(e) =>
-                  setCurrentProject({
-                    ...currentProject,
-                    github: e.target.value,
-                  })
-                }
-                sx={styles.dialogField}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Dashboard URL"
-                value={currentProject.dashboard || ""}
-                onChange={(e) =>
-                  setCurrentProject({
-                    ...currentProject,
-                    dashboard: e.target.value,
-                  })
-                }
-                sx={styles.dialogField}
-              />
+                            transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                          }}
+                        />
+                      </motion.div>
+                    ))}
+                  </Stack>
+                </AnimatePresence>
+              </Box>
             </Grid>
             <Grid item xs={12}>
               <TextField
