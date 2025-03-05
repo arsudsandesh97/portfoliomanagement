@@ -21,6 +21,7 @@ import Login from "./components/Login.jsx";
 import ContactForm from "./components/forms/ContactForm.jsx";
 import ImageUploadForm from "./components/forms/ImageUploadForm";
 import StorageForm from "./components/forms/StorageForm";
+import StorageFormS from "./components/forms/StorageFormSupabase.jsx";
 import Footer from "./components/Footer";
 
 import { supabase } from "./config/supabase";
@@ -104,6 +105,7 @@ const App = () => {
               <Route path="/contacts" element={<ContactForm />} />
               <Route path="/image-upload" element={<ImageUploadForm />} />
               <Route path="/storage" element={<StorageForm />} />{" "}
+              <Route path="/storages" element={<StorageFormS />} />{" "}
               <Route path="*" element={<Navigate to="/bio" replace />} />
             </Routes>
           </Box>
