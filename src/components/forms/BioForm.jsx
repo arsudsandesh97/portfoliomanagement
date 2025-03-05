@@ -884,7 +884,7 @@ const BioForm = () => {
                 fullWidth
                 label="Profile Image URL"
                 value={bio.Image || ""}
-                onChange={(e) => setBio({ ...bio, image: e.target.value })}
+                onChange={(e) => setBio({ ...bio, Image: e.target.value })}
                 sx={textFieldStyles}
               />
             </Grid>
