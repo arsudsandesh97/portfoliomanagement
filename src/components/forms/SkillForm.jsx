@@ -16,6 +16,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Fab,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -35,12 +36,120 @@ import { motion } from "framer-motion";
 import { useScrollLock } from "../../hooks/useScrollLock";
 
 const styles = {
-  gradientHeader: {
-    background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
-    color: "white",
-    p: 4,
+  container: {
+    width: "100%",
+    p: { xs: 0, sm: 2, md: 3 },
+    maxWidth: {
+      xs: "100%",
+      sm: "600px",
+      md: "900px",
+      lg: "1200px",
+    },
+    mx: "auto",
   },
 
+  paper: {
+    borderRadius: { xs: 2, sm: 2, md: 4 },
+    overflow: "hidden",
+    boxShadow: {
+      xs: "none",
+      sm: "0 4px 20px rgba(0,0,0,0.1)",
+    },
+    mb: { xs: 2, sm: 3 },
+  },
+
+  gradientHeader: {
+    p: { xs: 3, sm: 4 },
+    background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+    color: "white",
+  },
+
+  headerContent: {
+    display: "flex",
+    flexDirection: { xs: "column", sm: "row" },
+    justifyContent: "space-between",
+    alignItems: { xs: "stretch", sm: "flex-start" },
+    gap: { xs: 2, sm: 0 },
+  },
+
+  skillCard: {
+    p: { xs: 2, sm: 2.5, md: 3 },
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
+    borderRadius: { xs: 2, sm: 2, md: 3 },
+    border: "1px solid",
+    borderColor: "grey.200",
+    transition: "all 0.3s ease",
+    backgroundColor: "white",
+    "&:hover": {
+      transform: { xs: "none", sm: "translateY(-4px)" },
+      boxShadow: {
+        xs: "0 4px 12px rgba(0,0,0,0.05)",
+        sm: "0 12px 24px rgba(0,0,0,0.1)",
+      },
+    },
+  },
+
+  iconContainer: {
+    width: { xs: 32, sm: 36, md: 40 },
+    height: { xs: 32, sm: 36, md: 40 },
+    borderRadius: { xs: 1, sm: 1.5, md: 2 },
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F8FAFC",
+    border: "1px solid",
+    borderColor: "grey.100",
+  },
+
+  addButton: {
+    width: { xs: "100%", sm: "auto" },
+    minHeight: { xs: 48, sm: 40 },
+    background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
+    color: "#0F172A",
+    fontWeight: 600,
+    px: 3,
+    py: 1,
+    borderRadius: 2,
+    textTransform: "none",
+    boxShadow: "0 4px 12px rgba(255,255,255,0.15)",
+    "&:hover": {
+      background: "linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 16px rgba(255,255,255,0.2)",
+    },
+    transition: "all 0.2s ease-in-out",
+  },
+  categoryAddButton: {
+    width: { xs: "100%", sm: "auto" },
+    minHeight: { xs: 48, sm: 40 },
+    background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
+    color: "#0F172A",
+    fontWeight: 600,
+    px: 3,
+    py: 1,
+    borderRadius: 2,
+    textTransform: "none",
+    boxShadow: "0 4px 12px rgba(255,255,255,0.15)",
+    "&:hover": {
+      background: "linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 16px rgba(255,255,255,0.2)",
+    },
+    transition: "all 0.2s ease-in-out",
+  },
+
+  fabButton: {
+    position: "fixed",
+    bottom: 20,
+    right: 20,
+    display: { xs: "flex", sm: "none" },
+    background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+    "&:hover": {
+      background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
+    },
+  },
   headerText: {
     background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
     backgroundClip: "text",
@@ -48,38 +157,6 @@ const styles = {
     WebkitTextFillColor: "transparent",
     fontWeight: 700,
     letterSpacing: "-0.01em",
-  },
-
-  skillCard: {
-    p: 2,
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-    borderRadius: 3,
-    border: "1px solid",
-    borderColor: "grey.200",
-    transition: "all 0.3s ease",
-    "&:hover": {
-      transform: "translateY(-4px)",
-      boxShadow: "0 12px 24px rgba(0,0,0,0.1)",
-    },
-  },
-
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 2,
-    overflow: "hidden",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    bgcolor: "#F8FAFC",
-    border: "1px solid",
-    borderColor: "grey.100",
-    transition: "transform 0.2s ease",
-    "&:hover": {
-      transform: "scale(1.05)",
-    },
   },
 
   dialogField: {
@@ -104,29 +181,48 @@ const styles = {
 
   categoryPaper: {
     mt: 4,
-    borderRadius: 4,
+    borderRadius: { xs: 2, sm: 2, md: 3 },
     overflow: "hidden",
     boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
     background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)",
   },
 
   categoryCard: {
-    p: 3,
-    borderRadius: 3,
+    p: { xs: 2, sm: 2.5, md: 3 },
+    borderRadius: { xs: 2, sm: 2, md: 3 },
     backgroundColor: "white",
     transition: "all 0.3s ease",
     border: "1px solid",
     borderColor: "grey.200",
     "&:hover": {
-      transform: "translateY(-4px)",
-      boxShadow: "0 12px 24px rgba(0,0,0,0.1)",
+      transform: { xs: "none", sm: "translateY(-4px)" },
+      boxShadow: {
+        xs: "0 4px 12px rgba(0,0,0,0.05)",
+        sm: "0 12px 24px rgba(0,0,0,0.1)",
+      },
+    },
+  },
+
+  categoryActions: {
+    display: "flex",
+    gap: 1,
+    "& .MuiIconButton-root": {
+      width: { xs: 36, sm: 40 },
+      height: { xs: 36, sm: 40 },
     },
   },
 
   categoryHeader: {
     background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
     color: "white",
-    p: 4,
+    p: { xs: 3, sm: 3, md: 4 },
+  },
+  categoryHeaderContent: {
+    display: "flex",
+    flexDirection: { xs: "column", sm: "column", md: "row" },
+    justifyContent: "space-between",
+    alignItems: { xs: "stretch", sm: "stretch", md: "center" },
+    gap: { xs: 2, sm: 2, md: 0 },
   },
 
   dialogHeader: {
@@ -471,22 +567,10 @@ const SkillForm = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 1200, margin: "0 auto", p: 3 }}>
-      <Paper
-        sx={{
-          borderRadius: 4,
-          overflow: "hidden",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-        }}
-      >
+    <Box sx={styles.container}>
+      <Paper sx={styles.paper}>
         <Box sx={styles.gradientHeader}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
+          <Box sx={styles.headerContent}>
             <Box>
               <Typography variant="h4" sx={styles.headerText}>
                 Skills
@@ -495,6 +579,7 @@ const SkillForm = () => {
                 Manage your skills and technologies
               </Typography>
             </Box>
+            {/* Desktop Add Button */}
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -503,21 +588,25 @@ const SkillForm = () => {
                 setOpen(true);
               }}
               sx={{
-                background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
-                color: "#0F172A",
-                fontWeight: 600,
-                px: 3,
-                py: 1,
-                borderRadius: 2,
-                textTransform: "none",
-                boxShadow: "0 4px 12px rgba(255,255,255,0.15)",
-                "&:hover": {
-                  background:
-                    "linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%)",
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 6px 16px rgba(255,255,255,0.2)",
-                },
-                transition: "all 0.2s ease-in-out",
+                ...styles.addButton,
+                display: { xs: "none", sm: "flex" },
+              }}
+            >
+              Add Skill
+            </Button>
+
+            {/* Mobile Add Button */}
+            <Button
+              variant="contained"
+              fullWidth
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setEditMode(false);
+                setOpen(true);
+              }}
+              sx={{
+                ...styles.addButton,
+                display: { xs: "flex", sm: "none" },
               }}
             >
               Add Skill
@@ -525,17 +614,17 @@ const SkillForm = () => {
           </Box>
         </Box>
 
-        <Box sx={{ p: 4 }}>
+        <Box sx={{ p: { xs: 2, sm: 4 } }}>
           {categories.map((category) => (
             <Box key={category.id} sx={{ mb: 4 }}>
               <Typography variant="h6" sx={{ color: "#1E293B", mb: 2 }}>
                 {category.title}
               </Typography>
-              <Grid container spacing={2}>
+              <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
                 {skills
                   .filter((skill) => skill.category_id === category.id)
                   .map((skill) => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={skill.id}>
+                    <Grid item xs={12} sm={4} md={3} lg={3} key={skill.id}>
                       <Card sx={styles.skillCard}>
                         <Box
                           sx={{
@@ -609,13 +698,7 @@ const SkillForm = () => {
 
       <Paper sx={styles.categoryPaper}>
         <Box sx={styles.categoryHeader}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
+          <Box sx={styles.categoryHeaderContent}>
             <Box>
               <Typography variant="h4" sx={styles.headerText}>
                 Skill Categories
@@ -624,26 +707,28 @@ const SkillForm = () => {
                 Organize your skills into categories
               </Typography>
             </Box>
+            {/* Desktop Add Button */}
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => setCategoryDialogOpen(true)}
               sx={{
-                background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
-                color: "#0F172A",
-                fontWeight: 600,
-                px: 3,
-                py: 1,
-                borderRadius: 2,
-                textTransform: "none",
-                boxShadow: "0 4px 12px rgba(255,255,255,0.15)",
-                "&:hover": {
-                  background:
-                    "linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%)",
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 6px 16px rgba(255,255,255,0.2)",
-                },
-                transition: "all 0.2s ease-in-out",
+                ...styles.categoryAddButton,
+                display: { xs: "none", sm: "flex" },
+              }}
+            >
+              Add Category
+            </Button>
+
+            {/* Mobile Add Button */}
+            <Button
+              variant="contained"
+              fullWidth
+              startIcon={<AddIcon />}
+              onClick={() => setCategoryDialogOpen(true)}
+              sx={{
+                ...styles.categoryAddButton,
+                display: { xs: "flex", sm: "none" },
               }}
             >
               Add Category
@@ -652,7 +737,7 @@ const SkillForm = () => {
         </Box>
 
         <Box sx={{ p: 4 }}>
-          <Grid container spacing={2}>
+          <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
             {categories.map((category) => (
               <Grid item xs={12} sm={6} md={4} key={category.id}>
                 <Card sx={styles.categoryCard}>
@@ -1276,6 +1361,17 @@ const SkillForm = () => {
         }}
         gutter={8}
       />
+      <Fab
+        color="primary"
+        aria-label="add skill"
+        onClick={() => {
+          setEditMode(false);
+          setOpen(true);
+        }}
+        sx={styles.fabButton}
+      >
+        <AddIcon />
+      </Fab>
     </Box>
   );
 };

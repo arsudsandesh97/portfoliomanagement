@@ -19,6 +19,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Fab,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -80,25 +81,36 @@ const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
 // Add these responsive styles
 const styles = {
   container: {
-    width: "100%",
+    maxWidth: "100%",
+    margin: "0 auto",
     p: { xs: 2, sm: 3 },
-    maxWidth: {
-      xs: "100%",
-      lg: 1200,
+    "@media (min-width: 1200px)": {
+      maxWidth: 1200,
     },
-    mx: "auto",
   },
 
   paper: {
     borderRadius: { xs: 2, sm: 4 },
     overflow: "hidden",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+    boxShadow: {
+      xs: "0 2px 10px rgba(0,0,0,0.08)",
+      sm: "0 4px 20px rgba(0,0,0,0.1)",
+    },
+    background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)",
   },
 
   gradientHeader: {
     p: { xs: 2.5, sm: 4 },
     background: "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
     color: "white",
+  },
+
+  headerContent: {
+    display: "flex",
+    flexDirection: { xs: "column", sm: "row" },
+    justifyContent: "space-between",
+    alignItems: { xs: "flex-start", sm: "center" },
+    gap: { xs: 2, sm: 0 },
   },
 
   headerText: {
@@ -109,6 +121,24 @@ const styles = {
     backgroundClip: "text",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
+  },
+
+  addButton: {
+    background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
+    color: "#0F172A",
+    fontWeight: 600,
+    px: 3,
+    py: 1,
+    borderRadius: 2,
+    textTransform: "none",
+    boxShadow: "0 4px 12px rgba(255,255,255,0.15)",
+    width: { xs: "100%", sm: "auto" },
+    "&:hover": {
+      background: "linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%)",
+      transform: "translateY(-2px)",
+      boxShadow: "0 6px 16px rgba(255,255,255,0.2)",
+    },
+    transition: "all 0.2s ease-in-out",
   },
 
   projectCard: {
@@ -193,6 +223,12 @@ const styles = {
       boxShadow: "0 6px 16px rgba(239,68,68,0.3)",
     },
     transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+  },
+  contentWrapper: {
+    flexDirection: { xs: "column", sm: "row" },
+    alignItems: { xs: "center", sm: "flex-start" },
+    textAlign: { xs: "center", sm: "left" },
+    gap: { xs: 2, sm: 3 },
   },
 };
 
@@ -889,11 +925,14 @@ const ProjectForm = () => {
       sx={{
         maxWidth: 1200,
         margin: "0 auto",
-        p: 3,
+        p: { xs: 0, sm: 3 }, // Remove padding on mobile
         "& .MuiPaper-root": {
-          borderRadius: 4,
+          borderRadius: { xs: 2, sm: 4 },
           overflow: "hidden",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+          boxShadow: {
+            xs: "0 2px 10px rgba(0,0,0,0.08)",
+            sm: "0 4px 20px rgba(0,0,0,0.1)",
+          },
         },
       }}
     >
@@ -908,19 +947,18 @@ const ProjectForm = () => {
       {/* Main Projects List */}
       <Paper
         sx={{
-          borderRadius: 4,
+          borderRadius: { xs: 1, sm: 4 },
           overflow: "hidden",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+          boxShadow: {
+            xs: "0 2px 10px rgba(0,0,0,0.08)",
+            sm: "0 4px 20px rgba(0,0,0,0.1)",
+          },
+          mx: { xs: 1, sm: 0 },
+          border: { xs: "1px solid #E2E8F0", sm: "none" },
         }}
       >
         <Box sx={styles.gradientHeader}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
+          <Box sx={styles.headerContent}>
             <Box>
               <Typography variant="h4" sx={styles.headerText}>
                 Projects
@@ -936,23 +974,7 @@ const ProjectForm = () => {
                 setEditMode(false);
                 setOpen(true);
               }}
-              sx={{
-                background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
-                color: "#0F172A",
-                fontWeight: 600,
-                px: 3,
-                py: 1,
-                borderRadius: 2,
-                textTransform: "none",
-                boxShadow: "0 4px 12px rgba(255,255,255,0.15)",
-                "&:hover": {
-                  background:
-                    "linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%)",
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 6px 16px rgba(255,255,255,0.2)",
-                },
-                transition: "all 0.2s ease-in-out",
-              }}
+              sx={styles.addButton}
             >
               Add Project
             </Button>
@@ -960,7 +982,7 @@ const ProjectForm = () => {
         </Box>
 
         <Box sx={{ p: 4 }}>
-          <Grid container spacing={3}>
+          <Grid container spacing={{ xs: 2, sm: 3 }}>
             {projects.map((project) => (
               <Grid item xs={12} key={project.id}>
                 <Card sx={styles.projectCard}>
@@ -1000,14 +1022,7 @@ const ProjectForm = () => {
 
                     {/* Content section */}
                     <Grid item xs={12} sm={8}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "flex-start",
-                          mb: 2,
-                        }}
-                      >
+                      <Box sx={styles.contentWrapper}>
                         <Box>
                           <Typography
                             variant="h6"
@@ -1132,6 +1147,17 @@ const ProjectForm = () => {
               </Grid>
             ))}
           </Grid>
+          <Fab
+            color="primary"
+            aria-label="add project"
+            onClick={() => {
+              setEditMode(false);
+              setOpen(true);
+            }}
+            sx={styles.fabButton}
+          >
+            <AddIcon />
+          </Fab>
         </Box>
       </Paper>
 
