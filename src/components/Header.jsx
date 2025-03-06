@@ -13,10 +13,12 @@ import {
 import { Menu as MenuIcon, Logout as LogoutIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../config/supabase";
+import { toast } from "react-hot-toast";
 
 const Header = ({ handleDrawerToggle, user }) => {
   const [bioData, setBioData] = useState(null);
   const [profileImage, setProfileImage] = useState(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
@@ -50,13 +52,28 @@ const Header = ({ handleDrawerToggle, user }) => {
     }
   };
 
+  // Replace the existing handleLogout function with this optimized version
   const handleLogout = async () => {
+    // Start navigation immediately
+    navigate("/login");
+
+    // Clean up local state
+    setBioData(null);
+    setProfileImage(null);
+
+    // Perform logout in the background
     try {
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      navigate("/login");
+      if (error) {
+        // If logout fails, redirect back to the protected route
+        console.error("Error logging out:", error.message);
+        navigate("/");
+        // Show error toast if you have toast setup
+        toast?.error("Logout failed, please try again");
+      }
     } catch (error) {
       console.error("Error logging out:", error.message);
+      navigate("/");
     }
   };
 
@@ -246,7 +263,11 @@ const Header = ({ handleDrawerToggle, user }) => {
               <Button
                 variant="outlined"
                 startIcon={!isMobile && <LogoutIcon />}
-                onClick={handleLogout}
+                onClick={() => {
+                  setIsLoggingOut(true);
+                  handleLogout();
+                }}
+                disabled={isLoggingOut}
                 sx={{
                   borderColor: "rgba(226, 232, 240, 0.8)",
                   color: "#64748B",
@@ -266,10 +287,14 @@ const Header = ({ handleDrawerToggle, user }) => {
                   height: { xs: 38, sm: 42 },
                   fontSize: { xs: "0.85rem", sm: "0.9rem", md: "0.95rem" },
                   fontWeight: 500,
+                  opacity: isLoggingOut ? 0.7 : 1,
+                  cursor: isLoggingOut ? "not-allowed" : "pointer",
                 }}
               >
                 {isMobile ? (
                   <LogoutIcon sx={{ fontSize: "1.25rem" }} />
+                ) : isLoggingOut ? (
+                  "Logging out..."
                 ) : (
                   "Logout"
                 )}
