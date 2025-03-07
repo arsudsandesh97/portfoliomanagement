@@ -1,3 +1,4 @@
+// Packages
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -35,11 +36,13 @@ import {
   NightsStay as NightIcon,
   Delete as DeleteIcon,
 } from "@mui/icons-material";
-import { bioApi, copyrightApi } from "../../api/SupabaseData";
 import { Toaster, toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { useScrollLock } from "../../hooks/useScrollLock";
 import { styled } from "@mui/material/styles";
+
+// Components & Services
+import { bioApi, copyrightApi } from "../../Api/SupabaseData";
+import { useScrollLock } from "../../Hooks/UseScrollLock";
 
 // Add these utility functions
 const isMobile = () => window.innerWidth < 600;

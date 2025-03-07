@@ -1,3 +1,4 @@
+// Packages
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -25,8 +26,6 @@ import {
   InputLabel,
   CircularProgress,
 } from "@mui/material";
-
-// Add all required icons
 import {
   ContentCopy as ContentCopyIcon,
   Delete as DeleteIcon,
@@ -42,9 +41,14 @@ import {
   ErrorOutline as ErrorIcon,
   Info as InfoIcon,
   Sync as LoadingIcon,
-  PictureAsPdf as PdfIcon, // Add PictureAsPdf icon import
+  PictureAsPdf as PdfIcon,
 } from "@mui/icons-material";
-import { storage as configuredStorage } from "../../config/firebase";
+import { Toaster, toast } from "react-hot-toast";
+import { styled } from "@mui/material/styles";
+import { motion } from "framer-motion";
+
+// Components & Services
+import { storage as configuredStorage } from "../../Config/firebase";
 import {
   ref,
   getDownloadURL,
@@ -53,16 +57,8 @@ import {
   getMetadata,
   uploadBytes,
 } from "firebase/storage";
-import { Toaster, toast } from "react-hot-toast";
+import { useScrollLock } from "../../Hooks/UseScrollLock";
 
-// Add these imports at the top
-import { styled } from "@mui/material/styles";
-import { motion } from "framer-motion";
-
-// Add import
-import { useScrollLock } from "../../hooks/useScrollLock";
-
-// Create styled components
 const StyledDialog = styled(Dialog)`
   .MuiDialog-paper {
     background: rgba(255, 255, 255, 0.95);

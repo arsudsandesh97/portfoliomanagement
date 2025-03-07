@@ -1,3 +1,4 @@
+// Packages
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -29,11 +30,13 @@ import {
   Sync as LoadingIcon,
   Code as CodeIcon,
 } from "@mui/icons-material";
-import { skillsApi, skillCategoriesApi } from "../../api/SupabaseData";
 import { Toaster, toast } from "react-hot-toast";
 import { styled } from "@mui/system";
 import { motion } from "framer-motion";
-import { useScrollLock } from "../../hooks/useScrollLock";
+
+// Components & Services
+import { skillsApi, skillCategoriesApi } from "../../Api/SupabaseData";
+import { useScrollLock } from "../../Hooks/UseScrollLock";
 
 const styles = {
   container: {

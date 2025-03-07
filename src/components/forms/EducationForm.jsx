@@ -1,3 +1,4 @@
+// Packages
 import React, { useState, useEffect } from "react";
 import {
   Grid,
@@ -26,12 +27,14 @@ import {
   Info as InfoIcon,
   Sync as LoadingIcon,
 } from "@mui/icons-material";
-import { educationApi } from "../../api/SupabaseData";
 import { Toaster, toast } from "react-hot-toast";
-import { styled } from "@mui/material/styles";
 import { Warning as WarningIcon } from "@mui/icons-material";
+import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
-import { useScrollLock } from "../../hooks/useScrollLock";
+
+// Components & Services
+import { educationApi } from "../../Api/SupabaseData";
+import { useScrollLock } from "../../Hooks/UseScrollLock";
 
 // Add these responsive styles to your existing styles object
 const styles = {

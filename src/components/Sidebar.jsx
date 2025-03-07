@@ -1,3 +1,4 @@
+// Packages
 import React from "react";
 import {
   Drawer,
@@ -20,7 +21,6 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 
 const drawerWidth = 280;
-
 const menuItems = [
   { text: "Bio", icon: <BioIcon />, path: "/bio" },
   { text: "Education", icon: <EducationIcon />, path: "/education" },

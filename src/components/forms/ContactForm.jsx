@@ -1,3 +1,4 @@
+// Packages
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -32,11 +33,13 @@ import {
   Info as InfoIcon,
   Sync as LoadingIcon,
 } from "@mui/icons-material";
-import { contactsApi } from "../../api/SupabaseData";
 import { Toaster, toast } from "react-hot-toast";
-import { styled } from "@mui/system";
 import { motion } from "framer-motion";
-import { useScrollLock } from "../../hooks/useScrollLock";
+import { styled } from "@mui/system";
+
+// Components & Services
+import { contactsApi } from "../../Api/SupabaseData";
+import { useScrollLock } from "../../Hooks/UseScrollLock";
 
 const formatDateTime = (dateString) => {
   const date = new Date(dateString);

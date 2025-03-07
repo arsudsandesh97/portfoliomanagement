@@ -1,3 +1,4 @@
+// Packages
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -38,16 +39,18 @@ import {
   Info as InfoIcon,
   Sync as LoadingIcon,
 } from "@mui/icons-material";
+import { Toaster, toast } from "react-hot-toast";
+import { motion, AnimatePresence } from "framer-motion";
+import { styled } from "@mui/system";
+
+// Components & Services
 import {
   projectsApi,
   projectMembersApi,
   projectAssociationsApi,
-} from "../../api/SupabaseData";
-import { Toaster, toast } from "react-hot-toast";
-import { supabase } from "../../config/supabase";
-import { styled } from "@mui/system";
-import { motion, AnimatePresence } from "framer-motion";
-import { useScrollLock } from "../../hooks/useScrollLock";
+} from "../../Api/SupabaseData";
+import { supabase } from "../../Config/supabase";
+import { useScrollLock } from "../../Hooks/UseScrollLock";
 
 // Add these styled components at the top of your file
 const StyledDialog = styled(Dialog)`

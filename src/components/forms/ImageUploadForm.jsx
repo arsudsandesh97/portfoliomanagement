@@ -1,3 +1,4 @@
+// Packages
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -38,7 +39,11 @@ import {
   ErrorOutline as ErrorIcon,
   Sync as LoadingIcon,
 } from "@mui/icons-material";
-import { storage as configuredStorage } from "../../config/firebase";
+import { v4 as uuidv4 } from "uuid";
+import { Toaster, toast } from "react-hot-toast";
+
+// Components & Services
+import { storage as configuredStorage } from "../../Config/firebase";
 import {
   ref,
   uploadBytes,
@@ -47,8 +52,6 @@ import {
   listAll,
   getMetadata,
 } from "firebase/storage";
-import { v4 as uuidv4 } from "uuid";
-import { Toaster, toast } from "react-hot-toast";
 
 // Update the styles object with modern design elements
 const styles = {

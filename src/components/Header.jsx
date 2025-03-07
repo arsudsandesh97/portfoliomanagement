@@ -1,3 +1,4 @@
+// Packages
 import React, { useEffect, useState } from "react";
 import {
   AppBar,
@@ -12,8 +13,10 @@ import {
 } from "@mui/material";
 import { Menu as MenuIcon, Logout as LogoutIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../config/supabase";
 import { toast } from "react-hot-toast";
+
+// Components & Services
+import { supabase } from "../Config/supabase";
 
 const Header = ({ handleDrawerToggle, user }) => {
   const [bioData, setBioData] = useState(null);

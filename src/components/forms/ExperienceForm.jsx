@@ -1,3 +1,4 @@
+// Packages
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -28,11 +29,13 @@ import {
   Info as InfoIcon,
   Sync as LoadingIcon,
 } from "@mui/icons-material";
-import { experienceApi } from "../../api/SupabaseData";
 import { Toaster, toast } from "react-hot-toast";
 import { styled } from "@mui/material/styles";
 import { motion, AnimatePresence } from "framer-motion";
-import { useScrollLock } from "../../hooks/useScrollLock";
+
+// Components & Services
+import { experienceApi } from "../../Api/SupabaseData";
+import { useScrollLock } from "../../Hooks/UseScrollLock";
 
 const StyledDialog = styled(Dialog)`
   .MuiDialog-paper {

@@ -1,3 +1,4 @@
+// Packages
 import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -9,35 +10,35 @@ import { Box, CssBaseline } from "@mui/material";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// Components
-import Header from "./components/Header.jsx";
-import Sidebar from "./components/Sidebar.jsx";
-import BioForm from "./components/forms/BioForm.jsx";
-import EducationForm from "./components/forms/EducationForm.jsx";
-import ExperienceForm from "./components/forms/ExperienceForm.jsx";
-import ProjectForm from "./components/forms/ProjectForm.jsx";
-import SkillForm from "./components/forms/SkillForm.jsx";
-import Login from "./components/Login.jsx";
-import ContactForm from "./components/forms/ContactForm.jsx";
-import ImageUploadForm from "./components/forms/ImageUploadForm";
-import StorageForm from "./components/forms/StorageForm";
-import StorageFormS from "./components/forms/StorageFormSupabase.jsx";
-import Footer from "./components/Footer";
+// Services
+import { supabase } from "./Config/supabase";
 
-import { supabase } from "./config/supabase";
+// Components
+import Header from "./Components/Header.jsx";
+import Sidebar from "./Components/Sidebar.jsx";
+import Login from "./Auth/Login.jsx";
+import Footer from "./Components/Footer.jsx";
+
+// Forms
+import BioForm from "./Components/Forms/BioForm.jsx";
+import EducationForm from "./Components/Forms/EducationForm.jsx";
+import ExperienceForm from "./Components/Forms/ExperienceForm.jsx";
+import ProjectForm from "./Components/Forms/ProjectForm.jsx";
+import SkillForm from "./Components/Forms/SkillForm.jsx";
+import ContactForm from "./Components/Forms/ContactForm.jsx";
+import ImageUploadForm from "./Components/Forms/ImageUploadForm.jsx";
+import StorageForm from "./Components/Forms/StorageForm.jsx";
+import StorageFormS from "./Components/Forms/StorageFormSupabase.jsx";
 
 const App = () => {
   const [session, setSession] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Determine if we're running in production
   const isProduction = process.env.NODE_ENV === "production";
-  // Set the basename conditionally
   const basename = "/portfoliomanagement"; // Always use the same basename
 
   useEffect(() => {
-    // Check active sessions and set up auth listener
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
