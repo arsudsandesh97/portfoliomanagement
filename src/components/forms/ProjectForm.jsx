@@ -38,6 +38,9 @@ import {
   ErrorOutline as ErrorIcon,
   Info as InfoIcon,
   Sync as LoadingIcon,
+  LocalOffer as LocalOfferIcon,
+  Folder as FolderIcon,
+  Warning as WarningIcon,
 } from "@mui/icons-material";
 import { Toaster, toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -440,6 +443,17 @@ const toastConfig = {
   },
 };
 
+const PreviewBox = styled(Box)(({ theme }) => ({
+  padding: 24,
+  marginBottom: 24,
+  borderRadius: 8,
+  backgroundColor: "rgba(241, 245, 249, 0.5)",
+  backdropFilter: "blur(8px)",
+  display: "flex",
+  flexDirection: "column",
+  gap: 20,
+}));
+
 const ProjectForm = () => {
   const { enableBodyScroll, disableBodyScroll } = useScrollLock();
   const [projects, setProjects] = useState([]);
@@ -474,6 +488,12 @@ const ProjectForm = () => {
   const [newCategory, setNewCategory] = useState("");
   const [openCategoryDialog, setOpenCategoryDialog] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+
+  // Add these state variables at the top with other states
+  const [tagToDelete, setTagToDelete] = useState(null);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [tagDialogOpen, setTagDialogOpen] = useState(false);
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
 
   // Add this common button style
   const commonButtonSx = {
@@ -896,6 +916,42 @@ const ProjectForm = () => {
     }
   };
 
+  // Add these handlers after other handlers
+  const handleTagDelete = (tag) => {
+    setTagToDelete(tag);
+    setTagDialogOpen(true);
+    disableBodyScroll();
+  };
+
+  const handleConfirmTagDelete = () => {
+    setCurrentProject((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((t) => t !== tagToDelete),
+    }));
+    toast.success(`Tag "${tagToDelete}" removed successfully`);
+    setTagDialogOpen(false);
+    setTagToDelete(null);
+    enableBodyScroll();
+  };
+
+  const handleCategoryDelete = (category) => {
+    setCategoryToDelete(category);
+    setCategoryDialogOpen(true);
+    disableBodyScroll();
+  };
+
+  const handleConfirmCategoryDelete = async () => {
+    try {
+      await handleDeleteCategory(categoryToDelete);
+      toast.success(`Category "${categoryToDelete}" deleted successfully`);
+      setCategoryDialogOpen(false);
+      setCategoryToDelete(null);
+      enableBodyScroll();
+    } catch (error) {
+      toast.error(`Error deleting category: ${error.message}`);
+    }
+  };
+
   const handleConfirmDelete = async () => {
     const loadingToast = toast.loading("Deleting project...");
     try {
@@ -1122,6 +1178,7 @@ const ProjectForm = () => {
                             key={tag}
                             label={tag}
                             size="small"
+                            onDelete={() => handleTagDelete(tag)}
                             sx={{
                               backgroundColor: `hsl(${
                                 (index * 75) % 360
@@ -1391,16 +1448,7 @@ const ProjectForm = () => {
                       >
                         <Chip
                           label={tag}
-                          onDelete={() => {
-                            setCurrentProject((prev) => ({
-                              ...prev,
-                              tags: prev.tags.filter((t) => t !== tag),
-                            }));
-                            toast.success(`Removed tag: ${tag}`, {
-                              icon: "🗑️",
-                              duration: 2000,
-                            });
-                          }}
+                          onDelete={() => handleTagDelete(tag)}
                           sx={{
                             ...tagStyles.chip,
                             backgroundColor: `hsl(${
@@ -1568,7 +1616,7 @@ const ProjectForm = () => {
                         </IconButton>
                         <IconButton
                           size="small"
-                          onClick={() => handleDeleteCategory(category)}
+                          onClick={() => handleCategoryDelete(category)}
                           sx={{
                             color: "#EF4444",
                             "&:hover": {
@@ -2123,6 +2171,338 @@ const ProjectForm = () => {
             sx={styles.deleteButton}
           >
             Delete Project
+          </Button>
+        </DialogActions>
+      </StyledDialog>
+
+      {/* Tag Delete Confirmation Dialog */}
+      <StyledDialog
+        open={tagDialogOpen}
+        onClose={() => {
+          setTagDialogOpen(false);
+          setTagToDelete(null);
+          enableBodyScroll();
+        }}
+        maxWidth="sm"
+        fullWidth
+        TransitionComponent={motion.div}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+      >
+        <StyledDialogTitle>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <DeleteIcon sx={{ color: "#EF4444" }} />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Delete Tag
+              </Typography>
+            </Box>
+            <IconButton
+              onClick={() => {
+                setTagDialogOpen(false);
+                setTagToDelete(null);
+                enableBodyScroll();
+              }}
+              sx={{
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                  transform: "rotate(90deg)",
+                },
+                transition: "all 0.3s ease",
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </StyledDialogTitle>
+
+        <DialogContent sx={styles.dialogContent}>
+          {tagToDelete && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <PreviewBox>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Box
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 2,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: "#F1F5F9",
+                      color: "#475569",
+                    }}
+                  >
+                    <LocalOfferIcon />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: "#64748B", mb: 0.5 }}
+                    >
+                      Tag
+                    </Typography>
+                    <Chip
+                      label={tagToDelete}
+                      sx={{
+                        backgroundColor: `hsl(${
+                          Math.random() * 360
+                        }, 85%, 97%)`,
+                        color: `hsl(${Math.random() * 360}, 85%, 35%)`,
+                        fontWeight: 500,
+                        fontSize: "0.875rem",
+                      }}
+                    />
+                  </Box>
+                </Box>
+                <Box
+                  sx={{
+                    pt: 2,
+                    borderTop: "1px dashed rgba(203, 213, 225, 0.5)",
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "#94A3B8", display: "block", mb: 1 }}
+                  >
+                    Usage Information
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#475569" }}>
+                    This tag is currently used to categorize and filter project
+                    content.
+                  </Typography>
+                </Box>
+              </PreviewBox>
+
+              <Typography
+                variant="body1"
+                sx={{ color: "#1E293B", mb: 2, fontWeight: 500 }}
+              >
+                Are you sure you want to delete this tag?
+              </Typography>
+
+              <Typography
+                variant="body2"
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: "rgba(239, 68, 68, 0.1)",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                  color: "#64748B",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 1,
+                }}
+              >
+                <WarningIcon sx={{ color: "#EF4444", fontSize: 20 }} />
+                This action cannot be undone. The tag will be permanently
+                removed from the project.
+              </Typography>
+            </motion.div>
+          )}
+        </DialogContent>
+
+        <DialogActions
+          sx={{
+            p: 3,
+            backgroundColor: "#F8FAFC",
+            borderTop: "1px solid rgba(226, 232, 240, 0.8)",
+          }}
+        >
+          <Button
+            onClick={() => {
+              setTagDialogOpen(false);
+              setTagToDelete(null);
+              enableBodyScroll();
+            }}
+            variant="outlined"
+            sx={styles.cancelButton}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmTagDelete}
+            variant="contained"
+            sx={styles.deleteButton}
+          >
+            Delete Tag
+          </Button>
+        </DialogActions>
+      </StyledDialog>
+
+      {/* Category Delete Confirmation Dialog */}
+      <StyledDialog
+        open={categoryDialogOpen}
+        onClose={() => {
+          setCategoryDialogOpen(false);
+          setCategoryToDelete(null);
+          enableBodyScroll();
+        }}
+        maxWidth="sm"
+        fullWidth
+        TransitionComponent={motion.div}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+      >
+        <StyledDialogTitle>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <DeleteIcon sx={{ color: "#EF4444" }} />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Delete Category
+              </Typography>
+            </Box>
+            <IconButton
+              onClick={() => {
+                setCategoryDialogOpen(false);
+                setCategoryToDelete(null);
+                enableBodyScroll();
+              }}
+              sx={{
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                  transform: "rotate(90deg)",
+                },
+                transition: "all 0.3s ease",
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </StyledDialogTitle>
+
+        <DialogContent sx={styles.dialogContent}>
+          {categoryToDelete && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <PreviewBox>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Box
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 2,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background:
+                        "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+                      color: "white",
+                    }}
+                  >
+                    <FolderIcon />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: "#64748B", mb: 0.5 }}
+                    >
+                      Category
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      sx={{ color: "#1E293B", fontWeight: 600 }}
+                    >
+                      {categoryToDelete}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Box
+                  sx={{
+                    pt: 2,
+                    borderTop: "1px dashed rgba(203, 213, 225, 0.5)",
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "#94A3B8", display: "block", mb: 1 }}
+                  >
+                    Impact Assessment
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#475569" }}>
+                    This category is used to organize and classify projects.
+                    Deleting it will remove the categorization from all
+                    associated projects.
+                  </Typography>
+                </Box>
+              </PreviewBox>
+
+              <Typography
+                variant="body1"
+                sx={{ color: "#1E293B", mb: 2, fontWeight: 500 }}
+              >
+                Are you sure you want to delete this category?
+              </Typography>
+
+              <Typography
+                variant="body2"
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: "rgba(239, 68, 68, 0.1)",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                  color: "#64748B",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 1,
+                }}
+              >
+                <WarningIcon sx={{ color: "#EF4444", fontSize: 20 }} />
+                This action cannot be undone. The category will be permanently
+                removed from all projects using it.
+              </Typography>
+            </motion.div>
+          )}
+        </DialogContent>
+
+        <DialogActions
+          sx={{
+            p: 3,
+            backgroundColor: "#F8FAFC",
+            borderTop: "1px solid rgba(226, 232, 240, 0.8)",
+          }}
+        >
+          <Button
+            onClick={() => {
+              setCategoryDialogOpen(false);
+              setCategoryToDelete(null);
+              enableBodyScroll();
+            }}
+            variant="outlined"
+            sx={styles.cancelButton}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmCategoryDelete}
+            variant="contained"
+            sx={styles.deleteButton}
+          >
+            Delete Category
           </Button>
         </DialogActions>
       </StyledDialog>

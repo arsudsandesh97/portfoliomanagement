@@ -28,6 +28,8 @@ import {
   ErrorOutline as ErrorIcon,
   Info as InfoIcon,
   Sync as LoadingIcon,
+  Code as CodeIcon,
+  Warning as WarningIcon,
 } from "@mui/icons-material";
 import { Toaster, toast } from "react-hot-toast";
 import { styled } from "@mui/material/styles";
@@ -498,6 +500,8 @@ const ExperienceForm = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [skillInput, setSkillInput] = useState("");
+  const [skillToDelete, setSkillToDelete] = useState(null);
+  const [skillDialogOpen, setSkillDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchExperiences();
@@ -643,6 +647,29 @@ const ExperienceForm = () => {
   const handleCloseDelete = () => {
     setDeleteDialogOpen(false);
     setItemToDelete(null);
+    enableBodyScroll();
+  };
+
+  const handleSkillDelete = (skill) => {
+    setSkillToDelete(skill);
+    setSkillDialogOpen(true);
+    disableBodyScroll();
+  };
+
+  const handleConfirmSkillDelete = () => {
+    setCurrentExperience((prev) => ({
+      ...prev,
+      skills: prev.skills.filter((s) => s !== skillToDelete),
+    }));
+    toast.success(`Removed skill: ${skillToDelete}`);
+    setSkillDialogOpen(false);
+    setSkillToDelete(null);
+    enableBodyScroll();
+  };
+
+  const handleCloseSkillDelete = () => {
+    setSkillDialogOpen(false);
+    setSkillToDelete(null);
     enableBodyScroll();
   };
 
@@ -1126,13 +1153,7 @@ const ExperienceForm = () => {
                       >
                         <Chip
                           label={skill}
-                          onDelete={() => {
-                            setCurrentExperience((prev) => ({
-                              ...prev,
-                              skills: prev.skills.filter((s) => s !== skill),
-                            }));
-                            toast.success(`Removed skill: ${skill}`);
-                          }}
+                          onDelete={() => handleSkillDelete(skill)}
                           sx={{
                             ...skillStyles.chip,
                             backgroundColor: `hsl(${
@@ -1404,6 +1425,180 @@ const ExperienceForm = () => {
             sx={styles.deleteButton}
           >
             Delete Experience
+          </Button>
+        </DialogActions>
+      </StyledDialog>
+
+      <StyledDialog
+        open={skillDialogOpen}
+        onClose={handleCloseSkillDelete}
+        maxWidth="sm"
+        fullWidth
+        TransitionComponent={motion.div}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        PaperProps={{
+          sx: {
+            m: 2,
+            maxHeight: "calc(100% - 64px)",
+          },
+        }}
+      >
+        <StyledDialogTitle>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <DeleteIcon sx={{ color: "#EF4444" }} />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Delete Skill
+              </Typography>
+            </Box>
+            <IconButton
+              onClick={handleCloseSkillDelete}
+              sx={{
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                  transform: "rotate(90deg)",
+                },
+                transition: "all 0.3s ease",
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </StyledDialogTitle>
+
+        <DialogContent sx={styles.dialogContent}>
+          {skillToDelete && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2.5,
+                  mb: 3,
+                  p: 3,
+                  borderRadius: 2,
+                  backgroundColor: "rgba(241, 245, 249, 0.5)",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 2,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background:
+                        "linear-gradient(135deg, #1E293B 0%, #0F172A 100%)",
+                      color: "white",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    }}
+                  >
+                    <CodeIcon />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: "#64748B", mb: 0.5 }}
+                    >
+                      Skill
+                    </Typography>
+                    <Chip
+                      label={skillToDelete}
+                      sx={{
+                        backgroundColor: `hsl(${
+                          Math.random() * 360
+                        }, 85%, 97%)`,
+                        color: `hsl(${Math.random() * 360}, 85%, 35%)`,
+                        fontWeight: 600,
+                        fontSize: "0.875rem",
+                      }}
+                    />
+                  </Box>
+                </Box>
+
+                <Box
+                  sx={{
+                    pt: 2,
+                    borderTop: "1px dashed rgba(203, 213, 225, 0.5)",
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "#94A3B8", display: "block", mb: 1 }}
+                  >
+                    Impact Information
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#475569" }}>
+                    This skill is currently associated with your experience
+                    entry and is used to showcase your technical expertise.
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Typography
+                variant="body1"
+                sx={{ color: "#1E293B", mb: 2, fontWeight: 500 }}
+              >
+                Are you sure you want to remove this skill?
+              </Typography>
+
+              <Typography
+                variant="body2"
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: "rgba(239, 68, 68, 0.1)",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                  color: "#64748B",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 1,
+                }}
+              >
+                <WarningIcon sx={{ color: "#EF4444", fontSize: 20 }} />
+                This action cannot be undone. The skill will be permanently
+                removed from this experience entry.
+              </Typography>
+            </motion.div>
+          )}
+        </DialogContent>
+
+        <DialogActions
+          sx={{
+            p: 3,
+            backgroundColor: "#F8FAFC",
+            borderTop: "1px solid rgba(226, 232, 240, 0.8)",
+          }}
+        >
+          <Button
+            onClick={handleCloseSkillDelete}
+            variant="outlined"
+            sx={styles.cancelButton}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmSkillDelete}
+            variant="contained"
+            sx={styles.deleteButton}
+          >
+            Remove Skill
           </Button>
         </DialogActions>
       </StyledDialog>
