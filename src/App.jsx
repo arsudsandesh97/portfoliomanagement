@@ -7,9 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { AuthProvider } from "./contexts/AuthContext";
 import PrivateRoute from "./components/auth/PrivateRoute";
 import Login from "./components/auth/Login";
-import Dashboard from "./components/dashboard/Dashboard";
-import Redirect from "./components/Redirect";
-import StorageForm from "./components/forms/StorageForm";
+import StorageForm from "./Components/Forms/StorageForm";
 
 const theme = createTheme({
   palette: {
@@ -26,8 +24,6 @@ function App() {
   return (
     <Router basename="/portfoliomanagement">
       <Routes>
-        <Route path="/:shortCode" element={<Redirect />} />
-        {/* ...other routes... */}
         <Route path="/storage" element={<StorageForm />} />
       </Routes>
     </Router>
