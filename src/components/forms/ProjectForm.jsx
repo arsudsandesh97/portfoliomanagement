@@ -1536,6 +1536,46 @@ const ProjectForm = () => {
                 </Box>
               )}
             </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="GitHub URL"
+                value={currentProject.github || ""}
+                onChange={(e) =>
+                  setCurrentProject({
+                    ...currentProject,
+                    github: e.target.value,
+                  })
+                }
+                sx={styles.dialogField}
+                helperText="Enter the GitHub repository URL"
+                InputProps={{
+                  startAdornment: (
+                    <GitHubIcon sx={{ mr: 1, color: "#475569" }} />
+                  ),
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Dashboard URL"
+                value={currentProject.dashboard || ""}
+                onChange={(e) =>
+                  setCurrentProject({
+                    ...currentProject,
+                    dashboard: e.target.value,
+                  })
+                }
+                sx={styles.dialogField}
+                helperText="Enter the live project URL"
+                InputProps={{
+                  startAdornment: (
+                    <DashboardIcon sx={{ mr: 1, color: "#475569" }} />
+                  ),
+                }}
+              />
+            </Grid>
             <Grid item xs={12}>
               <Box sx={{ mb: 2 }}>
                 <Typography variant="h6" sx={{ color: "#1E293B", mb: 2 }}>
