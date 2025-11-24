@@ -16,6 +16,11 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Fade,
+  Slide,
+  Zoom,
+  Tooltip,
+  LinearProgress,
 } from "@mui/material";
 import {
   Save as SaveIcon,
@@ -35,6 +40,10 @@ import {
   Brightness2 as EveningIcon,
   NightsStay as NightIcon,
   Delete as DeleteIcon,
+  PhotoCamera as PhotoCameraIcon,
+  CloudUpload as CloudUploadIcon,
+  Visibility as VisibilityIcon,
+  Edit as EditIcon,
 } from "@mui/icons-material";
 import { Toaster, toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -234,54 +243,47 @@ const buttonStyles = {
   borderRadius: { xs: "10px", sm: "12px" },
 };
 
-const GreetingMessage = ({ userName }) => {
-  const getCurrentTimeGreeting = () => {
-    const hour = new Date().getHours();
-
-    if (hour >= 5 && hour < 12)
-      return {
-        text: "Good morning",
-        icon: <MorningIcon />,
-        color: "#FDB813",
-        gradientStart: "#FF512F",
-        gradientEnd: "#F09819",
-        bgPattern:
-          "radial-gradient(circle at top right, #FDB81315, transparent 70%)",
-      };
-
-    if (hour >= 12 && hour < 17)
-      return {
-        text: "Good afternoon",
-        icon: <AfternoonIcon />,
-        color: "#FFB100",
-        gradientStart: "#1E293B",
-        gradientEnd: "#334155",
-        bgPattern:
-          "radial-gradient(circle at top right, #FFB10015, transparent 70%)",
-      };
-
-    if (hour >= 17 && hour < 22)
-      return {
-        text: "Good evening",
-        icon: <EveningIcon />,
-        color: "#60A5FA",
-        gradientStart: "#2D3A69",
-        gradientEnd: "#1E293B",
-        bgPattern:
-          "radial-gradient(circle at top right, #60A5FA15, transparent 70%)",
-      };
-
+// Helper to get greeting based on time
+const getCurrentTimeGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12)
     return {
-      text: "Good night",
-      icon: <NightIcon />,
-      color: "#A78BFA",
-      gradientStart: "#0F172A",
-      gradientEnd: "#1E293B",
-      bgPattern:
-        "radial-gradient(circle at top right, #A78BFA15, transparent 70%)",
+      text: "Good morning",
+      icon: <MorningIcon />,
+      color: "#FDB813",
+      gradientStart: "#FF512F",
+      gradientEnd: "#F09819",
+      bgPattern: "radial-gradient(circle at top right, #FDB81315, transparent 70%)",
     };
+  if (hour >= 12 && hour < 17)
+    return {
+      text: "Good afternoon",
+      icon: <AfternoonIcon />,
+      color: "#FFB100",
+      gradientStart: "#1E293B",
+      gradientEnd: "#334155",
+      bgPattern: "radial-gradient(circle at top right, #FFB10015, transparent 70%)",
+    };
+  if (hour >= 17 && hour < 22)
+    return {
+      text: "Good evening",
+      icon: <EveningIcon />,
+      color: "#60A5FA",
+      gradientStart: "#2D3A69",
+      gradientEnd: "#1E293B",
+      bgPattern: "radial-gradient(circle at top right, #60A5FA15, transparent 70%)",
+    };
+  return {
+    text: "Good night",
+    icon: <NightIcon />,
+    color: "#A78BFA",
+    gradientStart: "#0F172A",
+    gradientEnd: "#1E293B",
+    bgPattern: "radial-gradient(circle at top right, #A78BFA15, transparent 70%)",
   };
+};
 
+const GreetingSection = ({ userName = "Sandesh Arsud" }) => {
   const greeting = getCurrentTimeGreeting();
 
   return (
@@ -314,106 +316,52 @@ const GreetingMessage = ({ userName }) => {
         },
       }}
     >
-      <motion.div
-        initial={{ scale: 0.5, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.2, duration: 0.5, ease: "easeOut" }}
-      >
-        <Typography
-          variant="h5"
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
+        <Box
           sx={{
             display: "flex",
             alignItems: "center",
-            gap: 1.5,
-            fontWeight: 700,
-            mb: 1.5,
-            fontSize: { xs: "1.5rem", sm: "1.75rem" },
+            justifyContent: "center",
+            width: { xs: 40, sm: 48 },
+            height: { xs: 40, sm: 48 },
+            borderRadius: "14px",
+            backgroundColor: `${greeting.color}20`,
+            border: `2px solid ${greeting.color}40`,
+            color: greeting.color,
+            boxShadow: `0 4px 12px ${greeting.color}30`,
+            mr: 1,
           }}
         >
-          <Box
-            component={motion.div}
-            initial={{ rotate: -30, scale: 0.5 }}
-            animate={{ rotate: 0, scale: 1 }}
-            transition={{
-              delay: 0.3,
-              duration: 0.5,
-              ease: "easeOut",
-              type: "spring",
-              stiffness: 200,
-            }}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: { xs: 40, sm: 48 },
-              height: { xs: 40, sm: 48 },
-              borderRadius: "14px",
-              backgroundColor: `${greeting.color}20`,
-              border: `2px solid ${greeting.color}40`,
-              color: greeting.color,
-              boxShadow: `0 4px 12px ${greeting.color}30`,
-              transition: "all 0.3s ease",
-              cursor: "pointer",
-              "&:hover": {
-                transform: "scale(1.1) rotate(5deg)",
-                backgroundColor: `${greeting.color}30`,
-                border: `2px solid ${greeting.color}60`,
-                boxShadow: `0 6px 16px ${greeting.color}40`,
-              },
-            }}
-          >
-            {greeting.icon}
-          </Box>
-          <Box
-            sx={{
-              background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
-              backgroundClip: "text",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            {`${greeting.text}, ${userName || "there"}!`}
-          </Box>
-        </Typography>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.4, duration: 0.5 }}
-      >
+          {greeting.icon}
+        </Box>
         <Typography
-          variant="body1"
+          variant="h5"
           sx={{
-            color: "#94A3B8",
-            lineHeight: 1.7,
-            fontSize: { xs: "0.875rem", sm: "1rem" },
-            maxWidth: "600px",
-            letterSpacing: "0.01em",
-            "& strong": {
-              color: "#E2E8F0",
-              fontWeight: 600,
-            },
+            fontWeight: 700,
+            fontSize: { xs: "1.5rem", sm: "1.75rem" },
+            background: "linear-gradient(135deg, #E2E8F0 0%, #FFFFFF 100%)",
+            backgroundClip: "text",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            display: "inline-block",
           }}
         >
-          Welcome to your <strong>portfolio management dashboard</strong>. Here
-          you can update your bio information and manage your{" "}
-          <strong>social media presence</strong>.
+          {`${greeting.text}, ${userName}!`}
         </Typography>
-      </motion.div>
-
-      <Box
-        component={motion.div}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6, duration: 0.5 }}
+      </Box>
+      <Typography
+        variant="body1"
         sx={{
-          display: "flex",
-          gap: 1,
-          mt: 2.5,
-          flexWrap: "wrap",
+          color: "#F1F5F9",
+          lineHeight: 1.7,
+          fontSize: { xs: "0.95rem", sm: "1.1rem" },
+          maxWidth: "600px",
+          mb: 2,
         }}
       >
+        Welcome to your <strong>portfolio management dashboard</strong>. Here you can update your bio information and manage your <strong>social media presence</strong>.
+      </Typography>
+      <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mt: 1 }}>
         {["Bio", "Social Links", "Copyright"].map((item, index) => (
           <Chip
             key={item}
@@ -423,20 +371,15 @@ const GreetingMessage = ({ userName }) => {
               color: "#E2E8F0",
               borderRadius: "10px",
               border: "1px solid rgba(255,255,255,0.1)",
-              backdropFilter: "blur(8px)",
               fontSize: { xs: "0.75rem", sm: "0.813rem" },
               height: { xs: "28px", sm: "32px" },
-              transition: "all 0.2s ease",
+              fontWeight: 600,
               "&:hover": {
                 backgroundColor: "rgba(255,255,255,0.12)",
                 transform: "translateY(-1px)",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
               },
-              animation: `fadeIn 0.5s ease forwards ${0.7 + index * 0.1}s`,
-              "@keyframes fadeIn": {
-                "0%": { opacity: 0, transform: "translateY(10px)" },
-                "100%": { opacity: 1, transform: "translateY(0)" },
-              },
+              transition: "all 0.2s ease",
             }}
           />
         ))}
@@ -867,7 +810,7 @@ const BioForm = () => {
 
   return (
     <Box sx={formStyles.container}>
-      <GreetingMessage userName={bio.name} /> {/* Add this line */}
+      <GreetingSection userName={bio.name} /> {/* Add this line */}
       <Paper sx={paperStyles}>
         <Box sx={formStyles.header}>
           <Typography variant="h4" sx={formStyles.headerTitle}>
@@ -1175,7 +1118,12 @@ const BioForm = () => {
             </Box>
           </StyledDialogTitle>
 
-          <DialogContent sx={styles.dialogContent}>
+          <DialogContent
+            sx={{
+              ...styles.dialogContent,
+              ...dialogScrollStyles.content,
+            }}
+          >
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1408,12 +1356,15 @@ const BioForm = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        disableScrollLock={false}
-        onBackdropClick={handleCloseDelete}
         PaperProps={{
           sx: {
-            m: 2,
-            maxHeight: "calc(100% - 64px)",
+            ...dialogScrollStyles.paper,
+            background: "rgba(255, 255, 255, 0.95)",
+            backdropFilter: "blur(16px) saturate(180%)",
+            border: "1px solid rgba(241, 245, 249, 0.2)",
+            borderRadius: "24px",
+            boxShadow:
+              "rgb(0 0 0 / 8%) 0px 20px 40px, rgb(0 0 0 / 6%) 0px 1px 3px",
           },
         }}
       >
@@ -1447,7 +1398,12 @@ const BioForm = () => {
           </Box>
         </StyledDialogTitle>
 
-        <DialogContent sx={styles.dialogContent}>
+        <DialogContent
+          sx={{
+            ...styles.dialogContent,
+            ...dialogScrollStyles.content,
+          }}
+        >
           {itemToDelete && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -1641,6 +1597,35 @@ const styles = {
       boxShadow: "0 6px 16px rgba(239,68,68,0.3)",
     },
     transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+  },
+};
+
+// Add these scroll-specific styles
+const dialogScrollStyles = {
+  paper: {
+    maxHeight: { xs: "calc(100% - 32px)", sm: "calc(100% - 64px)" },
+    margin: { xs: "16px", sm: "32px" },
+    display: "flex",
+    flexDirection: "column",
+    overflowY: "hidden",
+  },
+  content: {
+    overflowY: "auto",
+    "&::-webkit-scrollbar": {
+      width: "8px",
+      height: "8px",
+    },
+    "&::-webkit-scrollbar-track": {
+      backgroundColor: "#F1F5F9",
+      borderRadius: "4px",
+    },
+    "&::-webkit-scrollbar-thumb": {
+      backgroundColor: "#CBD5E1",
+      borderRadius: "4px",
+      "&:hover": {
+        backgroundColor: "#94A3B8",
+      },
+    },
   },
 };
 

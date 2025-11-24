@@ -6,9 +6,12 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { Box, CssBaseline } from "@mui/material";
+import { Box, CssBaseline, ThemeProvider } from "@mui/material";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+// Theme
+import theme from "./theme";
 
 // Services
 import { supabase } from "./Config/supabase";
@@ -29,6 +32,7 @@ import ContactForm from "./Components/Forms/ContactForm.jsx";
 import ImageUploadForm from "./Components/Forms/ImageUploadForm.jsx";
 import StorageForm from "./Components/Forms/StorageForm.jsx";
 import StorageFormS from "./Components/Forms/StorageFormSupabase.jsx";
+import ProjectExplanationForm from "./Components/Forms/ProjectExplanationForm.jsx";
 
 const App = () => {
   const [session, setSession] = useState(null);
@@ -64,69 +68,73 @@ const App = () => {
 
   if (!session) {
     return (
-      <>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
         <Login />
         <ToastContainer position="bottom-right" />
-      </>
+      </ThemeProvider>
     );
   }
 
   return (
-    <Router basename={basename}>
-      <Box sx={{ display: "flex" }}>
-        <CssBaseline />
+    <ThemeProvider theme={theme}>
+      <Router basename={basename}>
+        <Box sx={{ display: "flex" }}>
+          <CssBaseline />
 
-        <Header handleDrawerToggle={handleDrawerToggle} user={session.user} />
+          <Header handleDrawerToggle={handleDrawerToggle} user={session.user} />
 
-        <Sidebar
-          mobileOpen={mobileOpen}
-          handleDrawerToggle={handleDrawerToggle}
-        />
+          <Sidebar
+            mobileOpen={mobileOpen}
+            handleDrawerToggle={handleDrawerToggle}
+          />
 
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            display: "flex",
-            flexDirection: "column",
-            minHeight: "100vh",
-            width: { sm: `calc(100% - ${280}px)` },
-            mt: 8,
-            backgroundColor: "#F8FAFC",
-          }}
-        >
-          <Box sx={{ p: 3, flexGrow: 1 }}>
-            <Routes>
-              <Route path="/" element={<Navigate to="/bio" replace />} />
-              <Route path="/bio" element={<BioForm />} />
-              <Route path="/education" element={<EducationForm />} />
-              <Route path="/experience" element={<ExperienceForm />} />
-              <Route path="/projects" element={<ProjectForm />} />
-              <Route path="/skills" element={<SkillForm />} />
-              <Route path="/contacts" element={<ContactForm />} />
-              <Route path="/image-upload" element={<ImageUploadForm />} />
-              <Route path="/storage" element={<StorageForm />} />{" "}
-              <Route path="/storages" element={<StorageFormS />} />{" "}
-              <Route path="*" element={<Navigate to="/bio" replace />} />
-            </Routes>
+          <Box
+            component="main"
+            sx={{
+              flexGrow: 1,
+              display: "flex",
+              flexDirection: "column",
+              minHeight: "100vh",
+              width: { sm: `calc(100% - ${280}px)` },
+              mt: 8,
+              backgroundColor: "#F8FAFC",
+            }}
+          >
+            <Box sx={{ p: 3, flexGrow: 1 }}>
+              <Routes>
+                <Route path="/" element={<Navigate to="/bio" replace />} />
+                <Route path="/bio" element={<BioForm />} />
+                <Route path="/education" element={<EducationForm />} />
+                <Route path="/experience" element={<ExperienceForm />} />
+                <Route path="/projects" element={<ProjectForm />} />
+                <Route path="/skills" element={<SkillForm />} />
+                <Route path="/contacts" element={<ContactForm />} />
+                <Route path="/image-upload" element={<ImageUploadForm />} />
+                <Route path="/storage" element={<StorageForm />} />{" "}
+                <Route path="/storages" element={<StorageFormS />} />{" "}
+                <Route path="/project-explanations" element={<ProjectExplanationForm />} />
+                <Route path="*" element={<Navigate to="/bio" replace />} />
+              </Routes>
+            </Box>
+            <Footer />
           </Box>
-          <Footer />
-        </Box>
 
-        <ToastContainer
-          position="bottom-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
-      </Box>
-    </Router>
+          <ToastContainer
+            position="bottom-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+          />
+        </Box>
+      </Router>
+    </ThemeProvider>
   );
 };
 

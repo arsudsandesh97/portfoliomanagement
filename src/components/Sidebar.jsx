@@ -17,6 +17,7 @@ import {
   ContactMail as ContactMailIcon,
   Image as ImageIcon,
   Folder as FolderIcon,
+  Description as DescriptionIcon,
 } from "@mui/icons-material";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -26,6 +27,7 @@ const menuItems = [
   { text: "Education", icon: <EducationIcon />, path: "/education" },
   { text: "Experience", icon: <ExperienceIcon />, path: "/experience" },
   { text: "Projects", icon: <ProjectIcon />, path: "/projects" },
+  { text: "Project Explanations", icon: <DescriptionIcon />, path: "/project-explanations" },
   { text: "Skills", icon: <SkillIcon />, path: "/skills" },
   { text: "Contacts", icon: <ContactMailIcon />, path: "/contacts" },
   { text: "Image Upload", icon: <ImageIcon />, path: "/image-upload" },

@@ -192,9 +192,11 @@ const dialogStyles = {
     maxWidth: { xs: "100%", sm: 600 },
     m: { xs: 2, sm: 4 },
     borderRadius: { xs: 2, sm: 3 },
+    maxHeight: "90vh", // Add this to limit dialog height
   },
   content: {
     p: { xs: 2, sm: 3 },
+    overflowY: "auto", // Enable vertical scrolling
     "& .MuiTextField-root": {
       mb: { xs: 2, sm: 2.5 },
     },
@@ -276,7 +278,8 @@ const StyledDialog = styled(Dialog)`
     border: 1px solid rgba(241, 245, 249, 0.2);
     border-radius: 24px;
     box-shadow: rgb(0 0 0 / 8%) 0px 20px 40px, rgb(0 0 0 / 6%) 0px 1px 3px;
-    overflow: hidden;
+    max-height: 90vh; // Add this to limit dialog height
+    overflow-y: auto; // Enable vertical scrolling
   }
 `;
 
@@ -817,12 +820,10 @@ const ContactForm = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        disableScrollLock={false}
-        onBackdropClick={handleCloseDelete}
         PaperProps={{
           sx: {
             m: 2,
-            maxHeight: "calc(100% - 64px)",
+            maxHeight: "90vh",
           },
         }}
       >

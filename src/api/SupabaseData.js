@@ -419,3 +419,42 @@ export const projectCategoryApi = {
     if (error) throw error;
   },
 };
+
+// Project Explanations API
+export const projectExplanationsApi = {
+  fetchByProjectId: async (projectId) => {
+    const { data, error } = await supabase
+      .from("project_explanations")
+      .select("*")
+      .eq("project_id", projectId)
+      .single();
+    if (error && error.code !== "PGRST116") throw error; // PGRST116 is "not found" error
+    return data;
+  },
+
+  fetchAll: async () => {
+    const { data, error } = await supabase
+      .from("project_explanations")
+      .select("*");
+    if (error) throw error;
+    return data;
+  },
+
+  upsert: async (explanationData) => {
+    const { data, error } = await supabase
+      .from("project_explanations")
+      .upsert(explanationData, { onConflict: "project_id" })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  delete: async (projectId) => {
+    const { error } = await supabase
+      .from("project_explanations")
+      .delete()
+      .eq("project_id", projectId);
+    if (error) throw error;
+  },
+};
