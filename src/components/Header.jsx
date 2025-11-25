@@ -10,19 +10,27 @@ import {
   useTheme,
   useMediaQuery,
   Avatar,
+  Tooltip,
 } from "@mui/material";
-import { Menu as MenuIcon, Logout as LogoutIcon } from "@mui/icons-material";
+import {
+  Menu as MenuIcon,
+  Logout as LogoutIcon,
+  Brightness4 as DarkModeIcon,
+  Brightness7 as LightModeIcon,
+} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 // Components & Services
 import { supabase } from "../Config/supabase";
+import { useThemeMode } from "../Contexts/ThemeContext";
 
 const Header = ({ handleDrawerToggle, user }) => {
   const [bioData, setBioData] = useState(null);
   const [profileImage, setProfileImage] = useState(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const theme = useTheme();
+  const { mode, toggleTheme } = useThemeMode();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
 
@@ -104,11 +112,13 @@ const Header = ({ handleDrawerToggle, user }) => {
       position="fixed"
       sx={{
         zIndex: (theme) => theme.zIndex.drawer + 1,
-        background:
-          "linear-gradient(to right, rgba(255, 255, 255, 0.95), rgba(249, 250, 251, 0.95))",
+        background: mode === 'light'
+          ? "linear-gradient(to right, rgba(255, 255, 255, 0.95), rgba(249, 250, 251, 0.95))"
+          : "linear-gradient(to right, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95))",
         backdropFilter: "blur(20px)",
-        boxShadow: "0 4px 30px rgba(0, 0, 0, 0.03)",
-        borderBottom: "1px solid rgba(241, 245, 249, 0.9)",
+        boxShadow: mode === 'light' ? "0 4px 30px rgba(0, 0, 0, 0.03)" : "0 4px 30px rgba(0, 0, 0, 0.5)",
+        borderBottom: mode === 'light' ? "1px solid rgba(241, 245, 249, 0.9)" : "1px solid rgba(51, 65, 85, 0.5)",
+        transition: "all 0.3s ease",
       }}
     >
       <Toolbar
@@ -125,10 +135,10 @@ const Header = ({ handleDrawerToggle, user }) => {
           sx={{
             mr: { xs: 1, sm: 2 },
             display: { sm: "none" },
-            color: "#1E293B",
+            color: "text.primary",
             padding: { xs: 1, sm: 1.5 },
             "&:hover": {
-              background: "rgba(30, 41, 59, 0.04)",
+              background: mode === 'light' ? "rgba(30, 41, 59, 0.04)" : "rgba(203, 213, 225, 0.08)",
               transform: "scale(1.05)",
             },
             transition: "all 0.2s ease-in-out",
@@ -142,13 +152,15 @@ const Header = ({ handleDrawerToggle, user }) => {
           noWrap
           component="div"
           sx={{
-            background: "linear-gradient(135deg, #0F172A 0%, #334155 100%)",
+            background: mode === 'light'
+              ? "linear-gradient(135deg, #0F172A 0%, #334155 100%)"
+              : "linear-gradient(135deg, #F8FAFC 0%, #CBD5E1 100%)",
             backgroundClip: "text",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             fontWeight: 800,
             fontSize: {
-              xs: "0.75rem", // Smaller font size for mobile
+              xs: "0.75rem",
               sm: "1.1rem",
               md: "1.35rem",
             },
@@ -157,7 +169,7 @@ const Header = ({ handleDrawerToggle, user }) => {
             alignItems: "center",
             gap: { xs: 1, sm: 2 },
             position: "relative",
-            maxWidth: "100%", // Allow full width
+            maxWidth: "100%",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -168,8 +180,9 @@ const Header = ({ handleDrawerToggle, user }) => {
               left: 0,
               width: { xs: "60%", sm: "40%" },
               height: "2px",
-              background:
-                "linear-gradient(90deg, #0F172A 0%, transparent 100%)",
+              background: mode === 'light'
+                ? "linear-gradient(90deg, #0F172A 0%, transparent 100%)"
+                : "linear-gradient(90deg, #F8FAFC 0%, transparent 100%)",
               borderRadius: "2px",
             },
           }}
@@ -194,6 +207,27 @@ const Header = ({ handleDrawerToggle, user }) => {
             ml: "auto",
           }}
         >
+          {/* Theme Toggle Button */}
+          <Tooltip title={mode === 'light' ? 'Dark Mode' : 'Light Mode'}>
+            <IconButton
+              onClick={toggleTheme}
+              sx={{
+                color: "text.primary",
+                padding: { xs: 1, sm: 1.5 },
+                "&:hover": {
+                  background: mode === 'light' ? "rgba(30, 41, 59, 0.04)" : "rgba(203, 213, 225, 0.08)",
+                  transform: "rotate(180deg) scale(1.1)",
+                },
+                transition: "all 0.4s ease-in-out",
+              }}
+            >
+              {mode === 'light' ? 
+                <DarkModeIcon sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }} /> : 
+                <LightModeIcon sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }} />
+              }
+            </IconButton>
+          </Tooltip>
+
           {user && (
             <>
               <Box
@@ -201,17 +235,19 @@ const Header = ({ handleDrawerToggle, user }) => {
                   display: "flex",
                   alignItems: "center",
                   gap: { xs: 1, sm: 2 },
-                  background:
-                    "linear-gradient(to right, rgba(30, 41, 59, 0.04), rgba(30, 41, 59, 0.02))",
+                  background: mode === 'light'
+                    ? "linear-gradient(to right, rgba(30, 41, 59, 0.04), rgba(30, 41, 59, 0.02))"
+                    : "linear-gradient(to right, rgba(203, 213, 225, 0.08), rgba(203, 213, 225, 0.04))",
                   padding: { xs: "6px 12px", sm: "8px 16px" },
                   borderRadius: { xs: "12px", sm: "16px" },
                   transition: "all 0.3s ease",
-                  border: "1px solid rgba(241, 245, 249, 0.9)",
+                  border: mode === 'light' ? "1px solid rgba(241, 245, 249, 0.9)" : "1px solid rgba(51, 65, 85, 0.5)",
                   "&:hover": {
-                    background:
-                      "linear-gradient(to right, rgba(30, 41, 59, 0.06), rgba(30, 41, 59, 0.04))",
+                    background: mode === 'light'
+                      ? "linear-gradient(to right, rgba(30, 41, 59, 0.06), rgba(30, 41, 59, 0.04))"
+                      : "linear-gradient(to right, rgba(203, 213, 225, 0.12), rgba(203, 213, 225, 0.08))",
                     transform: "translateY(-1px)",
-                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
+                    boxShadow: mode === 'light' ? "0 4px 20px rgba(0, 0, 0, 0.03)" : "0 4px 20px rgba(0, 0, 0, 0.3)",
                   },
                 }}
               >
@@ -241,7 +277,7 @@ const Header = ({ handleDrawerToggle, user }) => {
                     <Typography
                       variant="subtitle2"
                       sx={{
-                        color: "#1E293B",
+                        color: "text.primary",
                         fontWeight: 600,
                         lineHeight: 1.2,
                         fontSize: { xs: "0.8rem", sm: "0.875rem", md: "1rem" },
@@ -252,7 +288,7 @@ const Header = ({ handleDrawerToggle, user }) => {
                     <Typography
                       variant="caption"
                       sx={{
-                        color: "#64748B",
+                        color: "text.secondary",
                         display: "block",
                         fontSize: { xs: "0.7rem", sm: "0.75rem", md: "0.8rem" },
                       }}
@@ -272,17 +308,17 @@ const Header = ({ handleDrawerToggle, user }) => {
                 }}
                 disabled={isLoggingOut}
                 sx={{
-                  borderColor: "rgba(226, 232, 240, 0.8)",
-                  color: "#64748B",
+                  borderColor: mode === 'light' ? "rgba(226, 232, 240, 0.8)" : "rgba(51, 65, 85, 0.8)",
+                  color: "text.secondary",
                   borderRadius: { xs: "10px", sm: "12px" },
                   px: { xs: 1.5, sm: 2, md: 3 },
                   py: { xs: 0.75, sm: 1 },
-                  backgroundColor: "rgba(255, 255, 255, 0.8)",
+                  backgroundColor: mode === 'light' ? "rgba(255, 255, 255, 0.8)" : "rgba(30, 41, 59, 0.8)",
                   "&:hover": {
-                    borderColor: "#CBD5E1",
-                    backgroundColor: "#F8FAFC",
+                    borderColor: mode === 'light' ? "#CBD5E1" : "#64748B",
+                    backgroundColor: mode === 'light' ? "#F8FAFC" : "#334155",
                     transform: "translateY(-2px)",
-                    boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
+                    boxShadow: mode === 'light' ? "0 4px 15px rgba(0,0,0,0.05)" : "0 4px 15px rgba(0,0,0,0.3)",
                   },
                   textTransform: "none",
                   transition: "all 0.3s ease",

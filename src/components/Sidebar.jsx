@@ -7,6 +7,7 @@ import {
   ListItemIcon,
   ListItemText,
   Box,
+  useTheme,
 } from "@mui/material";
 import {
   Person as BioIcon,
@@ -18,17 +19,21 @@ import {
   Image as ImageIcon,
   Folder as FolderIcon,
   Description as DescriptionIcon,
+  Article as ArticleIcon,
+  Dashboard as DashboardIcon,
 } from "@mui/icons-material";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const drawerWidth = 280;
 const menuItems = [
+  { text: "Dashboard", icon: <DashboardIcon />, path: "/" },
   { text: "Bio", icon: <BioIcon />, path: "/bio" },
   { text: "Education", icon: <EducationIcon />, path: "/education" },
   { text: "Experience", icon: <ExperienceIcon />, path: "/experience" },
   { text: "Projects", icon: <ProjectIcon />, path: "/projects" },
   { text: "Project Explanations", icon: <DescriptionIcon />, path: "/project-explanations" },
   { text: "Skills", icon: <SkillIcon />, path: "/skills" },
+  { text: "Blog Posts", icon: <ArticleIcon />, path: "/blog-posts" },
   { text: "Contacts", icon: <ContactMailIcon />, path: "/contacts" },
   { text: "Image Upload", icon: <ImageIcon />, path: "/image-upload" },
   { text: "Storage", icon: <FolderIcon />, path: "/storage" },
@@ -37,14 +42,16 @@ const menuItems = [
 const Sidebar = ({ mobileOpen, handleDrawerToggle }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const drawer = (
     <Box
       sx={{
         height: "100%",
-        backgroundColor: "white",
-        background:
-          "linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(248,250,252,0.5) 100%)",
+        backgroundColor: "background.paper",
+        background: theme.palette.mode === 'light'
+          ? "linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(248,250,252,0.5) 100%)"
+          : "linear-gradient(180deg, rgba(30,41,59,1) 0%, rgba(15,23,42,0.8) 100%)",
       }}
     >
       <Box
@@ -53,7 +60,7 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle }) => {
           display: "flex",
           alignItems: "center",
           px: 3,
-          borderBottom: "1px solid rgba(226, 232, 240, 0.8)",
+          borderBottom: theme.palette.mode === 'light' ? "1px solid rgba(226, 232, 240, 0.8)" : "1px solid rgba(51, 65, 85, 0.5)",
           backdropFilter: "blur(10px)",
         }}
       />
@@ -75,21 +82,21 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle }) => {
               mb: 1,
               backgroundColor:
                 location.pathname === item.path
-                  ? "rgba(15, 23, 42, 0.04)"
+                  ? (theme.palette.mode === 'light' ? "rgba(15, 23, 42, 0.04)" : "rgba(96, 165, 250, 0.15)")
                   : "transparent",
-              color: location.pathname === item.path ? "#0F172A" : "#64748B",
+              color: location.pathname === item.path ? "text.primary" : "text.secondary",
               position: "relative",
               overflow: "hidden",
               "&:hover": {
-                backgroundColor: "rgba(15, 23, 42, 0.02)",
+                backgroundColor: theme.palette.mode === 'light' ? "rgba(15, 23, 42, 0.02)" : "rgba(96, 165, 250, 0.08)",
                 transform: "translateY(-1px)",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
+                boxShadow: theme.palette.mode === 'light' ? "0 4px 12px rgba(0,0,0,0.03)" : "0 4px 12px rgba(0,0,0,0.3)",
                 "& .MuiListItemIcon-root": {
-                  color: "#0F172A",
+                  color: "text.primary",
                   transform: "scale(1.1)",
                 },
                 "& .MuiListItemText-primary": {
-                  color: "#0F172A",
+                  color: "text.primary",
                 },
               },
               "&:active": {
@@ -104,14 +111,14 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle }) => {
                 transform: "translateY(-50%)",
                 height: "60%",
                 width: "3px",
-                backgroundColor: "#0F172A",
+                backgroundColor: theme.palette.mode === 'light' ? "#0F172A" : "#60A5FA",
                 borderRadius: "0 4px 4px 0",
               },
             }}
           >
             <ListItemIcon
               sx={{
-                color: location.pathname === item.path ? "#0F172A" : "#64748B",
+                color: location.pathname === item.path ? "text.primary" : "text.secondary",
                 minWidth: 40,
                 transition: "all 0.2s ease-in-out",
               }}
@@ -149,16 +156,16 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle }) => {
         open={mobileOpen}
         onClose={handleDrawerToggle}
         ModalProps={{
-          keepMounted: true, // Better open performance on mobile.
+          keepMounted: true,
         }}
         sx={{
           display: { xs: "block", sm: "none" },
           "& .MuiDrawer-paper": {
             boxSizing: "border-box",
             width: drawerWidth,
-            backgroundColor: "white",
+            backgroundColor: "background.paper",
             border: "none",
-            boxShadow: "4px 0 25px rgba(0,0,0,0.08)",
+            boxShadow: theme.palette.mode === 'light' ? "4px 0 25px rgba(0,0,0,0.08)" : "4px 0 25px rgba(0,0,0,0.6)",
           },
         }}
       >
@@ -173,9 +180,9 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle }) => {
           "& .MuiDrawer-paper": {
             boxSizing: "border-box",
             width: drawerWidth,
-            backgroundColor: "white",
+            backgroundColor: "background.paper",
             border: "none",
-            boxShadow: "4px 0 25px rgba(0,0,0,0.08)",
+            boxShadow: theme.palette.mode === 'light' ? "4px 0 25px rgba(0,0,0,0.08)" : "4px 0 25px rgba(0,0,0,0.6)",
           },
         }}
         open

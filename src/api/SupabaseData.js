@@ -458,3 +458,180 @@ export const projectExplanationsApi = {
     if (error) throw error;
   },
 };
+
+// Blog Posts API
+export const blogPostsApi = {
+  // Fetch all published blog posts (for public view)
+  fetchPublished: async () => {
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .select("*")
+      .eq("published", true)
+      .order("published_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+
+  // Fetch all blog posts (for admin)
+  fetchAll: async () => {
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+
+  // Fetch featured blog posts
+  fetchFeatured: async () => {
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .select("*")
+      .eq("published", true)
+      .eq("is_featured", true)
+      .order("published_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+
+  // Fetch blog post by slug
+  fetchBySlug: async (slug) => {
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .select("*")
+      .eq("slug", slug)
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  // Fetch blog post by ID
+  fetchById: async (id) => {
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  // Fetch posts by category
+  fetchByCategory: async (category) => {
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .select("*")
+      .eq("published", true)
+      .eq("category", category)
+      .order("published_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+
+  // Fetch posts by tag
+  fetchByTag: async (tag) => {
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .select("*")
+      .eq("published", true)
+      .contains("tags", [tag])
+      .order("published_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+
+  // Search blog posts
+  search: async (query) => {
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .select("*")
+      .eq("published", true)
+      .or(`title.ilike.%${query}%,excerpt.ilike.%${query}%,content.ilike.%${query}%`)
+      .order("published_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+
+  // Create new blog post
+  create: async (postData) => {
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .insert([postData])
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  // Update blog post
+  update: async (postData) => {
+    const { id, ...updateData } = postData;
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .update(updateData)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  // Delete blog post
+  delete: async (id) => {
+    const { error } = await supabase.from("blog_posts").delete().eq("id", id);
+    if (error) throw error;
+  },
+
+  // Increment view count
+  incrementViews: async (id) => {
+    const { error } = await supabase.rpc("increment_post_views", {
+      post_id: id,
+    });
+    if (error) {
+      // Fallback if RPC function doesn't exist
+      const { data: post } = await supabase
+        .from("blog_posts")
+        .select("views")
+        .eq("id", id)
+        .single();
+      
+      if (post) {
+        await supabase
+          .from("blog_posts")
+          .update({ views: (post.views || 0) + 1 })
+          .eq("id", id);
+      }
+    }
+  },
+
+  // Get all unique categories
+  getCategories: async () => {
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .select("category")
+      .not("category", "is", null);
+    if (error) throw error;
+    
+    // Return unique categories
+    const categories = [...new Set(data.map(item => item.category))];
+    return categories.filter(Boolean);
+  },
+
+  // Get all unique tags
+  getTags: async () => {
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .select("tags");
+    if (error) throw error;
+    
+    // Flatten and get unique tags
+    const allTags = data.reduce((acc, item) => {
+      if (item.tags && Array.isArray(item.tags)) {
+        return [...acc, ...item.tags];
+      }
+      return acc;
+    }, []);
+    
+    return [...new Set(allTags)];
+  },
+};
