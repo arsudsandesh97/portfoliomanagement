@@ -541,6 +541,7 @@ const ProjectForm = () => {
 
           return {
             ...project,
+            tags: Array.isArray(project.tags) ? project.tags : [],
             members: members || [],
             associations: associations || [],
           };
@@ -548,7 +549,11 @@ const ProjectForm = () => {
       );
 
       console.log("Fetched projects with relations:", projectsWithRelations);
-      setProjects(projectsWithRelations);
+      // Filter out projects without titles (ghost projects)
+      const validProjects = projectsWithRelations.filter(
+        (p) => p.title && p.title.trim() !== ""
+      );
+      setProjects(validProjects);
       toast.success(
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Typography>Projects loaded successfully</Typography>
@@ -852,6 +857,7 @@ const ProjectForm = () => {
 
   // Add new functions for category management
   // Replace the handleAddCategory function
+  // Replace the handleAddCategory function
   const handleAddCategory = async () => {
     try {
       if (!newCategory.trim()) {
@@ -875,14 +881,18 @@ const ProjectForm = () => {
         );
         toast.success("Category updated successfully");
       } else {
-        // Add new category
-        const { error } = await supabase
-          .from("projects")
-          .insert([{ category: newCategory.trim() }]);
-
-        if (error) throw error;
+        // Add new category - LOCAL ONLY
+        if (categories.includes(newCategory.trim())) {
+          toast.error("Category already exists");
+          return;
+        }
 
         setCategories([...categories, newCategory.trim()]);
+        // Auto-select the new category
+        setCurrentProject((prev) => ({
+          ...prev,
+          category: newCategory.trim(),
+        }));
         toast.success("Category added successfully");
       }
 
@@ -1173,7 +1183,9 @@ const ProjectForm = () => {
                         flexWrap="wrap"
                         sx={{ gap: 1, mt: 2 }}
                       >
-                        {project.tags.map((tag, index) => (
+                        {project.tags &&
+                          Array.isArray(project.tags) &&
+                          project.tags.map((tag, index) => (
                           <Chip
                             key={tag}
                             label={tag}
