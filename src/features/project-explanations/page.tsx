@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react"
-import { useForm, Controller } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { FileCode, Trash2, Save, BookOpen, FolderKanban, FileText } from "lucide-react"
+import { FileCode, Trash2, Save, BookOpen, FolderKanban } from "lucide-react"
 import MDEditor from '@uiw/react-md-editor'
 import '@uiw/react-md-editor/markdown-editor.css'
 import '@uiw/react-markdown-preview/markdown.css'
@@ -17,22 +17,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
   Form,
-  FormControl,
   FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormDescription,
 } from "@/components/ui/form"
-import { Separator } from "@/components/ui/separator"
 
 const formSchema = z.object({
   project_id: z.string().min(1, "Please select a project"),
@@ -46,21 +33,6 @@ export default function ProjectExplanationsPage() {
   const selectedExplanation = useProjectExplanation(selectedProjectId)
   const upsertExplanation = useUpsertProjectExplanation()
   const deleteExplanation = useDeleteProjectExplanation()
-  const [previewMode, setPreviewMode] = useState<"live" | "edit" | "preview">("live")
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 768) {
-        setPreviewMode("edit")
-      } else {
-        setPreviewMode("live")
-      }
-    }
-    
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
