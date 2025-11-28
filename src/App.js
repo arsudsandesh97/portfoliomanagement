@@ -19,7 +19,7 @@ import { supabase } from "./config/supabase";
 // Components
 import Header from "./components/Header.jsx";
 import Sidebar from "./components/Sidebar.jsx";
-import Login from "./auth/Login.jsx";
+import Login from "./Auth/Login.jsx";
 import Footer from "./components/Footer.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 
