@@ -9,7 +9,10 @@ import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { useToast } from "@/components/ui/use-toast"
-import { Lock, Mail, Loader2 } from "lucide-react"
+import { Lock, Mail, Loader2, ArrowRight, User } from "lucide-react"
+import { motion } from "framer-motion"
+import { useBio } from "@/features/bio/use-bio"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const formSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -20,6 +23,7 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const { data: bio } = useBio()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -58,73 +62,115 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
-      <Card className="w-full max-w-md shadow-lg border-2">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <Lock className="h-6 w-6 text-primary" />
-            </div>
-          </div>
-          <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-          <CardDescription>
-            Enter your credentials to access the admin panel
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="name@example.com" className="pl-9" {...field} />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input type="password" placeholder="••••••••" className="pl-9" {...field} />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  "Sign In"
-                )}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
-            Don't have an account? Contact the administrator.
-          </p>
-        </CardFooter>
-      </Card>
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-950">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 w-full h-full">
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-purple-600/20 blur-[100px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-pink-600/20 blur-[100px] animate-pulse delay-1000" />
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md z-10 p-4"
+      >
+        <Card className="border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl">
+          <CardHeader className="space-y-1 text-center pb-8">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
+              className="flex justify-center mb-4"
+            >
+              <div className="relative">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 blur-lg opacity-50" />
+                <Avatar className="h-24 w-24 border-4 border-white/10 shadow-xl">
+                  <AvatarImage src={bio?.Image || ""} alt={bio?.name || "User"} className="object-cover" />
+                  <AvatarFallback className="bg-slate-800 text-white text-2xl">
+                    {bio?.name ? bio.name.charAt(0) : <User className="h-10 w-10" />}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+            </motion.div>
+            <CardTitle className="text-3xl font-bold tracking-tight text-white">
+              {bio?.name ? `Welcome, ${bio.name.split(' ')[0]}` : "Welcome Back"}
+            </CardTitle>
+            <CardDescription className="text-slate-400 text-lg">
+              {bio?.roles && bio.roles.length > 0 ? bio.roles[0] : "Portfolio Admin"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-300">Email</FormLabel>
+                      <FormControl>
+                        <div className="relative group">
+                          <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400 group-focus-within:text-purple-400 transition-colors" />
+                          <Input 
+                            placeholder="name@example.com" 
+                            className="pl-10 bg-black/20 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-purple-500/20 transition-all h-11" 
+                            {...field} 
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-300">Password</FormLabel>
+                      <FormControl>
+                        <div className="relative group">
+                          <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400 group-focus-within:text-purple-400 transition-colors" />
+                          <Input 
+                            type="password" 
+                            placeholder="••••••••" 
+                            className="pl-10 bg-black/20 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-purple-500/20 transition-all h-11" 
+                            {...field} 
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button 
+                  type="submit" 
+                  className="w-full h-11 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg shadow-purple-500/25 transition-all duration-300 hover:scale-[1.02]" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    <span className="flex items-center justify-center">
+                      Sign In <ArrowRight className="ml-2 h-4 w-4" />
+                    </span>
+                  )}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+          <CardFooter className="flex justify-center pb-8">
+            <p className="text-sm text-slate-500">
+              Secure Admin Access
+            </p>
+          </CardFooter>
+        </Card>
+      </motion.div>
     </div>
   )
 }
+

@@ -93,19 +93,45 @@ export default function ExperiencePage() {
       <div className="grid gap-4">
         {experience?.map((item) => (
           <Card key={item.id} className="group relative overflow-hidden transition-all hover:shadow-md">
-            <CardHeader className="flex flex-row items-start gap-4 p-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400 overflow-hidden">
+            <CardHeader className="flex flex-col sm:flex-row items-start gap-4 p-6">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400 overflow-hidden shrink-0">
                 {item.img ? (
                   <img src={item.img} alt={item.company || "Company"} className="h-full w-full object-cover" />
                 ) : (
                   <Briefcase className="h-6 w-6" />
                 )}
               </div>
-              <div className="flex-1">
-                <CardTitle className="text-xl">{item.role}</CardTitle>
-                <CardDescription className="text-base font-medium text-foreground/80">
-                  {item.company}
-                </CardDescription>
+              <div className="flex-1 w-full">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-xl">{item.role}</CardTitle>
+                    <CardDescription className="text-base font-medium text-foreground/80">
+                      {item.company}
+                    </CardDescription>
+                  </div>
+                  {/* Mobile Actions */}
+                  <div className="flex gap-1 sm:hidden">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => {
+                        setEditingItem(item)
+                        setIsDialogOpen(true)
+                      }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:text-destructive"
+                      onClick={() => handleDelete(item.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
                 <div className="mt-1 text-sm text-muted-foreground">
                   {item.date}
                 </div>
@@ -115,7 +141,8 @@ export default function ExperiencePage() {
                   </p>
                 )}
               </div>
-              <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+              {/* Desktop Actions */}
+              <div className="hidden sm:flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -216,7 +243,7 @@ function ExperienceForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="role"

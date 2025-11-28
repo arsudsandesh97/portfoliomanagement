@@ -46,6 +46,21 @@ export default function ProjectExplanationsPage() {
   const selectedExplanation = useProjectExplanation(selectedProjectId)
   const upsertExplanation = useUpsertProjectExplanation()
   const deleteExplanation = useDeleteProjectExplanation()
+  const [previewMode, setPreviewMode] = useState<"live" | "edit" | "preview">("live")
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setPreviewMode("edit")
+      } else {
+        setPreviewMode("live")
+      }
+    }
+    
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -107,33 +122,143 @@ export default function ProjectExplanationsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Enhanced Header */}
-      <div className="flex flex-col gap-4">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <h1 className="text-4xl font-bold tracking-tight flex items-center gap-3 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <BookOpen className="h-7 w-7 text-primary" />
-              </div>
-              Project Explanations
-            </h1>
-            <p className="text-muted-foreground text-base">
-              Write comprehensive markdown documentation for your projects
-            </p>
-          </div>
-          {selectedProjectId && (
-            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20">
-              <div className="h-2 w-2 rounded-full bg-primary animate-pulse"></div>
-              <span className="text-sm font-medium">Editing Mode</span>
+    <div className="w-full max-w-full overflow-x-hidden space-y-4 md:space-y-6">
+      {/* Mobile View: List or Editor */}
+      <div className="lg:hidden">
+        {!selectedProjectId ? (
+          // Mobile List View
+          <div className="space-y-4">
+            <div className="space-y-1 px-1">
+              <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                <div className="p-1.5 rounded-lg bg-primary/10 shrink-0">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                </div>
+                <span className="truncate">Explanations</span>
+              </h1>
+              <p className="text-muted-foreground text-xs">
+                Select a project to edit its documentation
+              </p>
             </div>
-          )}
-        </div>
+
+            <div className="grid gap-3 pb-20">
+              {projects?.map((project) => (
+                <Card 
+                  key={project.id} 
+                  className="active:scale-[0.98] transition-transform overflow-hidden"
+                  onClick={() => setSelectedProjectId(project.id)}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <FileCode className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate text-sm">{project.title}</p>
+                      {projectsWithExplanations.has(project.id) ? (
+                        <p className="text-[10px] text-green-600 flex items-center gap-1">
+                          <span className="h-1.5 w-1.5 rounded-full bg-green-600 shrink-0" />
+                          Has explanation
+                        </p>
+                      ) : (
+                        <p className="text-[10px] text-muted-foreground">No explanation yet</p>
+                      )}
+                    </div>
+                    <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8">
+                      <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
+                        <span className="sr-only">Open</span>
+                        <span className="text-xs">→</span>
+                      </div>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+              {(!projects || projects.length === 0) && (
+                <div className="text-center py-10 text-muted-foreground">
+                  No projects found.
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          // Mobile Editor View
+          <div className="flex flex-col h-[calc(100vh-7rem)] sm:h-[calc(100vh-8rem)] -mx-1">
+            <div className="flex items-center justify-between mb-2 sticky top-0 bg-background/95 backdrop-blur z-20 py-2 border-b px-1">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setSelectedProjectId(null)}
+                className="gap-1 text-muted-foreground h-8 px-2"
+              >
+                ← Back
+              </Button>
+              <span className="font-semibold text-sm truncate max-w-[120px]">
+                {projects?.find(p => p.id === selectedProjectId)?.title}
+              </span>
+              <Button
+                size="sm"
+                onClick={form.handleSubmit(onSubmit)}
+                disabled={form.formState.isSubmitting || upsertExplanation.isPending}
+                className="h-8 px-3"
+              >
+                {form.formState.isSubmitting ? "..." : "Save"}
+              </Button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-1">
+              {selectedExplanation.isLoading ? (
+                <div className="flex justify-center py-10">
+                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                </div>
+              ) : (
+                <Form {...form}>
+                  <form className="space-y-4 pb-10">
+                    <FormField
+                      control={form.control}
+                      name="markdown_content"
+                      render={({ field }) => (
+                        <div className="rounded-lg border overflow-hidden w-full max-w-full">
+                          <div data-color-mode="dark" className="bg-background">
+                            <MDEditor
+                              value={field.value}
+                              onChange={(value) => field.onChange(value || "")}
+                              preview="edit"
+                              height={window.innerHeight - 200}
+                              visibleDragbar={false}
+                              highlightEnable={true}
+                              className="!border-none w-full max-w-full"
+                              hideToolbar={false}
+                              enableScroll={true}
+                              textareaProps={{
+                                placeholder: "Write your explanation here..."
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    />
+                    <div className="flex justify-center">
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={handleDelete}
+                        className="w-full opacity-90 hover:opacity-100"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Explanation
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-4">
-        {/* Enhanced Sidebar */}
-        <Card className="lg:col-span-1 border-2 hover:border-primary/30 transition-all">
+      {/* Desktop View (Hidden on Mobile) */}
+      <div className="hidden lg:grid gap-6 lg:grid-cols-4">
+        {/* Sidebar */}
+        <Card className="lg:col-span-1 border-2 hover:border-primary/30 transition-all h-fit">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
               <div className="p-1.5 rounded bg-primary/10">
@@ -180,22 +305,10 @@ export default function ProjectExplanationsPage() {
                 </Button>
               ))}
             </div>
-
-            {(!projects || projects.length === 0) && (
-              <div className="text-center py-8">
-                <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
-                <p className="text-sm text-muted-foreground font-medium mb-1">
-                  No projects found
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Create a project first
-                </p>
-              </div>
-            )}
           </CardContent>
         </Card>
 
-        {/* Enhanced Editor Card */}
+        {/* Editor Card */}
         <Card className="lg:col-span-3 border-2 hover:border-primary/20 transition-all">
           <CardHeader className="border-b bg-muted/30">
             <CardTitle className="flex items-center justify-between">
@@ -255,81 +368,25 @@ export default function ProjectExplanationsPage() {
             ) : (
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  {/* Project Selector */}
                   <FormField
                     control={form.control}
-                    name="project_id"
+                    name="markdown_content"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-base font-semibold flex items-center gap-2">
-                          <FolderKanban className="h-4 w-4" />
-                          Project
-                        </FormLabel>
-                        <Select
-                          onValueChange={(value) => {
-                            field.onChange(value)
-                            setSelectedProjectId(value)
-                          }}
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="h-11">
-                              <SelectValue placeholder="Select a project" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {projects?.map((project) => (
-                              <SelectItem key={project.id} value={project.id}>
-                                <div className="flex items-center gap-2">
-                                  <FileCode className="h-3.5 w-3.5 text-muted-foreground" />
-                                  {project.title}
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
+                      <div className="rounded-xl overflow-hidden border-2 border-muted hover:border-primary/30 transition-all shadow-sm">
+                        <div data-color-mode="dark" className="bg-background">
+                          <MDEditor
+                            value={field.value}
+                            onChange={(value) => field.onChange(value || "")}
+                            preview="live"
+                            height={500}
+                            visibleDragbar={false}
+                            highlightEnable={true}
+                            className="!border-none"
+                          />
+                        </div>
+                      </div>
                     )}
                   />
-
-                  <Separator />
-
-                  {/* Markdown Editor */}
-                  <FormItem>
-                    <FormLabel className="text-base font-semibold flex items-center gap-2">
-                      <FileText className="h-4 w-4" />
-                      Markdown Content
-                    </FormLabel>
-                    <FormDescription className="text-xs flex items-center gap-1.5 bg-muted/50 px-3 py-2 rounded-md border mb-3">
-                      <span className="flex items-center gap-1">
-                        ✨ <strong>Tip:</strong> Write using Markdown syntax
-                      </span>
-                      <span className="text-muted-foreground/70">•</span>
-                      <span>Live preview updates as you type</span>
-                    </FormDescription>
-                    <Controller
-                      control={form.control}
-                      name="markdown_content"
-                      render={({ field }) => (
-                        <div className="rounded-xl overflow-hidden border-2 border-muted hover:border-primary/30 transition-all shadow-sm">
-                          <div data-color-mode="dark" className="bg-background">
-                            <MDEditor
-                              value={field.value}
-                              onChange={(value) => field.onChange(value || "")}
-                              preview="live"
-                              height={500}
-                              visibleDragbar={false}
-                              highlightEnable={true}
-                            />
-                          </div>
-                        </div>
-                      )}
-                    />
-                    <FormMessage />
-                  </FormItem>
-
-                  {/* Action Buttons */}
                   <div className="flex justify-end gap-3 pt-4 border-t">
                     <Button
                       type="button"

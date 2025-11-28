@@ -95,7 +95,7 @@ export default function ProjectsPage() {
                   No Image
                 </div>
               )}
-              <div className="absolute top-2 right-2 hidden gap-2 group-hover:flex">
+              <div className="absolute top-2 right-2 flex gap-2 sm:hidden sm:group-hover:flex">
                 <Button
                   variant="secondary"
                   size="icon"

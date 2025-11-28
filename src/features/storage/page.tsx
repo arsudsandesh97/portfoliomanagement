@@ -172,7 +172,7 @@ export default function StoragePage() {
     <div className="space-y-6">
       {/* Enhanced Header */}
       <div className="flex flex-col gap-4">
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <h1 className="text-4xl font-bold tracking-tight flex items-center gap-3 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               <div className="p-2 rounded-lg bg-primary/10">
@@ -184,7 +184,7 @@ export default function StoragePage() {
               Manage your uploaded images, documents, and other files
             </p>
           </div>
-          <Button disabled={isUploading} asChild size="lg" className="shadow-md">
+          <Button disabled={isUploading} asChild size="lg" className="shadow-md w-full sm:w-auto">
             <label className="cursor-pointer">
               <Upload className="mr-2 h-4 w-4" />
               {isUploading ? "Uploading..." : "Upload File"}
@@ -199,7 +199,7 @@ export default function StoragePage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="border-2 hover:border-primary/30 transition-all">
             <CardHeader className="pb-3">
               <CardDescription className="text-xs font-medium">Total Files</CardDescription>
@@ -302,7 +302,7 @@ export default function StoragePage() {
                       </div>
                     </div>
                   )}
-                  <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/70 opacity-0 transition-opacity group-hover:opacity-100 backdrop-blur-sm">
+                  <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/70 opacity-0 transition-opacity group-hover:opacity-100 backdrop-blur-sm sm:opacity-0 sm:group-hover:opacity-100 flex-wrap p-2 content-center">
                     <Button
                       variant="secondary"
                       size="icon"
@@ -344,6 +344,37 @@ export default function StoragePage() {
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
+                  {/* Mobile Actions Overlay (Always visible on mobile if we want, or maybe just rely on tap? 
+                      Actually, for grid view on mobile, hover doesn't exist. 
+                      Let's make the overlay visible on tap or always visible? 
+                      Always visible might obscure the image. 
+                      Let's use a different approach for mobile: maybe a 3-dot menu or just make the overlay visible on focus/active?
+                      For now, let's keep the overlay hidden on mobile but maybe add a "actions" button?
+                      Actually, the user asked to make it mobile friendly. 
+                      Let's make the overlay always visible on mobile (hidden on sm) but with a semi-transparent background so image is still somewhat visible?
+                      Or better, let's add a small "actions" button on mobile that opens a drawer/dialog?
+                      Simplest fix for now: Make overlay flex on mobile (always visible) but maybe at bottom?
+                      Let's try making it always visible on mobile.
+                  */}
+                   <div className="absolute inset-0 flex sm:hidden items-center justify-center gap-2 bg-black/40 backdrop-blur-[1px]">
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      onClick={() => window.open(publicUrl, "_blank")}
+                      className="shadow-md h-8 w-8"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                     <Button
+                      variant="destructive"
+                      size="icon"
+                      onClick={() => handleDeleteClick(file.name)}
+                      className="shadow-md h-8 w-8"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                   </div>
+
                   <Badge className="absolute top-2 right-2 text-xs shadow-md">
                     {getFileIcon(file.name)}
                   </Badge>

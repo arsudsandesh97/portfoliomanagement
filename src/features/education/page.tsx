@@ -88,19 +88,45 @@ export default function EducationPage() {
       <div className="grid gap-4">
         {education?.map((item) => (
           <Card key={item.id} className="group relative overflow-hidden transition-all hover:shadow-md">
-            <CardHeader className="flex flex-row items-start gap-4 p-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 overflow-hidden">
+            <CardHeader className="flex flex-col sm:flex-row items-start gap-4 p-6">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 overflow-hidden shrink-0">
                 {item.img ? (
                    <img src={item.img} alt={item.school || "School"} className="h-full w-full object-cover" />
                 ) : (
                   <GraduationCap className="h-6 w-6" />
                 )}
               </div>
-              <div className="flex-1">
-                <CardTitle className="text-xl">{item.school}</CardTitle>
-                <CardDescription className="text-base font-medium text-foreground/80">
-                  {item.degree}
-                </CardDescription>
+              <div className="flex-1 w-full">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-xl">{item.school}</CardTitle>
+                    <CardDescription className="text-base font-medium text-foreground/80">
+                      {item.degree}
+                    </CardDescription>
+                  </div>
+                  {/* Mobile Actions */}
+                  <div className="flex gap-1 sm:hidden">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => {
+                        setEditingItem(item)
+                        setIsDialogOpen(true)
+                      }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:text-destructive"
+                      onClick={() => handleDelete(item.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
                 <div className="mt-1 text-sm text-muted-foreground">
                   {item.date}
                   {item.grade && ` • Grade: ${item.grade}`}
@@ -111,7 +137,8 @@ export default function EducationPage() {
                   </p>
                 )}
               </div>
-              <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+              {/* Desktop Actions */}
+              <div className="hidden sm:flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
                 <Button
                   variant="ghost"
                   size="icon"
