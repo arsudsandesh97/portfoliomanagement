@@ -33,7 +33,7 @@ import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
 
 // Components & Services
-import { educationApi } from "../../Api/SupabaseData";
+import { educationApi } from "../../api/SupabaseData";
 import { useScrollLock } from "../../Hooks/UseScrollLock";
 
 // Add these responsive styles to your existing styles object

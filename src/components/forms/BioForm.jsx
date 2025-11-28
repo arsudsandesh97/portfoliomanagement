@@ -44,18 +44,6 @@ import {
   CloudUpload as CloudUploadIcon,
   Visibility as VisibilityIcon,
   Edit as EditIcon,
-} from "@mui/icons-material";
-import { Toaster, toast } from "react-hot-toast";
-import { motion, AnimatePresence } from "framer-motion";
-import { styled } from "@mui/material/styles";
-
-// Components & Services
-import { bioApi, copyrightApi } from "../../Api/SupabaseData";
-import { useScrollLock } from "../../Hooks/UseScrollLock";
-
-// Add these utility functions
-const isMobile = () => window.innerWidth < 600;
-const isTablet = () => window.innerWidth >= 600 && window.innerWidth < 960;
 
 // Add responsive handlers
 const handleTouchStart = (event) => {

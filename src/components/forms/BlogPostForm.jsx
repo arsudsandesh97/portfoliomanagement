@@ -70,7 +70,7 @@ import { styled, keyframes } from "@mui/system";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Components & Services
-import { blogPostsApi } from "../../Api/SupabaseData";
+import { blogPostsApi } from "../../api/SupabaseData";
 
 // Animations
 const pulse = keyframes`

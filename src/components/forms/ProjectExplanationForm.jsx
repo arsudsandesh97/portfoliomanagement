@@ -46,21 +46,6 @@ import {
   CloudDone as CloudDoneIcon,
   Info as InfoIcon,
   Folder as FolderIcon,
-} from "@mui/icons-material";
-import { Toaster, toast } from "react-hot-toast";
-import { styled, keyframes } from "@mui/system";
-import { motion, AnimatePresence } from "framer-motion";
-
-// Components & Services
-import {
-  projectsApi,
-  projectExplanationsApi,
-} from "../../Api/SupabaseData";
-
-// Animations
-const pulse = keyframes`
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(0.98); }
 `;
 
 const slideIn = keyframes`

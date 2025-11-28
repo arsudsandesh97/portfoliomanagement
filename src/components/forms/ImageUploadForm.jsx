@@ -37,18 +37,6 @@ import {
   Refresh as RefreshIcon,
   CheckCircleOutline as SuccessIcon,
   ErrorOutline as ErrorIcon,
-  Sync as LoadingIcon,
-} from "@mui/icons-material";
-import { v4 as uuidv4 } from "uuid";
-import { Toaster, toast } from "react-hot-toast";
-
-// Components & Services
-import { storage as configuredStorage } from "../../Config/firebase";
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject,
   listAll,
   getMetadata,
 } from "firebase/storage";

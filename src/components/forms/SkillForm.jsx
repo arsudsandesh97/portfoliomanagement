@@ -29,18 +29,6 @@ import {
   ErrorOutline as ErrorIcon,
   Sync as LoadingIcon,
   Code as CodeIcon,
-} from "@mui/icons-material";
-import { Toaster, toast } from "react-hot-toast";
-import { styled } from "@mui/system";
-import { motion } from "framer-motion";
-
-// Components & Services
-import { skillsApi, skillCategoriesApi } from "../../Api/SupabaseData";
-import { useScrollLock } from "../../Hooks/UseScrollLock";
-
-const styles = {
-  container: {
-    width: "100%",
     p: { xs: 0, sm: 2, md: 3 },
     maxWidth: {
       xs: "100%",

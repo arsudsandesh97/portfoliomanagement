@@ -36,7 +36,7 @@ import { styled } from "@mui/material/styles";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Components & Services
-import { experienceApi } from "../../Api/SupabaseData";
+import { experienceApi } from "../../api/SupabaseData";
 import { useScrollLock } from "../../Hooks/UseScrollLock";
 
 const StyledDialog = styled(Dialog)`

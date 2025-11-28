@@ -38,7 +38,7 @@ import { motion } from "framer-motion";
 import { styled } from "@mui/system";
 
 // Components & Services
-import { contactsApi } from "../../Api/SupabaseData";
+import { contactsApi } from "../../api/SupabaseData";
 import { useScrollLock } from "../../Hooks/UseScrollLock";
 
 const formatDateTime = (dateString) => {
