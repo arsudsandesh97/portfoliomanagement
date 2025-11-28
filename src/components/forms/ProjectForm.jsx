@@ -51,9 +51,9 @@ import {
   projectsApi,
   projectMembersApi,
   projectAssociationsApi,
-} from "../../Api/SupabaseData";
-import { supabase } from "../../Config/supabase";
-import { useScrollLock } from "../../Hooks/UseScrollLock";
+} from "../../api/SupabaseData";
+import { supabase } from "../../config/supabase";
+import { useScrollLock } from "../../hooks/useScrollLock";
 
 // Add these styled components at the top of your file
 const StyledDialog = styled(Dialog)`

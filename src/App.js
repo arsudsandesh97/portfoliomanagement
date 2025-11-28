@@ -11,30 +11,30 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 // Theme
-import { ThemeProvider } from "./Contexts/ThemeContext.jsx";
+import { ThemeProvider } from "./contexts/ThemeContext.jsx";
 
 // Services
-import { supabase } from "./Config/supabase";
+import { supabase } from "./config/supabase";
 
 // Components
-import Header from "./Components/Header.jsx";
-import Sidebar from "./Components/Sidebar.jsx";
-import Login from "./Auth/Login.jsx";
-import Footer from "./Components/Footer.jsx";
-import Dashboard from "./Components/Dashboard.jsx";
+import Header from "./components/Header.jsx";
+import Sidebar from "./components/Sidebar.jsx";
+import Login from "./auth/Login.jsx";
+import Footer from "./components/Footer.jsx";
+import Dashboard from "./components/Dashboard.jsx";
 
 // Forms
-import BioForm from "./Components/Forms/BioForm.jsx";
-import EducationForm from "./Components/Forms/EducationForm.jsx";
-import ExperienceForm from "./Components/Forms/ExperienceForm.jsx";
-import ProjectForm from "./Components/Forms/ProjectForm.jsx";
-import SkillForm from "./Components/Forms/SkillForm.jsx";
-import ContactForm from "./Components/Forms/ContactForm.jsx";
-import ImageUploadForm from "./Components/Forms/ImageUploadForm.jsx";
-import StorageForm from "./Components/Forms/StorageForm.jsx";
-import StorageFormS from "./Components/Forms/StorageFormSupabase.jsx";
-import ProjectExplanationForm from "./Components/Forms/ProjectExplanationForm.jsx";
-import BlogPostForm from "./Components/Forms/BlogPostForm.jsx";
+import BioForm from "./components/forms/BioForm.jsx";
+import EducationForm from "./components/forms/EducationForm.jsx";
+import ExperienceForm from "./components/forms/ExperienceForm.jsx";
+import ProjectForm from "./components/forms/ProjectForm.jsx";
+import SkillForm from "./components/forms/SkillForm.jsx";
+import ContactForm from "./components/forms/ContactForm.jsx";
+import ImageUploadForm from "./components/forms/ImageUploadForm.jsx";
+import StorageForm from "./components/forms/StorageForm.jsx";
+import StorageFormS from "./components/forms/StorageFormSupabase.jsx";
+import ProjectExplanationForm from "./components/forms/ProjectExplanationForm.jsx";
+import BlogPostForm from "./components/forms/BlogPostForm.jsx";
 
 const App = () => {
   const [session, setSession] = useState(null);

@@ -39,7 +39,7 @@ import {
   skillsApi,
   blogPostsApi,
   contactsApi,
-} from "../Api/SupabaseData";
+} from "../api/SupabaseData";
 
 // Animations
 const float = keyframes`

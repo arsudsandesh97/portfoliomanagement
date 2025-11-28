@@ -22,8 +22,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 // Components & Services
-import { supabase } from "../Config/supabase";
-import { useThemeMode } from "../Contexts/ThemeContext";
+import { supabase } from "../config/supabase";
+import { useThemeMode } from "../contexts/ThemeContext";
 
 const Header = ({ handleDrawerToggle, user }) => {
   const [bioData, setBioData] = useState(null);

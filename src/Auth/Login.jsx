@@ -19,7 +19,7 @@ import {
 import { toast } from "react-toastify";
 
 // Services
-import { supabase } from "../Config/supabase";
+import { supabase } from "../config/supabase";
 
 const Login = () => {
   const [email, setEmail] = useState("");
