@@ -49,8 +49,8 @@ import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
 
 // Components & Services
-import { useScrollLock } from "../../Hooks/UseScrollLock";
-import { SupabaseStorageService } from "../../Api/SupabaseStorage";
+import { useScrollLock } from "../../hooks/useScrollLock";
+import { SupabaseStorageService } from "../../api/SupabaseStorage";
 
 const StyledDialog = styled(Dialog)`
   .MuiDialog-paper {

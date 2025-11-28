@@ -44,12 +44,21 @@ import {
   CloudUpload as CloudUploadIcon,
   Visibility as VisibilityIcon,
   Edit as EditIcon,
+} from "@mui/icons-material";
+import { Toaster, toast } from "react-hot-toast";
+import { styled } from "@mui/material/styles";
+import { motion, AnimatePresence } from "framer-motion";
 
-// Add responsive handlers
-const handleTouchStart = (event) => {
-  if (isMobile()) {
-    // Add touch-specific behavior
+// Components & Services
+import { bioApi, copyrightApi } from "../../api/SupabaseData";
+import { useScrollLock } from "../../hooks/useScrollLock";
+
+// Helper function for mobile detection
+const isMobile = () => {
+  if (typeof window !== "undefined") {
+    return window.innerWidth < 768;
   }
+  return false;
 };
 
 // Update the formStyles with responsive design

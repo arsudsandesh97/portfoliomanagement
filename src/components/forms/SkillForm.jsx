@@ -29,6 +29,17 @@ import {
   ErrorOutline as ErrorIcon,
   Sync as LoadingIcon,
   Code as CodeIcon,
+} from "@mui/icons-material";
+import { Toaster, toast } from "react-hot-toast";
+import { styled } from "@mui/material/styles";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Components & Services
+import { skillsApi, skillCategoriesApi } from "../../api/SupabaseData";
+import { useScrollLock } from "../../hooks/useScrollLock";
+
+const styles = {
+  container: {
     p: { xs: 0, sm: 2, md: 3 },
     maxWidth: {
       xs: "100%",
@@ -365,15 +376,9 @@ const SkillForm = () => {
   const [editingCategory, setEditingCategory] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
-  const [categoryDeleteDialogOpen, setCategoryDeleteDialogOpen] =
-    useState(false);
+  const [categoryDeleteDialogOpen, setCategoryDeleteDialogOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const { enableBodyScroll, disableBodyScroll } = useScrollLock();
-
-  useEffect(() => {
-    fetchCategories();
-    fetchSkills();
-  }, []);
 
   const fetchCategories = async () => {
     const loadingToast = toast.loading("Loading categories...", toastConfig);

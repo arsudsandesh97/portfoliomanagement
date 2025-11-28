@@ -37,7 +37,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 // Components & Services
 import { experienceApi } from "../../api/SupabaseData";
-import { useScrollLock } from "../../Hooks/UseScrollLock";
+import { useScrollLock } from "../../hooks/useScrollLock";
 
 const StyledDialog = styled(Dialog)`
   .MuiDialog-paper {

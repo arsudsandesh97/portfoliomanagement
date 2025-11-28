@@ -46,12 +46,25 @@ import {
   CloudDone as CloudDoneIcon,
   Info as InfoIcon,
   Folder as FolderIcon,
+} from "@mui/icons-material";
+import { Toaster, toast } from "react-hot-toast";
+import { styled, keyframes } from "@mui/material/styles";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Components & Services
+import { projectsApi, projectExplanationsApi } from "../../api/SupabaseData";
+
+const pulse = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 `;
 
 const slideIn = keyframes`
   from { transform: translateY(-10px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 `;
+
 
 const float = keyframes`
   0%, 100% { transform: translateY(0px); }

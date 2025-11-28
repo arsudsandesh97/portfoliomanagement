@@ -34,7 +34,7 @@ import { motion } from "framer-motion";
 
 // Components & Services
 import { educationApi } from "../../api/SupabaseData";
-import { useScrollLock } from "../../Hooks/UseScrollLock";
+import { useScrollLock } from "../../hooks/useScrollLock";
 
 // Add these responsive styles to your existing styles object
 const styles = {

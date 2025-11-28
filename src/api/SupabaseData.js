@@ -1,4 +1,4 @@
-import { supabase } from "../Config/supabase";
+import { supabase } from "../config/supabase";
 
 // Bio API
 export const bioApi = {

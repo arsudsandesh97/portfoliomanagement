@@ -48,7 +48,7 @@ import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
 
 // Components & Services
-import { storage as configuredStorage } from "../../Config/firebase";
+import { storage as configuredStorage } from "../../config/firebase";
 import {
   ref,
   getDownloadURL,
@@ -57,7 +57,7 @@ import {
   getMetadata,
   uploadBytes,
 } from "firebase/storage";
-import { useScrollLock } from "../../Hooks/UseScrollLock";
+import { useScrollLock } from "../../hooks/useScrollLock";
 
 const StyledDialog = styled(Dialog)`
   .MuiDialog-paper {

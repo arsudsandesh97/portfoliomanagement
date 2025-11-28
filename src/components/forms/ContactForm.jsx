@@ -39,7 +39,7 @@ import { styled } from "@mui/system";
 
 // Components & Services
 import { contactsApi } from "../../api/SupabaseData";
-import { useScrollLock } from "../../Hooks/UseScrollLock";
+import { useScrollLock } from "../../hooks/useScrollLock";
 
 const formatDateTime = (dateString) => {
   const date = new Date(dateString);

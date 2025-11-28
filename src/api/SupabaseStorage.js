@@ -1,4 +1,4 @@
-import { supabase, supabaseStorageBucket } from "../Config/supabase";
+import { supabase, supabaseStorageBucket } from "../config/supabase";
 
 export class SupabaseStorageService {
   constructor(bucketName = supabaseStorageBucket) {

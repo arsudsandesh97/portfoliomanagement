@@ -37,9 +37,19 @@ import {
   Refresh as RefreshIcon,
   CheckCircleOutline as SuccessIcon,
   ErrorOutline as ErrorIcon,
+  Sync as LoadingIcon,
+} from "@mui/icons-material";
+import { Toaster, toast } from "react-hot-toast";
+import { v4 as uuidv4 } from "uuid";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
   listAll,
   getMetadata,
 } from "firebase/storage";
+import { storage as configuredStorage } from "../../config/firebase";
 
 // Update the styles object with modern design elements
 const styles = {
