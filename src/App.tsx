@@ -16,6 +16,8 @@ import ContactsPage from '@/features/contacts/page'
 import BioPage from '@/features/bio/page'
 import StoragePage from '@/features/storage/page'
 import ProjectExplanationsPage from '@/features/project-explanations/page'
+import PowerBiDashboardsPage from '@/features/power-bi-dashboards/page'
+import SessionsPage from '@/features/sessions/page'
 
 const queryClient = new QueryClient()
 
@@ -43,6 +45,8 @@ function App() {
                         <Route path="/blog-posts" element={<BlogPage />} />
                         <Route path="/contacts" element={<ContactsPage />} />
                         <Route path="/storage" element={<StoragePage />} />
+                        <Route path="/power-bi-dashboards" element={<PowerBiDashboardsPage />} />
+                        <Route path="/sessions" element={<SessionsPage />} />
                       </Routes>
                     </AppShell>
                   </ProtectedRoute>
