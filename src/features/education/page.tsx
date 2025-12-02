@@ -35,7 +35,7 @@ const formSchema = z.object({
   grade: z.string().optional(),
   description: z.string().optional(),
   img: z.string().url().optional().or(z.literal("")),
-  is_published: z.boolean().default(true),
+  is_published: z.boolean(),
 })
 
 export default function EducationPage() {

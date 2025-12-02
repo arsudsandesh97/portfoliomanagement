@@ -35,7 +35,7 @@ const formSchema = z.object({
   }),
   author: z.string().optional(),
   image_url: z.string().url().optional().or(z.literal("")),
-  is_published: z.boolean().default(true),
+  is_published: z.boolean(),
 })
 
 type PowerBiDashboardFormProps = {

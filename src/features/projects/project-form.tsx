@@ -34,7 +34,7 @@ const formSchema = z.object({
   dashboard: z.string().url().optional().or(z.literal("")),
   // tags will be managed via state, not in form schema
   category: z.string().optional(),
-  is_published: z.boolean().default(true),
+  is_published: z.boolean(),
 })
 
 type ProjectFormProps = {
@@ -126,7 +126,7 @@ export function ProjectForm({ project, onSuccess }: ProjectFormProps) {
     setAssociations(associations.filter((_, i) => i !== index))
   }
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: project?.title || "",

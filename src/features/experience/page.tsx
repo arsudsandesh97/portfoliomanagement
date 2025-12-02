@@ -38,7 +38,7 @@ const formSchema = z.object({
   // skills will be managed via state, not in form schema
   doc: z.string().url().optional().or(z.literal("")),
   img: z.string().url().optional().or(z.literal("")),
-  is_published: z.boolean().default(true),
+  is_published: z.boolean(),
 })
 
 export default function ExperiencePage() {
