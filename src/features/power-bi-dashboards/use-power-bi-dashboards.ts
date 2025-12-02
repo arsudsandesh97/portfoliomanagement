@@ -11,11 +11,12 @@ export interface PowerBiDashboard {
   author: string | null
   image_url: string | null
   tags: string[] | null
+  is_published: boolean
   created_at: string
   updated_at: string
 }
 
-export type PowerBiDashboardInsert = Omit<PowerBiDashboard, "id" | "created_at" | "updated_at">
+export type PowerBiDashboardInsert = Omit<PowerBiDashboard, "id" | "created_at" | "updated_at" | "is_published"> & { is_published?: boolean }
 export type PowerBiDashboardUpdate = Partial<PowerBiDashboardInsert> & { id: string }
 
 export const usePowerBiDashboards = () => {

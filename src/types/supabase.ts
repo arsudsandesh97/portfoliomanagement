@@ -181,6 +181,7 @@ export interface Database {
           grade: string | null
           description: string | null
           degree: string | null
+          is_published: boolean
         }
         Insert: {
           id?: string
@@ -190,6 +191,7 @@ export interface Database {
           grade?: string | null
           description?: string | null
           degree?: string | null
+          is_published?: boolean
         }
         Update: {
           id?: string
@@ -199,6 +201,7 @@ export interface Database {
           grade?: string | null
           description?: string | null
           degree?: string | null
+          is_published?: boolean
         }
       }
       experiences: {
@@ -213,6 +216,7 @@ export interface Database {
           description3: string | null
           skills: string[] | null
           doc: string | null
+          is_published: boolean
         }
         Insert: {
           id?: string
@@ -225,6 +229,7 @@ export interface Database {
           description3?: string | null
           skills?: string[] | null
           doc?: string | null
+          is_published?: boolean
         }
         Update: {
           id?: string
@@ -237,6 +242,7 @@ export interface Database {
           description3?: string | null
           skills?: string[] | null
           doc?: string | null
+          is_published?: boolean
         }
       }
       members: {
@@ -291,6 +297,7 @@ export interface Database {
           category: string | null
           github: string | null
           dashboard: string | null
+          is_published: boolean
         }
         Insert: {
           id?: string
@@ -303,6 +310,7 @@ export interface Database {
           category?: string | null
           github?: string | null
           dashboard?: string | null
+          is_published?: boolean
         }
         Update: {
           id?: string
@@ -315,6 +323,7 @@ export interface Database {
           category?: string | null
           github?: string | null
           dashboard?: string | null
+          is_published?: boolean
         }
       }
       skill_categories: {

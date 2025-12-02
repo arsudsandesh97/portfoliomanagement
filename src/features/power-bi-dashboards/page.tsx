@@ -4,6 +4,7 @@ import { usePowerBiDashboards, useDeletePowerBiDashboard } from "./use-power-bi-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogContent,
@@ -93,6 +94,13 @@ export default function PowerBiDashboardsPage() {
               ) : (
                 <div className="flex h-full items-center justify-center text-muted-foreground">
                   No Image
+                </div>
+              )}
+              {!dashboard.is_published && (
+                <div className="absolute top-2 left-2">
+                  <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">
+                    Draft
+                  </Badge>
                 </div>
               )}
               <div className="absolute top-2 right-2 flex gap-2 sm:hidden sm:group-hover:flex">

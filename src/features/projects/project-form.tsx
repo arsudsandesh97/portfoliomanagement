@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { Plus, X } from "lucide-react"
+import { Plus, X, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -16,8 +16,9 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
 import { useCreateProject, useUpdateProject } from "./use-projects"
-import type { Project } from "./use-projects"
+import type { MemberInsert, AssociationInsert, ProjectWithDetails } from "./use-projects"
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -33,10 +34,11 @@ const formSchema = z.object({
   dashboard: z.string().url().optional().or(z.literal("")),
   // tags will be managed via state, not in form schema
   category: z.string().optional(),
+  is_published: z.boolean().default(true),
 })
 
 type ProjectFormProps = {
-  project?: Project | null
+  project?: ProjectWithDetails | null
   onSuccess: () => void
 }
 
@@ -46,7 +48,85 @@ export function ProjectForm({ project, onSuccess }: ProjectFormProps) {
   const [tags, setTags] = useState<string[]>(project?.tags || [])
   const [tagInput, setTagInput] = useState("")
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  // Members state
+  const [members, setMembers] = useState<MemberInsert[]>(project?.members || [])
+  const [newMember, setNewMember] = useState<MemberInsert>({
+    name: "",
+    img: "",
+    github: "",
+    linkedin: "",
+    project_id: "", // Will be set on submit
+  })
+
+
+  const [editingMemberIndex, setEditingMemberIndex] = useState<number | null>(null)
+
+  // Associations state
+  const [associations, setAssociations] = useState<AssociationInsert[]>(project?.associations || [])
+  const [newAssociation, setNewAssociation] = useState<AssociationInsert>({
+    name: "",
+    img: "",
+    project_id: "", // Will be set on submit
+  })
+  const [editingAssociationIndex, setEditingAssociationIndex] = useState<number | null>(null)
+
+  const addMember = () => {
+    if (newMember.name) {
+      if (editingMemberIndex !== null) {
+        const updatedMembers = [...members]
+        updatedMembers[editingMemberIndex] = newMember
+        setMembers(updatedMembers)
+        setEditingMemberIndex(null)
+      } else {
+        setMembers([...members, newMember])
+      }
+      setNewMember({ name: "", img: "", github: "", linkedin: "", project_id: "" })
+    }
+  }
+
+  const editMember = (index: number) => {
+    setNewMember(members[index])
+    setEditingMemberIndex(index)
+  }
+
+  const cancelEditMember = () => {
+    setNewMember({ name: "", img: "", github: "", linkedin: "", project_id: "" })
+    setEditingMemberIndex(null)
+  }
+
+  const removeMember = (index: number) => {
+    setMembers(members.filter((_, i) => i !== index))
+  }
+
+  const addAssociation = () => {
+    if (newAssociation.name) {
+      if (editingAssociationIndex !== null) {
+        const updatedAssociations = [...associations]
+        updatedAssociations[editingAssociationIndex] = newAssociation
+        setAssociations(updatedAssociations)
+        setEditingAssociationIndex(null)
+      } else {
+        setAssociations([...associations, newAssociation])
+      }
+      setNewAssociation({ name: "", img: "", project_id: "" })
+    }
+  }
+
+  const editAssociation = (index: number) => {
+    setNewAssociation(associations[index])
+    setEditingAssociationIndex(index)
+  }
+
+  const cancelEditAssociation = () => {
+    setNewAssociation({ name: "", img: "", project_id: "" })
+    setEditingAssociationIndex(null)
+  }
+
+  const removeAssociation = (index: number) => {
+    setAssociations(associations.filter((_, i) => i !== index))
+  }
+
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: project?.title || "",
@@ -57,6 +137,7 @@ export function ProjectForm({ project, onSuccess }: ProjectFormProps) {
       github: project?.github || "",
       dashboard: project?.dashboard || "",
       category: project?.category || "",
+      is_published: project?.is_published ?? true,
     },
   })
 
@@ -90,6 +171,9 @@ export function ProjectForm({ project, onSuccess }: ProjectFormProps) {
         dashboard: values.dashboard || null,
         tags: tags.length > 0 ? tags : [],
         category: values.category || null,
+        is_published: values.is_published,
+        members,
+        associations,
       }
 
       if (project) {
@@ -258,6 +342,196 @@ export function ProjectForm({ project, onSuccess }: ProjectFormProps) {
             )}
           />
         </div>
+
+        {/* Members Section */}
+        <div className="space-y-4 rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+          <div className="flex flex-col space-y-1.5">
+            <h3 className="text-lg font-semibold leading-none tracking-tight">Team Members</h3>
+            <p className="text-sm text-muted-foreground">Add team members who contributed to this project.</p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-4 rounded-lg border bg-muted/50 p-4">
+              <h4 className="text-sm font-medium leading-none mb-4">
+                {editingMemberIndex !== null ? "Edit Member" : "Add New Member"}
+              </h4>
+              <div className="grid gap-3">
+                <Input
+                  placeholder="Name"
+                  value={newMember.name}
+                  onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
+                  className="bg-background"
+                />
+                <Input
+                  placeholder="Image URL"
+                  value={newMember.img || ""}
+                  onChange={(e) => setNewMember({ ...newMember, img: e.target.value })}
+                  className="bg-background"
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <Input
+                    placeholder="GitHub URL"
+                    value={newMember.github || ""}
+                    onChange={(e) => setNewMember({ ...newMember, github: e.target.value })}
+                    className="bg-background"
+                  />
+                  <Input
+                    placeholder="LinkedIn URL"
+                    value={newMember.linkedin || ""}
+                    onChange={(e) => setNewMember({ ...newMember, linkedin: e.target.value })}
+                    className="bg-background"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button type="button" onClick={addMember} disabled={!newMember.name} className="flex-1">
+                  {editingMemberIndex !== null ? <><Pencil className="mr-2 h-4 w-4" /> Update Member</> : <><Plus className="mr-2 h-4 w-4" /> Add Member</>}
+                </Button>
+                {editingMemberIndex !== null && (
+                  <Button type="button" variant="outline" onClick={cancelEditMember}>
+                    Cancel
+                  </Button>
+                )}
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium leading-none mb-4">Current Members</h4>
+              <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                {members.map((member, index) => (
+                  <div 
+                    key={index} 
+                    className={`flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50 ${editingMemberIndex === index ? "border-primary bg-primary/5" : "bg-card"}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-muted overflow-hidden flex items-center justify-center border">
+                        {member.img ? (
+                          <img src={member.img} alt={member.name} className="h-full w-full object-cover" />
+                        ) : (
+                          <span className="text-xs font-medium text-muted-foreground">{member.name.charAt(0)}</span>
+                        )}
+                      </div>
+                      <div className="grid gap-0.5">
+                        <span className="text-sm font-medium leading-none">{member.name}</span>
+                        <div className="flex gap-2 text-xs text-muted-foreground">
+                          {member.github && <span>GitHub</span>}
+                          {member.linkedin && <span>LinkedIn</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => editMember(index)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => removeMember(index)}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                {members.length === 0 && (
+                  <div className="flex h-24 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">
+                    No members added yet
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Associations Section */}
+        <div className="space-y-4 rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+          <div className="flex flex-col space-y-1.5">
+            <h3 className="text-lg font-semibold leading-none tracking-tight">Associations</h3>
+            <p className="text-sm text-muted-foreground">Add organizations or companies associated with this project.</p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-4 rounded-lg border bg-muted/50 p-4">
+              <h4 className="text-sm font-medium leading-none mb-4">
+                {editingAssociationIndex !== null ? "Edit Association" : "Add New Association"}
+              </h4>
+              <div className="grid gap-3">
+                <Input
+                  placeholder="Name"
+                  value={newAssociation.name}
+                  onChange={(e) => setNewAssociation({ ...newAssociation, name: e.target.value })}
+                  className="bg-background"
+                />
+                <Input
+                  placeholder="Image URL"
+                  value={newAssociation.img || ""}
+                  onChange={(e) => setNewAssociation({ ...newAssociation, img: e.target.value })}
+                  className="bg-background"
+                />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button type="button" onClick={addAssociation} disabled={!newAssociation.name} className="flex-1">
+                  {editingAssociationIndex !== null ? <><Pencil className="mr-2 h-4 w-4" /> Update Association</> : <><Plus className="mr-2 h-4 w-4" /> Add Association</>}
+                </Button>
+                {editingAssociationIndex !== null && (
+                  <Button type="button" variant="outline" onClick={cancelEditAssociation}>
+                    Cancel
+                  </Button>
+                )}
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium leading-none mb-4">Current Associations</h4>
+              <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                {associations.map((association, index) => (
+                  <div 
+                    key={index} 
+                    className={`flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50 ${editingAssociationIndex === index ? "border-primary bg-primary/5" : "bg-card"}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-muted overflow-hidden flex items-center justify-center border">
+                        {association.img ? (
+                          <img src={association.img} alt={association.name} className="h-full w-full object-cover" />
+                        ) : (
+                          <span className="text-xs font-medium text-muted-foreground">{association.name.charAt(0)}</span>
+                        )}
+                      </div>
+                      <span className="text-sm font-medium leading-none">{association.name}</span>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => editAssociation(index)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => removeAssociation(index)}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                {associations.length === 0 && (
+                  <div className="flex h-24 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">
+                    No associations added yet
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        <FormField
+          control={form.control}
+          name="is_published"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Published</FormLabel>
+                <FormDescription>
+                  Make this project visible to the public.
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
         <div className="flex justify-end gap-2">
           <Button type="submit" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting ? "Saving..." : "Save"}

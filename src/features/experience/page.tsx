@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
 import {
   Dialog,
   DialogContent,
@@ -37,6 +38,7 @@ const formSchema = z.object({
   // skills will be managed via state, not in form schema
   doc: z.string().url().optional().or(z.literal("")),
   img: z.string().url().optional().or(z.literal("")),
+  is_published: z.boolean().default(true),
 })
 
 export default function ExperiencePage() {
@@ -104,7 +106,14 @@ export default function ExperiencePage() {
               <div className="flex-1 w-full">
                 <div className="flex justify-between items-start">
                   <div>
-                    <CardTitle className="text-xl">{item.role}</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-xl">{item.role}</CardTitle>
+                      {!item.is_published && (
+                        <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">
+                          Draft
+                        </Badge>
+                      )}
+                    </div>
                     <CardDescription className="text-base font-medium text-foreground/80">
                       {item.company}
                     </CardDescription>
@@ -194,6 +203,7 @@ function ExperienceForm({
       description3: experience?.description3 || "",
       doc: experience?.doc || "",
       img: experience?.img || "",
+      is_published: experience?.is_published ?? true,
     },
   })
 
@@ -227,6 +237,7 @@ function ExperienceForm({
         skills: skills.length > 0 ? skills : null,
         doc: values.doc || null,
         img: values.img || null,
+        is_published: values.is_published,
       }
 
       if (experience) {
@@ -401,6 +412,26 @@ function ExperienceForm({
             )}
           />
         </div>
+        <FormField
+          control={form.control}
+          name="is_published"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Published</FormLabel>
+                <FormDescription>
+                  Make this experience visible to the public.
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
         <div className="flex justify-end">
           <Button type="submit" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting ? "Saving..." : "Save"}

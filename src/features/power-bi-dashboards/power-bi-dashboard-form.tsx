@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
 import MDEditor from '@uiw/react-md-editor'
 import '@uiw/react-md-editor/markdown-editor.css'
 import '@uiw/react-markdown-preview/markdown.css'
@@ -34,6 +35,7 @@ const formSchema = z.object({
   }),
   author: z.string().optional(),
   image_url: z.string().url().optional().or(z.literal("")),
+  is_published: z.boolean().default(true),
 })
 
 type PowerBiDashboardFormProps = {
@@ -56,6 +58,7 @@ export function PowerBiDashboardForm({ dashboard, onSuccess }: PowerBiDashboardF
       embed_url: dashboard?.embed_url || "",
       author: dashboard?.author || "",
       image_url: dashboard?.image_url || "",
+      is_published: dashboard?.is_published ?? true,
     },
   })
 
@@ -87,6 +90,7 @@ export function PowerBiDashboardForm({ dashboard, onSuccess }: PowerBiDashboardF
         author: values.author || null,
         image_url: values.image_url || null,
         tags: tags.length > 0 ? tags : [],
+        is_published: values.is_published,
       }
 
       if (dashboard) {
@@ -238,6 +242,26 @@ export function PowerBiDashboardForm({ dashboard, onSuccess }: PowerBiDashboardF
           </FormDescription>
         </FormItem>
 
+        <FormField
+          control={form.control}
+          name="is_published"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Published</FormLabel>
+                <FormDescription>
+                  Make this dashboard visible to the public.
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
         <div className="flex justify-end gap-2">
           <Button type="submit" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting ? "Saving..." : "Save"}

@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
 import {
   Dialog,
   DialogContent,
@@ -23,6 +25,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form"
 
 const formSchema = z.object({
@@ -32,6 +35,7 @@ const formSchema = z.object({
   grade: z.string().optional(),
   description: z.string().optional(),
   img: z.string().url().optional().or(z.literal("")),
+  is_published: z.boolean().default(true),
 })
 
 export default function EducationPage() {
@@ -99,7 +103,14 @@ export default function EducationPage() {
               <div className="flex-1 w-full">
                 <div className="flex justify-between items-start">
                   <div>
-                    <CardTitle className="text-xl">{item.school}</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-xl">{item.school}</CardTitle>
+                      {!item.is_published && (
+                        <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">
+                          Draft
+                        </Badge>
+                      )}
+                    </div>
                     <CardDescription className="text-base font-medium text-foreground/80">
                       {item.degree}
                     </CardDescription>
@@ -186,6 +197,7 @@ function EducationForm({
       grade: education?.grade || "",
       description: education?.description || "",
       img: education?.img || "",
+      is_published: education?.is_published ?? true,
     },
   })
 
@@ -198,6 +210,7 @@ function EducationForm({
         grade: values.grade || null,
         description: values.description || null,
         img: values.img || null,
+        is_published: values.is_published,
       }
 
       if (education) {
@@ -289,6 +302,26 @@ function EducationForm({
                 <Input placeholder="https://..." {...field} />
               </FormControl>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="is_published"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Published</FormLabel>
+                <FormDescription>
+                  Make this education entry visible to the public.
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
             </FormItem>
           )}
         />
