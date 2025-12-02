@@ -4,29 +4,32 @@ import { ref, listAll, uploadBytes, deleteObject, getDownloadURL, getMetadata } 
 import { toast } from "@/components/ui/use-toast"
 import { v4 as uuidv4 } from 'uuid'
 
-export interface StorageFile {
+export interface StorageItem {
   name: string
   id: string
-  updated_at: string
-  created_at: string
-  last_accessed_at: string
-  metadata: Record<string, any>
-  url: string
+  type: 'file' | 'folder'
+  updated_at?: string
+  created_at?: string
+  last_accessed_at?: string
+  metadata?: Record<string, any>
+  url?: string
 }
 
-export const useStorage = (bucket: string = "") => {
+export const useStorage = (path: string = "") => {
   return useQuery({
-    queryKey: ["storage", bucket],
+    queryKey: ["storage", path],
     queryFn: async () => {
-      console.log(`Listing files in path: "${bucket}"`)
-      const listRef = ref(storage, bucket)
+      console.log(`Listing files in path: "${path}"`)
+      const listRef = ref(storage, path)
       const res = await listAll(listRef)
-      console.log("List result:", { 
-        items: res.items.length, 
-        prefixes: res.prefixes.map(p => p.name).join(', ') 
-      })
       
-      const files = await Promise.all(
+      const folders: StorageItem[] = res.prefixes.map((folderRef) => ({
+        name: folderRef.name,
+        id: folderRef.fullPath,
+        type: 'folder',
+      }))
+
+      const files: StorageItem[] = await Promise.all(
         res.items.map(async (itemRef) => {
           const url = await getDownloadURL(itemRef)
           const metadata = await getMetadata(itemRef)
@@ -34,6 +37,7 @@ export const useStorage = (bucket: string = "") => {
           return {
             name: itemRef.name,
             id: itemRef.fullPath,
+            type: 'file',
             updated_at: metadata.updated,
             created_at: metadata.timeCreated,
             last_accessed_at: metadata.timeCreated,
@@ -43,11 +47,11 @@ export const useStorage = (bucket: string = "") => {
               ...metadata.customMetadata
             },
             url: url
-          } as StorageFile
+          }
         })
       )
       
-      return files
+      return [...folders, ...files]
     },
   })
 }
