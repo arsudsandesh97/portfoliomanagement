@@ -86,7 +86,8 @@ export const useToggleOpenToWork = () => {
       if (existingSettings) {
         result = await supabase
           .from("open_to_work_settings")
-          .update({ is_visible: isVisible })
+          // @ts-expect-error - Supabase type inference mismatch
+          .update({ is_visible: isVisible } as any)
           .eq("id", (existingSettings as any).id)
           .select()
           .single()
