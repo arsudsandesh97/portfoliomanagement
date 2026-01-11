@@ -360,6 +360,65 @@ export interface Database {
           image?: string | null
         }
       }
+      open_to_work_settings: {
+        Row: {
+          id: string
+          is_visible: boolean
+          custom_message: string | null
+          location: string | null
+          experience_type: 'fresher' | 'entry' | 'junior' | 'mid' | 'senior' | 'lead' | 'custom' | null
+          experience_display: string | null
+          contact_email: string | null
+          linkedin_url: string | null
+          twitter_url: string | null
+          position: 'bottom-left' | 'bottom-right' | null
+          job_types: string[] | null
+          preferred_roles: string[] | null
+          skills: string[] | null
+          availability: string | null
+          available_from: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          is_visible?: boolean
+          custom_message?: string | null
+          location?: string | null
+          experience_type?: 'fresher' | 'entry' | 'junior' | 'mid' | 'senior' | 'lead' | 'custom' | null
+          experience_display?: string | null
+          contact_email?: string | null
+          linkedin_url?: string | null
+          twitter_url?: string | null
+          position?: 'bottom-left' | 'bottom-right' | null
+          job_types?: string[] | null
+          preferred_roles?: string[] | null
+          skills?: string[] | null
+          availability?: string | null
+          available_from?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          is_visible?: boolean
+          custom_message?: string | null
+          location?: string | null
+          experience_type?: 'fresher' | 'entry' | 'junior' | 'mid' | 'senior' | 'lead' | 'custom' | null
+          experience_display?: string | null
+          contact_email?: string | null
+          linkedin_url?: string | null
+          twitter_url?: string | null
+          position?: 'bottom-left' | 'bottom-right' | null
+          job_types?: string[] | null
+          preferred_roles?: string[] | null
+          skills?: string[] | null
+          availability?: string | null
+          available_from?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
     }
   }
 }
