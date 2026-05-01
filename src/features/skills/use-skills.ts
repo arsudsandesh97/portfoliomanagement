@@ -7,6 +7,8 @@ export type Skill = Database["public"]["Tables"]["skills"]["Row"] & {
   skill_categories?: Database["public"]["Tables"]["skill_categories"]["Row"] | null
 }
 export type SkillCategory = Database["public"]["Tables"]["skill_categories"]["Row"]
+export type SkillCategoryInsert = Database["public"]["Tables"]["skill_categories"]["Insert"]
+export type SkillCategoryUpdate = Database["public"]["Tables"]["skill_categories"]["Update"]
 export type SkillInsert = Database["public"]["Tables"]["skills"]["Insert"]
 export type SkillUpdate = Database["public"]["Tables"]["skills"]["Update"]
 
@@ -45,6 +47,8 @@ export const useSkillCategories = () => {
     },
   })
 }
+
+// ─── Skill CRUD ───────────────────────────────────────────────
 
 export const useCreateSkill = () => {
   const queryClient = useQueryClient()
@@ -129,6 +133,105 @@ export const useDeleteSkill = () => {
       toast({
         title: "Success",
         description: "Skill deleted successfully.",
+      })
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    },
+  })
+}
+
+// ─── Skill Category CRUD ──────────────────────────────────────
+
+export const useCreateSkillCategory = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (newCategory: SkillCategoryInsert) => {
+      const { data, error } = await supabase
+        .from("skill_categories")
+        // @ts-expect-error - Supabase type inference mismatch
+        .insert([newCategory as any])
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["skill_categories"] })
+      toast({
+        title: "Success",
+        description: "Category created successfully.",
+      })
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    },
+  })
+}
+
+export const useUpdateSkillCategory = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (category: SkillCategoryUpdate & { id: string }) => {
+      const { id, ...updates } = category
+      const { data, error } = await supabase
+        .from("skill_categories")
+        // @ts-expect-error - Supabase type inference mismatch
+        .update(updates as any)
+        .eq("id", id)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["skill_categories"] })
+      queryClient.invalidateQueries({ queryKey: ["skills"] }) // skills join on categories
+      toast({
+        title: "Success",
+        description: "Category updated successfully.",
+      })
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    },
+  })
+}
+
+export const useDeleteSkillCategory = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("skill_categories")
+        .delete()
+        .eq("id", id)
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["skill_categories"] })
+      queryClient.invalidateQueries({ queryKey: ["skills"] })
+      toast({
+        title: "Success",
+        description: "Category deleted successfully.",
       })
     },
     onError: (error) => {
