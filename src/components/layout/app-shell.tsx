@@ -20,6 +20,7 @@ import {
   BookOpen,
   BarChart,
   Shield,
+  Target,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -34,6 +35,7 @@ const navigation = [
   { name: "Blog Posts", href: "/blog-posts", icon: FileText },
   { name: "Contacts", href: "/contacts", icon: Mail },
   { name: "Storage", href: "/storage", icon: HardDrive },
+  { name: "Job", href: "/jobs", icon: Target },
   { name: "Power BI Dashboards", href: "/power-bi-dashboards", icon: BarChart },
   { name: "Sessions", href: "/sessions", icon: Shield },
 ]

@@ -40,7 +40,7 @@ export const useSkillCategories = () => {
       const { data, error } = await supabase
         .from("skill_categories")
         .select("*")
-        .order("title")
+        .order("sort_order", { ascending: true })
       
       if (error) throw error
       return data as SkillCategory[]
@@ -233,6 +233,32 @@ export const useDeleteSkillCategory = () => {
         title: "Success",
         description: "Category deleted successfully.",
       })
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    },
+  })
+}
+
+export const useReorderSkillCategory = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, newOrder }: { id: string; newOrder: number }) => {
+      const { error } = await supabase
+        .from("skill_categories")
+        // @ts-expect-error - Supabase type inference mismatch
+        .update({ sort_order: newOrder } as any)
+        .eq("id", id)
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["skill_categories"] })
     },
     onError: (error) => {
       toast({

@@ -204,6 +204,44 @@ export interface Database {
           is_published?: boolean
         }
       }
+      job_applications: {
+        Row: {
+          id: string
+          title: string
+          application_link: string | null
+          applied_on: string | null
+          resume_used: string | null
+          status: 'Applied' | 'Rejected' | 'Interviewing' | 'Short Listed' | 'Offer Letter Received'
+          notes: string | null
+          company: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          title: string
+          application_link?: string | null
+          applied_on?: string | null
+          resume_used?: string | null
+          status?: 'Applied' | 'Rejected' | 'Interviewing' | 'Short Listed' | 'Offer Letter Received'
+          notes?: string | null
+          company?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          title?: string
+          application_link?: string | null
+          applied_on?: string | null
+          resume_used?: string | null
+          status?: 'Applied' | 'Rejected' | 'Interviewing' | 'Short Listed' | 'Offer Letter Received'
+          notes?: string | null
+          company?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
       experiences: {
         Row: {
           id: string
@@ -330,14 +368,17 @@ export interface Database {
         Row: {
           id: string
           title: string
+          sort_order: number
         }
         Insert: {
           id?: string
           title: string
+          sort_order?: number
         }
         Update: {
           id?: string
           title?: string
+          sort_order?: number
         }
       }
       skills: {

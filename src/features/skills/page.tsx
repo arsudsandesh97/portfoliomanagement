@@ -1,10 +1,11 @@
 import { useState } from "react"
-import { Plus, Pencil, Trash2, Search, FolderOpen, Layers } from "lucide-react"
+import { Plus, Pencil, Trash2, Search, FolderOpen, Layers, ArrowUp, ArrowDown, GripVertical } from "lucide-react"
 import {
   useSkills,
   useSkillCategories,
   useDeleteSkill,
   useDeleteSkillCategory,
+  useReorderSkillCategory,
 } from "./use-skills"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -37,6 +38,7 @@ export default function SkillsPage() {
   const { data: categories, isLoading: categoriesLoading } = useSkillCategories()
   const deleteSkill = useDeleteSkill()
   const deleteCategory = useDeleteSkillCategory()
+  const reorderCategory = useReorderSkillCategory()
 
   // Skill states
   const [search, setSearch] = useState("")
@@ -77,6 +79,22 @@ export default function SkillsPage() {
     deleteCategory.mutate(id, {
       onSettled: () => setDeletingCategoryId(null),
     })
+  }
+
+  const handleMoveCategory = async (index: number, direction: "up" | "down") => {
+    if (!filteredCategories) return
+    const targetIndex = direction === "up" ? index - 1 : index + 1
+    if (targetIndex < 0 || targetIndex >= filteredCategories.length) return
+
+    const current = filteredCategories[index]
+    const target = filteredCategories[targetIndex]
+
+    // Swap sort_order values
+    const currentOrder = current.sort_order ?? index
+    const targetOrder = target.sort_order ?? targetIndex
+
+    await reorderCategory.mutateAsync({ id: current.id, newOrder: targetOrder })
+    await reorderCategory.mutateAsync({ id: target.id, newOrder: currentOrder })
   }
 
   const isLoading = skillsLoading || categoriesLoading
@@ -286,8 +304,8 @@ export default function SkillsPage() {
               </p>
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredCategories?.map((category) => {
+            <div className="space-y-3">
+              {filteredCategories?.map((category, index) => {
                 const count = skillCountByCategory(category.id)
                 return (
                   <Card
@@ -295,6 +313,27 @@ export default function SkillsPage() {
                     className="group relative overflow-hidden transition-all hover:shadow-md"
                   >
                     <CardHeader className="flex flex-row items-center gap-4 p-4">
+                      <div className="flex flex-col gap-0.5 shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                          disabled={index === 0 || reorderCategory.isPending}
+                          onClick={() => handleMoveCategory(index, "up")}
+                        >
+                          <ArrowUp className="h-3.5 w-3.5" />
+                        </Button>
+                        <GripVertical className="h-4 w-4 text-muted-foreground/40 mx-auto" />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                          disabled={index === (filteredCategories?.length ?? 0) - 1 || reorderCategory.isPending}
+                          onClick={() => handleMoveCategory(index, "down")}
+                        >
+                          <ArrowDown className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                         <FolderOpen className="h-6 w-6 text-primary" />
                       </div>
@@ -303,7 +342,7 @@ export default function SkillsPage() {
                           {category.title}
                         </CardTitle>
                         <p className="text-xs text-muted-foreground">
-                          {count} {count === 1 ? "skill" : "skills"}
+                          {count} {count === 1 ? "skill" : "skills"} · Order: {category.sort_order ?? "—"}
                         </p>
                       </div>
                     </CardHeader>
