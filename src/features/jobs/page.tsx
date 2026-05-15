@@ -9,7 +9,6 @@ import {
   Briefcase,
   ExternalLink,
   Search,
-  FileText,
   Calendar as CalendarIcon,
   Filter,
   Folder,
@@ -505,7 +504,7 @@ function JobForm({
                           date ? format(date, "yyyy-MM-dd") : ""
                         )
                       }
-                      initialFocus
+                      autoFocus
                     />
                   </PopoverContent>
                 </Popover>
