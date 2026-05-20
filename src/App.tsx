@@ -27,7 +27,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <AuthProvider>
-          <Router basename="/portfoliomanagement">
+          <Router>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route
